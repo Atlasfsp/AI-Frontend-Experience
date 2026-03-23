@@ -2,8 +2,8 @@
 
 Default declared mode for `AI-Frontend-Experience` is **HOTL**.
 
-- Shared baseline: `../GOVERNANCE_MODE.md`
-- Canonical package reference: `../Claude-Master-Architecture-Package/docs/GOVERNANCE_MODE.md`
+- Shared baseline: `../AI Platform Automation/docs/ecosystem/GOVERNANCE_MODE.md`
+- Canonical package reference: `/Users/AbiolaOgunsakin1/Workflows/Claude-Master-Architecture-Package/docs/GOVERNANCE_MODE.md`
 - Repo-local switch: `governance/manifest.json`
 
 ## What changes by mode

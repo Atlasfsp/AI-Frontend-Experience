@@ -1145,7 +1145,7 @@ All 6 repos follow the BAC engineering doctrine:
 
 ### 14.4.1 Governance Mode Default
 
-The ecosystem default is **HOTL**. `HITL` and `FULL_AUTONOMY` are supported only through explicit, documented, repo-local governance manifest changes. Those mode changes do not alter contract ownership, design ownership, compatibility gates, or release guardrails. The canonical details live in `docs/GOVERNANCE_MODE.md` and `manifests/governance-mode.json`.
+The ecosystem default is **HOTL**. `HITL` and `FULL_AUTONOMY` are supported only through explicit, documented, repo-local governance manifest changes. Those mode changes do not alter contract ownership, design ownership, compatibility gates, or release guardrails. The canonical details live in `/Users/AbiolaOgunsakin1/Workflows/AI Platform Automation/docs/ecosystem/GOVERNANCE_MODE.md` and `manifests/governance-mode.json`.
 
 ### 14.5 Quality Gates
 
