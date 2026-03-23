@@ -1,3 +1,5 @@
+export type GovernanceMode = 'HOTL' | 'HITL' | 'FULL_AUTONOMY';
+
 export interface FeatureFlags {
   graphiqlExplorer: boolean;
   swaggerExplorer: boolean;
@@ -6,6 +8,7 @@ export interface FeatureFlags {
   liveSubscriptions: boolean;
   oidcLogin: boolean;
   previewDeploys: boolean;
+  governanceMode: GovernanceMode;
 }
 
 export function createFeatureFlags(source: Record<string, string | undefined>): FeatureFlags {
@@ -25,5 +28,10 @@ export function createFeatureFlags(source: Record<string, string | undefined>): 
     liveSubscriptions: isEnabled(source.NEXT_PUBLIC_BAC_FEATURE_LIVE_SUBSCRIPTIONS, true),
     oidcLogin: isEnabled(source.NEXT_PUBLIC_BAC_FEATURE_OIDC_LOGIN, true),
     previewDeploys: isEnabled(source.NEXT_PUBLIC_BAC_FEATURE_PREVIEW_DEPLOYS, true),
+    governanceMode: (() => {
+      const mode = source.NEXT_PUBLIC_BAC_GOVERNANCE_MODE;
+      if (mode === 'HITL' || mode === 'FULL_AUTONOMY') return mode;
+      return 'HOTL' as const;
+    })(),
   };
 }

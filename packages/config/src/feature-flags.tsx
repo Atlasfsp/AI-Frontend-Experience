@@ -18,6 +18,8 @@ export interface FlagEvaluationContext {
   [key: string]: unknown;
 }
 
+export type GovernanceMode = 'HOTL' | 'HITL' | 'FULL_AUTONOMY';
+
 export interface FeatureFlagConfig {
   /** Static flags loaded from env or build-time config. */
   staticFlags: Record<string, boolean>;
@@ -27,6 +29,8 @@ export interface FeatureFlagConfig {
   refreshIntervalMs?: number;
   /** User context for contextual flag evaluation. */
   evaluationContext?: FlagEvaluationContext;
+  /** Governance mode: HOTL (human-on-the-loop), HITL (human-in-the-loop), or FULL_AUTONOMY. */
+  governanceMode?: GovernanceMode;
 }
 
 interface FeatureFlagContextValue {
@@ -36,6 +40,8 @@ interface FeatureFlagContextValue {
   remoteLoaded: boolean;
   /** Force a refresh of remote flags. */
   refresh: () => Promise<void>;
+  /** Current governance mode. */
+  governanceMode: GovernanceMode;
 }
 
 const FeatureFlagContext = createContext<FeatureFlagContextValue | null>(null);
@@ -103,6 +109,7 @@ export function FeatureFlagProvider({
     remoteUrl = '/api/flags',
     refreshIntervalMs = 60_000,
     evaluationContext,
+    governanceMode = 'HOTL',
   } = config;
 
   const [remoteFlags, setRemoteFlags] = useState<Record<string, boolean>>({});
@@ -132,8 +139,8 @@ export function FeatureFlagProvider({
   );
 
   const value = useMemo<FeatureFlagContextValue>(
-    () => ({ isEnabled, remoteLoaded, refresh: loadRemoteFlags }),
-    [isEnabled, remoteLoaded, loadRemoteFlags],
+    () => ({ isEnabled, remoteLoaded, refresh: loadRemoteFlags, governanceMode }),
+    [isEnabled, remoteLoaded, loadRemoteFlags, governanceMode],
   );
 
   return (
@@ -167,4 +174,13 @@ export function useFeatureFlags(): FeatureFlagContextValue {
   }
 
   return context;
+}
+
+/**
+ * Hook to get the current governance mode from the feature flag context.
+ * Returns 'HOTL' if not within a provider.
+ */
+export function useGovernanceMode(): GovernanceMode {
+  const context = useContext(FeatureFlagContext);
+  return context?.governanceMode ?? 'HOTL';
 }
