@@ -1,12 +1,10 @@
 # Architecture Summary
 
-This scaffold follows the Claude BAC architecture baseline:
+Use [ARCHITECTURE.md](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/ARCHITECTURE.md) as the canonical repository architecture guide.
 
-- Next.js 15 App Router for all browser surfaces.
-- Shared `@bac/*` packages for UI, config, auth, observability, and API clients.
-- Authentik-oriented auth seams with a safe mock fallback.
-- Hasura-oriented GraphQL explorer scaffolding for platform data access.
-- Swagger/OpenAPI explorer scaffolding for SDX REST documentation.
-- Strict TypeScript, Turborepo task orchestration, Vitest, and Playwright foundations.
+Short version:
 
-The current repository is intentionally focused on M1-M2 delivery from the architecture backlog: foundations, shells, auth seams, client seams, and operator-facing route scaffolds.
+- this repo is the BAC web experience layer
+- it serves AI Software Factory, AI Platform Automation, and Docs Portal
+- Next.js 15, strict TypeScript, Tailwind v4, shared `@bac/*` packages, Authentik-oriented auth, BFF proxy routes, and mock-first client seams form the baseline
+- shared UI, auth, config, observability, and API packages carry the long-term maintainability load

@@ -1,23 +1,26 @@
-# Developer Onboarding
+# Onboarding
 
-## Prerequisites
+Start with:
 
-- Node.js 20.10 or newer
-- pnpm 9.x
-- Access to BAC Authentik, SDX, and Hasura endpoints if you want live integration
+- [README.md](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/README.md)
+- [LOCAL_DEVELOPMENT.md](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/LOCAL_DEVELOPMENT.md)
+- [ARCHITECTURE.md](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/ARCHITECTURE.md)
 
-## First-day workflow
+Recommended first-day path:
 
 1. Install dependencies with `pnpm install --no-frozen-lockfile`.
 2. Create `.env.local` from `.env.example`.
-3. Keep `NEXT_PUBLIC_BAC_ENABLE_MOCK_API=true` until the backend endpoints are reachable.
-4. Use `pnpm dev:software-factory` for SDX work, `pnpm dev:platform` for platform surfaces, and `pnpm dev:docs` for docs work.
-5. Run `pnpm check` before you push.
+3. Keep mock mode enabled unless you already have live Authentik and backend access.
+4. Run one app at a time:
+   - `pnpm dev:software-factory`
+   - `pnpm dev:platform`
+   - `pnpm dev:docs`
+5. Run `pnpm check` before pushing.
 
-## Shared package expectations
+Package ownership guidance:
 
-- Put reusable UI in `packages/ui`.
-- Put environment or feature-flag logic in `packages/config`.
-- Keep network contracts in `packages/api-clients`.
-- Keep auth policy and route guard logic in `packages/auth`.
-- Keep telemetry and structured logging in `packages/observability`.
+- reusable browser UI belongs in `packages/ui`
+- auth and permission logic belongs in `packages/auth`
+- runtime config and feature flags belong in `packages/config`
+- network contracts and client abstractions belong in `packages/api-clients`
+- telemetry belongs in `packages/observability`
