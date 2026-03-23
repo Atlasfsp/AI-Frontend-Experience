@@ -11,6 +11,7 @@ Authoritative baseline references:
 - `COMPATIBILITY_MATRIX.md`
 - `CROSS_REPO_RELEASE_FLOW.md`
 - `LOCAL_INTEGRATION_GUIDE.md`
+- `GOVERNANCE_MODE.md`
 
 `AI-Frontend-Experience` is a consumer repo that binds together:
 

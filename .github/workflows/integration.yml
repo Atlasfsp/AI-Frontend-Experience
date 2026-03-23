@@ -31,6 +31,7 @@ jobs:
       - run: pnpm check
       - run: pnpm contracts:validate
       - run: pnpm design:validate
+      - run: pnpm governance:validate
       - run: pnpm docs:validate
       - run: pnpm release:validate
       - run: pnpm integration:smoke
@@ -41,3 +42,4 @@ jobs:
           path: |
             reports/compatibility-report.json
             reports/design-drift-report.json
+            reports/governance-mode-report.json

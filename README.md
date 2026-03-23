@@ -25,7 +25,17 @@ This repo aligns to the workspace-level baseline artifacts and does not redefine
 - `COMPATIBILITY_MATRIX.md`
 - `CROSS_REPO_RELEASE_FLOW.md`
 - `LOCAL_INTEGRATION_GUIDE.md`
+- `GOVERNANCE_MODE.md`
 - `Claude-Master-Architecture-Package`
+
+## Governance Mode
+
+- Default mode: `HOTL`
+- Controlled modes: `HITL`, `FULL_AUTONOMY`
+- Repo-local declaration: `governance/manifest.json`
+- Repo-local operating guide: `docs/GOVERNANCE_MODE.md`
+
+Mode changes must be reviewed and documented. Even in `FULL_AUTONOMY`, generated-client validation, design handoff validation, compatibility checks, auth guardrails, and release documentation remain mandatory.
 
 ## What this repository owns
 
@@ -187,6 +197,7 @@ The baseline expectation for all changes:
 - [Architecture](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/ARCHITECTURE.md)
 - [Local Development](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/LOCAL_DEVELOPMENT.md)
 - [Release](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/RELEASE.md)
+- [Governance Mode](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/GOVERNANCE_MODE.md)
 - [Onboarding](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/onboarding.md)
 - [Repository Map](/Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/docs/repository-map.md)
 

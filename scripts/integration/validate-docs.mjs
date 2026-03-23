@@ -10,6 +10,7 @@ const docs = [
   'docs/COMPATIBILITY_MATRIX.md',
   'docs/CROSS_REPO_RELEASE_FLOW.md',
   'docs/LOCAL_INTEGRATION_GUIDE.md',
+  'docs/GOVERNANCE_MODE.md',
 ];
 
 for (const docPath of docs) {
@@ -30,6 +31,7 @@ const baselineRefs = [
   'COMPATIBILITY_MATRIX.md',
   'CROSS_REPO_RELEASE_FLOW.md',
   'LOCAL_INTEGRATION_GUIDE.md',
+  'GOVERNANCE_MODE.md',
   'Claude-Master-Architecture-Package',
 ];
 const integrationArchitecture = fs.readFileSync(path.join(root, 'docs/INTEGRATION_ARCHITECTURE.md'), 'utf8');
@@ -41,6 +43,10 @@ for (const ref of baselineRefs) {
   if (!readme.includes(ref)) {
     throw new Error(`README must reference ${ref}`);
   }
+}
+
+if (!fs.existsSync(path.join(root, 'governance/manifest.json'))) {
+  throw new Error('Missing governance manifest: governance/manifest.json');
 }
 
 console.log('Frontend integration docs validated.');

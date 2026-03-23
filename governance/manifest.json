@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0.0",
+  "repo": "AI-Frontend-Experience",
+  "layer": "EXPERIENCE",
+  "defaultMode": "HOTL",
+  "activeMode": "HOTL",
+  "allowedModes": ["HOTL", "HITL", "FULL_AUTONOMY"],
+  "switchControl": {
+    "mechanism": "pull-requested manifest change",
+    "requiresPullRequest": true,
+    "requiresDocsUpdate": true,
+    "requiresAuditTrail": true,
+    "requiresReleaseNote": true,
+    "requiresCompatibilityReview": true
+  },
+  "requiredGuardrails": {
+    "policyChecks": true,
+    "compatibilityChecks": true,
+    "releaseDocsUpdate": true,
+    "ciValidation": true,
+    "securityChecks": true
+  },
+  "repoSpecific": {
+    "affectedActions": [
+      "web client generation",
+      "swagger-openapi explorer consumption",
+      "release promotion",
+      "bff automation",
+      "operator workflow automation"
+    ],
+    "unchangedActions": [
+      "experience-only ownership",
+      "non-ownership of backend contracts",
+      "non-ownership of canonical figma handoff"
+    ],
+    "cannotBypass": [
+      "policy-checks",
+      "compatibility-validation",
+      "release-documentation",
+      "docs-validation",
+      "security-validation",
+      "design-handoff-validation",
+      "generated-client-validation"
+    ]
+  }
+}

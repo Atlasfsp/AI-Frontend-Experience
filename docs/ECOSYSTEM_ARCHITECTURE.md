@@ -1143,6 +1143,10 @@ All 6 repos follow the BAC engineering doctrine:
 | **DDD** | Domain boundaries enforced at package/module level |
 | **AIDD** | AI-assisted development with human oversight |
 
+### 14.4.1 Governance Mode Default
+
+The ecosystem default is **HOTL**. `HITL` and `FULL_AUTONOMY` are supported only through explicit, documented, repo-local governance manifest changes. Those mode changes do not alter contract ownership, design ownership, compatibility gates, or release guardrails. The canonical details live in `docs/GOVERNANCE_MODE.md` and `manifests/governance-mode.json`.
+
 ### 14.5 Quality Gates
 
 | Gate | When | Pass Criteria |
