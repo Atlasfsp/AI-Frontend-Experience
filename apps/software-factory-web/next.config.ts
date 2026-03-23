@@ -1,5 +1,9 @@
 import type { NextConfig } from 'next';
 
+import { getCacheHeaders, loadCdnConfig } from '@bac/config';
+
+const cdn = loadCdnConfig();
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   eslint: {
@@ -14,6 +18,16 @@ const nextConfig: NextConfig = {
     '@bac/observability',
     '@bac/ui',
   ],
+  assetPrefix: cdn.assetPrefix || undefined,
+  images: {
+    remotePatterns: cdn.imageDomains.map((hostname) => ({
+      protocol: 'https' as const,
+      hostname,
+    })),
+  },
+  async headers() {
+    return getCacheHeaders();
+  },
 };
 
 export default nextConfig;

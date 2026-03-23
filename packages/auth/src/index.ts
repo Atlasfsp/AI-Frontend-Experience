@@ -24,3 +24,5 @@ export { AuthProvider, useBacAccess, useBacPermission, useBacSession } from './r
 export { PermissionGuard, RoleGuard } from './guards';
 export type { OidcRefreshConfig, TokenResponse } from './refresh';
 export { createRefreshResponse, refreshTokens } from './refresh';
+export type { TenantContext } from './tenant-context';
+export { createTenantHeaders, extractTenantContext, validateTenantContext } from './tenant-context';

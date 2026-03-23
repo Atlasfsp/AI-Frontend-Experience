@@ -29,6 +29,11 @@ export interface WorkspaceSwitcherProps {
    * invalidating queries, and redirecting to the dashboard.
    */
   onSwitch?: (workspaceId: string) => void | Promise<void>;
+  /**
+   * Called after a workspace switch to emit a tenant audit log entry.
+   * Receives the previous and next workspace IDs.
+   */
+  onAuditLog?: (previousWorkspaceId: string, nextWorkspaceId: string) => void;
   /** Available workspaces to display in the dropdown. */
   options: WorkspaceOption[];
   /** Label above the selector. */
@@ -47,6 +52,7 @@ export interface WorkspaceSwitcherProps {
 export function WorkspaceSwitcher({
   activeWorkspaceId,
   compact = false,
+  onAuditLog,
   onSwitch,
   options,
   title = 'Workspace',
@@ -64,15 +70,22 @@ export function WorkspaceSwitcher({
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
       const nextId = event.target.value;
+      const previousId = selectedId;
       setSelectedId(nextId);
 
-      if (onSwitch && nextId !== activeWorkspaceId) {
-        startTransition(() => {
-          void Promise.resolve(onSwitch(nextId));
-        });
+      if (nextId !== activeWorkspaceId) {
+        if (onAuditLog) {
+          onAuditLog(previousId, nextId);
+        }
+
+        if (onSwitch) {
+          startTransition(() => {
+            void Promise.resolve(onSwitch(nextId));
+          });
+        }
       }
     },
-    [activeWorkspaceId, onSwitch],
+    [activeWorkspaceId, onAuditLog, onSwitch, selectedId],
   );
 
   const selector = (

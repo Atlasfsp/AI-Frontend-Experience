@@ -27,3 +27,14 @@ export type { TimelineItem } from './components/timeline';
 export { WorkspaceSwitcher } from './components/workspace-switcher';
 export type { WorkspaceOption, WorkspaceSwitcherProps } from './components/workspace-switcher';
 export { cn } from './lib/cn';
+
+// Governance
+export { GovernanceGate } from './components/governance-gate';
+export type { GovernanceGateProps, GovernanceMode } from './components/governance-gate';
+export { useGovernanceMode } from './hooks/use-governance-mode';
+export {
+  GovernedApprovalButton,
+  GovernedIncidentAction,
+  GovernedAlertAction,
+  GovernedWorkspaceAction,
+} from './components/governed-actions';
