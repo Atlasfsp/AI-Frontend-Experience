@@ -1,0 +1,64 @@
+{
+  "brandMode": "enterprise",
+  "color": {
+    "primary": "#1f5eff",
+    "secondary": "#0f2240",
+    "accent": "#15b8a6",
+    "background": "#06111f",
+    "surface": "#102035",
+    "text": "#edf4ff",
+    "success": "#2ec27e",
+    "warning": "#ffb020",
+    "danger": "#ff5d73"
+  },
+  "typography": {
+    "display": "\"Space Grotesk\", \"Avenir Next\", sans-serif",
+    "heading": "\"Space Grotesk\", \"Segoe UI\", sans-serif",
+    "body": "\"Source Sans 3\", \"Segoe UI\", sans-serif",
+    "mono": "\"IBM Plex Mono\", \"SFMono-Regular\", monospace",
+    "scale": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "md": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.5rem",
+      "2xl": "2.5rem"
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 32
+  },
+  "radius": {
+    "sm": 8,
+    "md": 14,
+    "lg": 22,
+    "pill": 999
+  },
+  "elevation": {
+    "low": "0 14px 30px rgba(5, 14, 28, 0.18)",
+    "medium": "0 18px 48px rgba(5, 14, 28, 0.26)",
+    "high": "0 28px 80px rgba(5, 14, 28, 0.35)"
+  },
+  "components": {
+    "appShell": {
+      "navWidth": 320,
+      "headerHeight": 72
+    },
+    "card": {
+      "padding": 24,
+      "gap": 18
+    },
+    "table": {
+      "rowHeight": 54,
+      "headerHeight": 48
+    },
+    "form": {
+      "fieldHeight": 48,
+      "fieldGap": 16
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "ai-frontend-experience",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20.10.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel --filter=@bac/software-factory-web --filter=@bac/platform-automation-web --filter=@bac/docs-portal",
+    "dev:software-factory": "pnpm --filter @bac/software-factory-web dev",
+    "dev:platform": "pnpm --filter @bac/platform-automation-web dev",
+    "dev:docs": "pnpm --filter @bac/docs-portal dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "clean": "node scripts/clean.mjs",
+    "sync:tokens": "bash scripts/sync-design-tokens.sh",
+    "sync:proto": "bash scripts/sync-proto-types.sh",
+    "sync:openapi": "bash scripts/sync-openapi-spec.sh"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.23.0",
+    "@next/eslint-plugin-next": "^15.2.4",
+    "@playwright/test": "^1.52.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.1",
+    "eslint": "^9.23.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.0.0",
+    "jsdom": "^26.0.0",
+    "msw": "^2.7.3",
+    "prettier": "^3.5.3",
+    "turbo": "^2.4.4",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.28.0",
+    "vitest": "^3.1.1"
+  }
+}

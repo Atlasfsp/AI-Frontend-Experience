@@ -1,0 +1,27 @@
+{
+  "name": "@bac/software-factory-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@bac/api-clients": "workspace:*",
+    "@bac/auth": "workspace:*",
+    "@bac/config": "workspace:*",
+    "@bac/design-tokens": "workspace:*",
+    "@bac/observability": "workspace:*",
+    "@bac/ui": "workspace:*",
+    "@tailwindcss/postcss": "^4.1.3",
+    "next": "^15.2.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.3",
+    "zod": "^3.24.2"
+  }
+}

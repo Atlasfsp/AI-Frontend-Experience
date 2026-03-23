@@ -1,0 +1,20 @@
+{
+  "name": "@bac/api-clients",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@bac/config": "workspace:*",
+    "@bac/observability": "workspace:*",
+    "@tanstack/react-query": "^5.69.0",
+    "react": "^19.1.0"
+  }
+}

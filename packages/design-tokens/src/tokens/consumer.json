@@ -1,0 +1,64 @@
+{
+  "brandMode": "consumer",
+  "color": {
+    "primary": "#005f73",
+    "secondary": "#0a9396",
+    "accent": "#ee9b00",
+    "background": "#fff9f0",
+    "surface": "#ffffff",
+    "text": "#1c2938",
+    "success": "#3fa34d",
+    "warning": "#d97706",
+    "danger": "#cb3a31"
+  },
+  "typography": {
+    "display": "\"Fraunces\", \"Georgia\", serif",
+    "heading": "\"Space Grotesk\", \"Segoe UI\", sans-serif",
+    "body": "\"Source Sans 3\", \"Segoe UI\", sans-serif",
+    "mono": "\"IBM Plex Mono\", monospace",
+    "scale": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "md": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.5rem",
+      "2xl": "2.25rem"
+    }
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "xl": 36
+  },
+  "radius": {
+    "sm": 10,
+    "md": 16,
+    "lg": 24,
+    "pill": 999
+  },
+  "elevation": {
+    "low": "0 8px 20px rgba(20, 44, 75, 0.08)",
+    "medium": "0 16px 40px rgba(20, 44, 75, 0.14)",
+    "high": "0 28px 64px rgba(20, 44, 75, 0.2)"
+  },
+  "components": {
+    "appShell": {
+      "navWidth": 304,
+      "headerHeight": 72
+    },
+    "card": {
+      "padding": 24,
+      "gap": 18
+    },
+    "table": {
+      "rowHeight": 52,
+      "headerHeight": 48
+    },
+    "form": {
+      "fieldHeight": 48,
+      "fieldGap": 16
+    }
+  }
+}

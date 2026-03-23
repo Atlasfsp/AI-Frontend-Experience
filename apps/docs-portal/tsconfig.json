@@ -1,0 +1,31 @@
+{
+  "extends": "../../packages/tsconfig/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@bac/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
+      "@bac/design-tokens": [
+        "../../packages/design-tokens/src/index.ts"
+      ],
+      "@bac/auth": [
+        "../../packages/auth/src/index.ts"
+      ]
+    },
+    "noEmit": true,
+    "jsx": "preserve"
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
