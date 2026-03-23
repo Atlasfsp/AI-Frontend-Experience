@@ -25,5 +25,5 @@ export { TerminalPanel } from './components/terminal-panel';
 export { Timeline } from './components/timeline';
 export type { TimelineItem } from './components/timeline';
 export { WorkspaceSwitcher } from './components/workspace-switcher';
-export type { WorkspaceOption } from './components/workspace-switcher';
+export type { WorkspaceOption, WorkspaceSwitcherProps } from './components/workspace-switcher';
 export { cn } from './lib/cn';

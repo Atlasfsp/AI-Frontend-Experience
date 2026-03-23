@@ -22,4 +22,9 @@ for (const docPath of docs) {
   }
 }
 
+const integrationArchitecture = fs.readFileSync(path.join(root, 'docs/INTEGRATION_ARCHITECTURE.md'), 'utf8');
+if (!integrationArchitecture.includes('Claude-Master-Architecture-Package')) {
+  throw new Error('Integration architecture doc must reference Claude-Master-Architecture-Package');
+}
+
 console.log('Frontend integration docs validated.');

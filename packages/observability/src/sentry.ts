@@ -1,6 +1,11 @@
 import * as Sentry from '@sentry/nextjs';
 
 export interface SentryConfig {
+  /**
+   * Sentry Data Source Name.
+   * Must be set via the NEXT_PUBLIC_SENTRY_DSN environment variable.
+   * Without a valid DSN, Sentry will silently discard all events.
+   */
   dsn: string;
   environment: string;
   app: string;

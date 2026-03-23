@@ -27,6 +27,9 @@ for (const artifact of readJson(root, 'contracts/upstreams/design-factory-figma/
 for (const artifact of readJson(root, 'contracts/upstreams/design-factory-figma/handoff/component-specs/manifest.json').artifacts) {
   observed.set(artifact.artifactId, artifact.version);
 }
+for (const artifact of readJson(root, 'contracts/upstreams/design-factory-figma/handoff/state-maps/manifest.json').artifacts) {
+  observed.set(artifact.artifactId, artifact.version);
+}
 for (const artifact of readJson(root, 'contracts/upstreams/design-factory-figma/design-system/tokens/manifest.json').artifacts) {
   observed.set(artifact.artifactId, artifact.version);
 }

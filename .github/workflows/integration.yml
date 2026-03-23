@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - name: Sync upstream contracts from GitHub Releases
         env:
           BAC_UPSTREAM_SOURCE_MODE: github-release

@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@bac/auth": "workspace:*",
     "@bac/config": "workspace:*",
     "@bac/domain-contracts": "workspace:*",
     "@bac/observability": "workspace:*",

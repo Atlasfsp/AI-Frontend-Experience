@@ -10,5 +10,5 @@
 
 - `AI-Software-Factory`: Software Factory API contracts
 - `AI Platform Automation`: Platform Automation API contracts
-- `Design-Factory_Figma`: route maps, component specs, and tokens
+- `Design-Factory_Figma`: route maps, component specs, state maps, and tokens
 - `Design Factory_Stitch`: concept inventories and exploratory prompt outputs

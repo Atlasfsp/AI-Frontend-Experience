@@ -1,0 +1,7 @@
+{
+  "budgets": [
+    { "name": "main-app-chunk", "maxSizeKb": 250, "pattern": "app/layout" },
+    { "name": "total-js", "maxSizeKb": 1000 },
+    { "name": "page-chunk", "maxSizeKb": 100, "pattern": "page" }
+  ]
+}

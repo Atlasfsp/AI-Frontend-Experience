@@ -6,6 +6,7 @@ import { ensure, readJson, routePathFromPageFile } from './common.mjs';
 const root = path.resolve(import.meta.dirname, '..', '..');
 const webRouteMap = readJson(root, 'contracts/upstreams/design-factory-figma/handoff/route-maps/frontend-web.json');
 const webComponentSpecs = readJson(root, 'contracts/upstreams/design-factory-figma/handoff/component-specs/web-enterprise-shell.json');
+const webStateMap = readJson(root, 'contracts/upstreams/design-factory-figma/handoff/state-maps/frontend-web.json');
 
 function collectRoutes(appName, appRoot) {
   const pages = [];
@@ -53,6 +54,25 @@ for (const component of webComponentSpecs.components) {
     fs.existsSync(path.join(root, component.fileHint)),
     `Missing implementation file for design component ${component.componentId}: ${component.fileHint}`,
   );
+}
+
+for (const target of webStateMap.targets) {
+  const actualRoutes = implementedRoutes.get(target.app);
+  ensure(actualRoutes, `Missing implemented state-map route inventory for ${target.app}`);
+  for (const screenState of target.screenStates) {
+    ensure(actualRoutes.has(screenState.routePath), `Missing state-map route ${screenState.routePath} in ${target.app}`);
+    for (const state of screenState.states) {
+      const fullPath = path.join(root, state.fileHint);
+      ensure(fs.existsSync(fullPath), `Missing state-map implementation file ${state.fileHint}`);
+      const contents = fs.readFileSync(fullPath, 'utf8');
+      for (const marker of state.markers) {
+        ensure(
+          contents.includes(marker),
+          `State-map drift: ${screenState.screenId} (${state.name}) missing marker "${marker}" in ${state.fileHint}`,
+        );
+      }
+    }
+  }
 }
 
 const enterpriseSnapshot = fs.readFileSync(

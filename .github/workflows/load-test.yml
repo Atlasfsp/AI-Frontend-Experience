@@ -1,0 +1,20 @@
+name: Load Test
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target URL'
+        required: true
+        default: 'http://localhost:3000'
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/load/bff-proxy.js
+        env:
+          BASE_URL: ${{ github.event.inputs.target }}

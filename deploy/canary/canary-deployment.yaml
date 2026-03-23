@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bac-{{APP_NAME}}-canary
+  labels:
+    app: bac-{{APP_NAME}}
+    track: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bac-{{APP_NAME}}
+      track: canary
+  template:
+    metadata:
+      labels:
+        app: bac-{{APP_NAME}}
+        track: canary
+    spec:
+      containers:
+        - name: {{APP_NAME}}
+          image: ghcr.io/stratogroup/bac-{{APP_NAME}}:{{VERSION}}
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: production
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

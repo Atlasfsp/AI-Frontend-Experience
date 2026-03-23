@@ -92,6 +92,13 @@
           "targetRoot": "contracts/upstreams/design-factory-figma"
         },
         {
+          "kind": "state-maps",
+          "template": "design-factory-figma-state-maps-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "handoff/state-maps",
+          "targetRoot": "contracts/upstreams/design-factory-figma"
+        },
+        {
           "kind": "design-tokens",
           "template": "design-factory-figma-design-tokens-{releaseVersion}.tgz",
           "packageType": "directory",

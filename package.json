@@ -29,7 +29,10 @@
     "release:validate": "node scripts/integration/validate-release-artifacts.mjs",
     "compatibility:report": "node scripts/integration/report-compatibility.mjs",
     "integration:smoke": "node scripts/integration/smoke-test.mjs",
-    "integration:check": "pnpm contracts:generate && pnpm contracts:validate && pnpm design:validate && pnpm docs:validate && pnpm release:validate && pnpm integration:smoke"
+    "integration:check": "pnpm contracts:generate && pnpm contracts:validate && pnpm design:validate && pnpm docs:validate && pnpm release:validate && pnpm integration:smoke",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "audit:security": "node scripts/security-audit.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",

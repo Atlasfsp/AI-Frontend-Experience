@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 
-import { loadAppEnv } from '@/lib/env';
+const startTime = Date.now();
 
 export async function GET() {
-  const env = loadAppEnv();
-
   return NextResponse.json({
-    environment: env.environment,
-    service: 'software-factory-web',
     status: 'ok',
-    timestamp: new Date().toISOString(),
+    version: process.env.APP_VERSION ?? '0.0.0-local',
+    uptime: Math.floor((Date.now() - startTime) / 1000),
+    app: 'software-factory-web',
   });
 }

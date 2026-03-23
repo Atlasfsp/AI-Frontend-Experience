@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "figma-web-state-map",
+  "version": "1.0.0",
+  "targets": [
+    {
+      "app": "software-factory-web",
+      "platform": "web",
+      "screenStates": [
+        {
+          "screenId": "software-factory-dashboard",
+          "routeId": "software-factory.dashboard",
+          "routePath": "/software-factory/dashboard",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/software-factory-web/app/loading.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/software-factory-web/app/error.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "app": "platform-automation-web",
+      "platform": "web",
+      "screenStates": [
+        {
+          "screenId": "platform-dashboard",
+          "routeId": "platform.dashboard",
+          "routePath": "/platform/dashboard",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/platform-automation-web/app/loading.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/platform-automation-web/app/error.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "app": "docs-portal",
+      "platform": "web",
+      "screenStates": [
+        {
+          "screenId": "docs-search",
+          "routeId": "docs.search",
+          "routePath": "/search",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/docs-portal/app/loading.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/docs-portal/app/error.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            },
+            {
+              "name": "empty",
+              "fileHint": "apps/docs-portal/components/docs-search-panel.tsx",
+              "markers": [
+                "EmptyState"
+              ]
+            },
+            {
+              "name": "not-found",
+              "fileHint": "apps/docs-portal/app/not-found.tsx",
+              "markers": [
+                "EmptyState"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

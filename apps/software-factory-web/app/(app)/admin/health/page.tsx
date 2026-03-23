@@ -1,8 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { Badge, Card } from '@bac/ui';
+import type { FeatureFlags } from '@bac/config';
+import { createFeatureFlags } from '@bac/config';
+import { Badge, Card, DetailList, type DetailItem, StatGrid, type StatItem } from '@bac/ui';
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
 interface UpstreamStatus {
   name: string;
@@ -19,11 +25,39 @@ interface HealthResponse {
   checkedAt: string;
 }
 
-const STATUS_CONFIG = {
-  healthy: { variant: 'success' as const, label: 'Healthy' },
-  degraded: { variant: 'warning' as const, label: 'Degraded' },
-  unhealthy: { variant: 'danger' as const, label: 'Unhealthy' },
+interface ContractManifest {
+  schemaVersion: string;
+  repo: string;
+  repoVersion: string;
+  handoffArtifacts: Array<{ artifactId: string; version: string }>;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+
+const STATUS_VARIANT = {
+  healthy: 'success',
+  degraded: 'warning',
+  unhealthy: 'danger',
 } as const;
+
+const STATUS_LABEL = {
+  healthy: 'Healthy',
+  degraded: 'Degraded',
+  unhealthy: 'Unhealthy',
+} as const;
+
+const BUILD_VERSION =
+  process.env.NEXT_PUBLIC_BAC_BUILD_VERSION ?? '0.0.0-local';
+const BUILD_COMMIT =
+  process.env.NEXT_PUBLIC_BAC_BUILD_COMMIT ?? 'unknown';
+const BUILD_ENV =
+  process.env.NEXT_PUBLIC_BAC_ENV ?? process.env.BAC_ENV ?? 'development';
+
+/* ------------------------------------------------------------------ */
+/*  StatusDot                                                          */
+/* ------------------------------------------------------------------ */
 
 function StatusDot({ status }: { status: UpstreamStatus['status'] }) {
   const colorMap = {
@@ -40,10 +74,17 @@ function StatusDot({ status }: { status: UpstreamStatus['status'] }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Page component                                                     */
+/* ------------------------------------------------------------------ */
+
 export default function AdminHealthPage() {
-  const [data, setData] = useState<HealthResponse | null>(null);
+  const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [contracts, setContracts] = useState<ContractManifest[]>([]);
+
+  /* ---- Fetch health ------------------------------------------------ */
 
   const fetchHealth = useCallback(async () => {
     setLoading(true);
@@ -57,35 +98,154 @@ export default function AdminHealthPage() {
       }
 
       const json: HealthResponse = await response.json();
-      setData(json);
+      setHealth(json);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch health status');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch health status',
+      );
     } finally {
       setLoading(false);
     }
   }, []);
 
+  /* ---- Fetch contract manifests ----------------------------------- */
+
+  const fetchContracts = useCallback(async () => {
+    try {
+      const response = await fetch('/api/health/contracts');
+      if (response.ok) {
+        const json = (await response.json()) as ContractManifest[];
+        setContracts(json);
+      }
+    } catch {
+      // Contract info is best-effort; fail silently.
+    }
+  }, []);
+
+  /* ---- Bootstrap -------------------------------------------------- */
+
   useEffect(() => {
     fetchHealth();
+    fetchContracts();
 
-    // Auto-refresh every 30 seconds.
     const interval = setInterval(fetchHealth, 30_000);
     return () => clearInterval(interval);
-  }, [fetchHealth]);
+  }, [fetchHealth, fetchContracts]);
+
+  /* ---- Feature flags ---------------------------------------------- */
+
+  const featureFlags: FeatureFlags = useMemo(() => {
+    const source: Record<string, string | undefined> = {};
+    if (typeof process !== 'undefined') {
+      const env = process.env as Record<string, string | undefined>;
+      for (const key of Object.keys(env)) {
+        if (key.startsWith('NEXT_PUBLIC_BAC_FEATURE_') || key.startsWith('NEXT_PUBLIC_BAC_ENABLE_')) {
+          source[key] = env[key];
+        }
+      }
+    }
+    return createFeatureFlags(source);
+  }, []);
+
+  const flagEntries = Object.entries(featureFlags) as [
+    keyof FeatureFlags,
+    boolean,
+  ][];
+  const enabledFlagCount = flagEntries.filter(([, v]) => v).length;
+
+  /* ---- Derived data ----------------------------------------------- */
+
+  const overallStatus = health?.status ?? 'unhealthy';
+  const healthyCount =
+    health?.upstreams.filter((u) => u.status === 'healthy').length ?? 0;
+  const totalUpstreams = health?.upstreams.length ?? 0;
+
+  const designTokenVersion =
+    contracts
+      .flatMap((c) => c.handoffArtifacts)
+      .find(
+        (a) =>
+          a.artifactId === 'figma-design-tokens-enterprise' ||
+          a.artifactId === 'figma-design-tokens-consumer',
+      )?.version ?? 'N/A';
+
+  /* ---- Stat items ------------------------------------------------- */
+
+  const statItems: StatItem[] = [
+    {
+      label: 'App Health',
+      value: STATUS_LABEL[overallStatus],
+      description: 'Overall application status.',
+      status: STATUS_VARIANT[overallStatus],
+    },
+    {
+      label: 'Upstreams',
+      value: `${healthyCount}/${totalUpstreams}`,
+      description: 'Healthy upstream dependencies.',
+      status: healthyCount === totalUpstreams ? 'success' : 'warning',
+    },
+    {
+      label: 'Feature Flags',
+      value: `${enabledFlagCount}/${flagEntries.length}`,
+      description: 'Currently enabled feature flags.',
+      status: 'neutral',
+    },
+    {
+      label: 'Environment',
+      value: BUILD_ENV,
+      description: `Version ${BUILD_VERSION}`,
+      status: 'neutral',
+    },
+  ];
+
+  /* ---- Build info detail items ------------------------------------ */
+
+  const buildItems: DetailItem[] = [
+    { label: 'Version', value: BUILD_VERSION, monospace: true },
+    { label: 'Commit', value: BUILD_COMMIT, monospace: true },
+    { label: 'Environment', value: BUILD_ENV },
+    { label: 'Design Token Version', value: designTokenVersion, monospace: true },
+  ];
+
+  /* ---- Contract version detail items ------------------------------ */
+
+  const contractItems: DetailItem[] = contracts.length
+    ? contracts.map((c) => ({
+        label: c.repo,
+        value: c.repoVersion,
+        hint: `Schema v${c.schemaVersion} -- ${c.handoffArtifacts.length} artifacts`,
+        monospace: true,
+      }))
+    : [{ label: 'Contracts', value: 'No contract data available' }];
+
+  /* ---- Feature flag detail items ---------------------------------- */
+
+  const flagDetailItems: DetailItem[] = flagEntries.map(([name, enabled]) => ({
+    label: name,
+    value: (
+      <Badge variant={enabled ? 'success' : 'danger'}>
+        {enabled ? 'Enabled' : 'Disabled'}
+      </Badge>
+    ),
+  }));
+
+  /* ---- Render ----------------------------------------------------- */
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Health Dashboard</h1>
           <p className="mt-1 text-sm text-slate-400">
-            Real-time status of upstream dependencies.
+            Real-time status of the application, upstream dependencies, and
+            configuration.
           </p>
         </div>
         <div className="flex items-center gap-4">
-          {data ? (
-            <Badge variant={STATUS_CONFIG[data.status].variant}>
-              {STATUS_CONFIG[data.status].label}
+          {health ? (
+            <Badge variant={STATUS_VARIANT[health.status]}>
+              {STATUS_LABEL[health.status]}
             </Badge>
           ) : null}
           <button
@@ -98,14 +258,19 @@ export default function AdminHealthPage() {
         </div>
       </div>
 
+      {/* Error banner */}
       {error ? (
         <Card className="border-rose-400/30 bg-rose-500/10">
           <p className="text-sm text-rose-200">{error}</p>
         </Card>
       ) : null}
 
+      {/* Top-level stats */}
+      <StatGrid items={statItems} />
+
+      {/* Upstream connectivity */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {data?.upstreams.map((upstream) => (
+        {health?.upstreams.map((upstream) => (
           <Card key={upstream.name}>
             <div className="flex items-start justify-between">
               <div className="space-y-1">
@@ -115,10 +280,12 @@ export default function AdminHealthPage() {
                     {upstream.name}
                   </h3>
                 </div>
-                <p className="text-xs text-slate-400 break-all">{upstream.url}</p>
+                <p className="break-all text-xs text-slate-400">
+                  {upstream.url}
+                </p>
               </div>
-              <Badge variant={STATUS_CONFIG[upstream.status].variant}>
-                {STATUS_CONFIG[upstream.status].label}
+              <Badge variant={STATUS_VARIANT[upstream.status]}>
+                {STATUS_LABEL[upstream.status]}
               </Badge>
             </div>
 
@@ -153,9 +320,31 @@ export default function AdminHealthPage() {
         ))}
       </div>
 
-      {data ? (
+      {/* Build & token info */}
+      <DetailList
+        title="Build Information"
+        description="Current build metadata and design token compatibility."
+        items={buildItems}
+      />
+
+      {/* Contract versions */}
+      <DetailList
+        title="Contract Versions"
+        description="Upstream contract manifests consumed by this application."
+        items={contractItems}
+      />
+
+      {/* Feature flag summary */}
+      <DetailList
+        title="Feature Flag State"
+        description={`${enabledFlagCount} of ${flagEntries.length} flags are currently enabled.`}
+        items={flagDetailItems}
+      />
+
+      {/* Timestamp footer */}
+      {health ? (
         <p className="text-center text-xs text-slate-500">
-          Last checked at {new Date(data.checkedAt).toLocaleString()}
+          Last checked at {new Date(health.checkedAt).toLocaleString()}
         </p>
       ) : null}
     </div>

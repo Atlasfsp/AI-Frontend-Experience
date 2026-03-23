@@ -1,0 +1,349 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "figma-mobile-state-map",
+  "version": "1.0.0",
+  "targets": [
+    {
+      "app": "operator-mobile",
+      "platform": "mobile",
+      "screenStates": [
+        {
+          "screenId": "mobile-home",
+          "routeId": "mobile.home",
+          "routePath": "/(tabs)",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/(tabs)/index.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/(tabs)/index.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            },
+            {
+              "name": "empty",
+              "fileHint": "apps/operator-mobile/app/(tabs)/index.tsx",
+              "markers": [
+                "EmptyState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-alerts",
+          "routeId": "mobile.alerts",
+          "routePath": "/(tabs)/alerts",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/(tabs)/alerts.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/(tabs)/alerts.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            },
+            {
+              "name": "empty",
+              "fileHint": "apps/operator-mobile/app/(tabs)/alerts.tsx",
+              "markers": [
+                "EmptyState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-alert-detail",
+          "routeId": "mobile.alert-detail",
+          "routePath": "/alerts/[alertId]",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/alerts/[alertId].tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/alerts/[alertId].tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-approvals",
+          "routeId": "mobile.approvals",
+          "routePath": "/(tabs)/approvals",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/(tabs)/approvals.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/(tabs)/approvals.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            },
+            {
+              "name": "empty",
+              "fileHint": "apps/operator-mobile/app/(tabs)/approvals.tsx",
+              "markers": [
+                "EmptyState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-approval-detail",
+          "routeId": "mobile.approval-detail",
+          "routePath": "/approvals/[approvalId]",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/approvals/[approvalId].tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/approvals/[approvalId].tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-incidents",
+          "routeId": "mobile.incidents",
+          "routePath": "/incidents",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/incidents/index.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/incidents/index.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            },
+            {
+              "name": "empty",
+              "fileHint": "apps/operator-mobile/app/incidents/index.tsx",
+              "markers": [
+                "EmptyState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-incident-detail",
+          "routeId": "mobile.incident-detail",
+          "routePath": "/incidents/[incidentId]",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/incidents/[incidentId].tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/incidents/[incidentId].tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-workspaces",
+          "routeId": "mobile.workspaces",
+          "routePath": "/workspaces",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/workspaces/index.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/workspaces/index.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            },
+            {
+              "name": "empty",
+              "fileHint": "apps/operator-mobile/app/workspaces/index.tsx",
+              "markers": [
+                "EmptyState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-workspace-detail",
+          "routeId": "mobile.workspace-detail",
+          "routePath": "/workspaces/[workspaceId]",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/workspaces/[workspaceId].tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/workspaces/[workspaceId].tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-software-project-summary",
+          "routeId": "mobile.software-factory.summary",
+          "routePath": "/software-factory/project-summary",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/software-factory/project-summary.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/software-factory/project-summary.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-pipeline-compliance",
+          "routeId": "mobile.software-factory.pipeline",
+          "routePath": "/software-factory/pipeline-compliance",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/software-factory/pipeline-compliance.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/software-factory/pipeline-compliance.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-observability-snapshot",
+          "routeId": "mobile.platform.observability",
+          "routePath": "/platform/observability",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/platform/observability.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/platform/observability.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-policy-snapshot",
+          "routeId": "mobile.platform.policy",
+          "routePath": "/platform/policy",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/platform/policy.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/platform/policy.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            }
+          ]
+        },
+        {
+          "screenId": "mobile-notifications",
+          "routeId": "mobile.notifications",
+          "routePath": "/(tabs)/notifications",
+          "states": [
+            {
+              "name": "loading",
+              "fileHint": "apps/operator-mobile/app/(tabs)/notifications.tsx",
+              "markers": [
+                "LoadingState"
+              ]
+            },
+            {
+              "name": "error",
+              "fileHint": "apps/operator-mobile/app/(tabs)/notifications.tsx",
+              "markers": [
+                "ErrorState"
+              ]
+            },
+            {
+              "name": "empty",
+              "fileHint": "apps/operator-mobile/app/(tabs)/notifications.tsx",
+              "markers": [
+                "EmptyState"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

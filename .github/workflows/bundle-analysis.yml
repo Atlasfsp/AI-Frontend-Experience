@@ -78,7 +78,11 @@ jobs:
           echo "" >> bundle-report.md
           echo "_Generated at $(date -u '+%Y-%m-%d %H:%M:%S UTC') for commit \`${{ github.event.pull_request.head.sha }}\`_" >> bundle-report.md
 
+      - name: Check bundle budgets
+        run: node scripts/check-bundle-budget.mjs
+
       - name: Comment PR with bundle report
+        if: always()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: bundle-analysis

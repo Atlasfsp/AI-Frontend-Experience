@@ -96,3 +96,19 @@ export function useSwaggerSpec(context?: RequestContext) {
 export function useLivePlatformOverview() {
   return useHasuraSubscription('/api/proxy/hasura/subscriptions/platform-overview', platformOverview);
 }
+
+/* Re-export subscription hooks for convenience */
+export { useSubscription, setSubscriptionClient } from './hooks/use-subscription';
+export type { UseSubscriptionResult } from './hooks/use-subscription';
+export {
+  useIncidentSubscription,
+  useClusterHealthSubscription,
+  useBuildProgressSubscription,
+  useAlertStreamSubscription,
+} from './hooks/platform-subscriptions';
+export type {
+  IncidentChange,
+  ClusterHealth,
+  BuildProgress,
+  AlertStreamItem,
+} from './hooks/platform-subscriptions';

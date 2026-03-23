@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bac-{{APP_NAME}}
+  labels:
+    app: bac-{{APP_NAME}}
+spec:
+  selector:
+    app: bac-{{APP_NAME}}
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP
+---
+# Istio VirtualService for weighted traffic split between stable and canary
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: bac-{{APP_NAME}}
+spec:
+  hosts:
+    - bac-{{APP_NAME}}
+  http:
+    - route:
+        - destination:
+            host: bac-{{APP_NAME}}
+            subset: stable
+          weight: 90
+        - destination:
+            host: bac-{{APP_NAME}}
+            subset: canary
+          weight: 10
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: bac-{{APP_NAME}}
+spec:
+  host: bac-{{APP_NAME}}
+  subsets:
+    - name: stable
+      labels:
+        track: stable
+    - name: canary
+      labels:
+        track: canary

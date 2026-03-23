@@ -1,5 +1,7 @@
 # BAC Platform — Master Ecosystem Architecture Package
 
+This file is the canonical source document for the workspace-level `Claude-Master-Architecture-Package`.
+
 **Version:** 1.0.0
 **Date:** 2026-03-23
 **Author:** Principal Architect, StratoGroup
