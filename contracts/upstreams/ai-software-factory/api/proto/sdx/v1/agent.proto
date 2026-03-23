@@ -1,0 +1,191 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+service AgentService {
+  rpc RegisterAgent(RegisterAgentRequest) returns (Agent) {
+    option (google.api.http) = {
+      post: "/api/v1/agents"
+      body: "*"
+    };
+  }
+  rpc GetAgent(GetAgentRequest) returns (Agent) {
+    option (google.api.http) = {
+      get: "/api/v1/agents/{agent_id}"
+    };
+  }
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/agents"
+    };
+  }
+  rpc AssignAgent(AssignAgentRequest) returns (AssignAgentResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/agents/{agent_id}/assign"
+      body: "*"
+    };
+  }
+  rpc ReleaseAgent(ReleaseAgentRequest) returns (Agent) {
+    option (google.api.http) = {
+      post: "/api/v1/agents/{agent_id}/release"
+      body: "*"
+    };
+  }
+  rpc RecordHeartbeat(RecordHeartbeatRequest) returns (RecordHeartbeatResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/agents/{agent_id}/heartbeat"
+      body: "*"
+    };
+  }
+  rpc GetAgentHealth(GetAgentHealthRequest) returns (AgentHealthReport) {
+    option (google.api.http) = {
+      get: "/api/v1/agents/{agent_id}/health"
+    };
+  }
+  rpc TerminateAgent(TerminateAgentRequest) returns (Agent) {
+    option (google.api.http) = {
+      post: "/api/v1/agents/{agent_id}/terminate"
+      body: "*"
+    };
+  }
+  rpc GetAgentMetrics(GetAgentMetricsRequest) returns (AgentMetrics) {
+    option (google.api.http) = {
+      get: "/api/v1/agents/{agent_id}/metrics"
+    };
+  }
+}
+
+enum AgentStatus {
+  AGENT_STATUS_UNSPECIFIED = 0;
+  AGENT_STATUS_REGISTERED = 1;
+  AGENT_STATUS_IDLE = 2;
+  AGENT_STATUS_ASSIGNED = 3;
+  AGENT_STATUS_PROCESSING = 4;
+  AGENT_STATUS_RECOVERING = 5;
+  AGENT_STATUS_UNHEALTHY = 6;
+  AGENT_STATUS_TERMINATED = 7;
+}
+
+enum HealthState {
+  HEALTH_STATE_UNSPECIFIED = 0;
+  HEALTH_STATE_HEALTHY = 1;
+  HEALTH_STATE_DEGRADED = 2;
+  HEALTH_STATE_UNHEALTHY = 3;
+}
+
+message Agent {
+  string id = 1;
+  AgentType type = 2;
+  AgentStatus status = 3;
+  string spiffe_id = 4;
+  ModelRoutingConfig model_config = 5;
+  HealthStatus health = 6;
+  string current_build_id = 7;       // Empty if not assigned
+  uint32 current_stage = 8;
+  string pod_name = 9;
+  NexoRegion nexo_region = 10;
+  google.protobuf.Timestamp heartbeat_at = 11;
+  google.protobuf.Timestamp created_at = 12;
+}
+
+message ModelRoutingConfig {
+  ModelID primary_model = 1;
+  ModelID fallback_model = 2;
+  string on_prem_trigger = 3;       // NEVER, LATENCY_EXCEEDS_3S, ALWAYS_ON_PREM, COST_OPTIMISED
+  uint32 max_tokens = 4;
+  double temperature = 5;
+  google.protobuf.Duration timeout = 6;
+}
+
+message HealthStatus {
+  HealthState state = 1;
+  google.protobuf.Timestamp last_check = 2;
+  uint32 latency_ms = 3;
+  uint32 error_count = 4;
+  uint32 consecutive_failures = 5;
+}
+
+message AgentHealthReport {
+  string agent_id = 1;
+  HealthStatus current = 2;
+  repeated HealthStatus history = 3;  // Last 24h
+}
+
+message AgentMetrics {
+  string agent_id = 1;
+  uint64 builds_completed = 2;
+  uint64 stages_processed = 3;
+  uint64 total_tokens_used = 4;
+  uint64 total_cost_microdollars = 5;
+  double avg_stage_duration_ms = 6;
+  double utilisation_pct = 7;
+  google.protobuf.Timestamp since = 8;
+}
+
+// ─── Requests ───
+
+message RegisterAgentRequest {
+  AgentType type = 1;
+  string spiffe_id = 2;
+  ModelRoutingConfig model_config = 3;
+  string pod_name = 4;
+  NexoRegion nexo_region = 5;
+}
+
+message GetAgentRequest { string agent_id = 1; }
+
+message ListAgentsRequest {
+  AgentType type_filter = 1;
+  AgentStatus status_filter = 2;
+  NexoRegion region_filter = 3;
+  PaginationRequest pagination = 4;
+}
+
+message ListAgentsResponse {
+  repeated Agent agents = 1;
+  PaginationResponse pagination = 2;
+}
+
+message AssignAgentRequest {
+  string agent_id = 1;
+  string build_id = 2;
+  uint32 stage_number = 3;
+}
+
+message AssignAgentResponse {
+  bool assigned = 1;
+  string agent_id = 2;
+}
+
+message ReleaseAgentRequest {
+  string agent_id = 1;
+  string build_id = 2;
+}
+
+message RecordHeartbeatRequest {
+  string agent_id = 1;
+  HealthStatus health = 2;
+}
+
+message RecordHeartbeatResponse {
+  bool acknowledged = 1;
+}
+
+message GetAgentHealthRequest { string agent_id = 1; }
+
+message TerminateAgentRequest {
+  string agent_id = 1;
+  string reason = 2;
+}
+
+message GetAgentMetricsRequest {
+  string agent_id = 1;
+  DateRange period = 2;
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "ai-platform-automation",
+  "artifactSet": "platform-automation-proto",
+  "artifacts": [
+    {
+      "artifactId": "platform-automation-proto",
+      "version": "1.0.0",
+      "format": "buf-proto",
+      "path": "api/proto",
+      "entrypoints": [
+        "api/proto/platform/v1/control_plane.proto"
+      ],
+      "releaseTag": "contracts/platform-automation-proto/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience",
+        "ai-companion-mobile"
+      ]
+    }
+  ]
+}

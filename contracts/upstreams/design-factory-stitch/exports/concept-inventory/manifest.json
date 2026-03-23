@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "design-factory-stitch",
+  "artifactSet": "stitch-concept-inventory",
+  "artifacts": [
+    {
+      "artifactId": "stitch-concept-inventory-web",
+      "version": "1.0.0",
+      "path": "exports/concept-inventory/ai-frontend-experience.json",
+      "releaseTag": "handoff/stitch-concept-inventory-web/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience"
+      ]
+    },
+    {
+      "artifactId": "stitch-concept-inventory-mobile",
+      "version": "1.0.0",
+      "path": "exports/concept-inventory/ai-companion-mobile.json",
+      "releaseTag": "handoff/stitch-concept-inventory-mobile/v1.0.0",
+      "consumers": [
+        "ai-companion-mobile"
+      ]
+    }
+  ]
+}

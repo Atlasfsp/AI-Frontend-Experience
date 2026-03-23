@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "design-factory-figma",
+  "artifactSet": "figma-component-specs",
+  "artifacts": [
+    {
+      "artifactId": "figma-component-specs-web",
+      "version": "1.0.0",
+      "path": "handoff/component-specs/web-enterprise-shell.json",
+      "releaseTag": "handoff/figma-component-specs-web/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience"
+      ]
+    },
+    {
+      "artifactId": "figma-component-specs-mobile",
+      "version": "1.0.0",
+      "path": "handoff/component-specs/mobile-companion.json",
+      "releaseTag": "handoff/figma-component-specs-mobile/v1.0.0",
+      "consumers": [
+        "ai-companion-mobile"
+      ]
+    }
+  ]
+}

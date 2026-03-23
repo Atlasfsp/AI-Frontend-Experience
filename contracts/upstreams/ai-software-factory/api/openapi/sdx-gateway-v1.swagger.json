@@ -1,0 +1,6504 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "NeuroForge SDX Gateway API",
+    "description": "Unified REST/gRPC API for the NeuroForge AI Software Factory. Provides endpoints for work item submission, build orchestration, artifact management, quality gates, compliance certification, and deployment.",
+    "version": "0.1.0",
+    "contact": {
+      "name": "StratoGroup Engineering",
+      "url": "https://docs.sdx.stratogroup.io",
+      "email": "engineering@stratogroup.io"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://stratogroup.io/license"
+    }
+  },
+  "tags": [
+    {
+      "name": "SDXGatewayService"
+    },
+    {
+      "name": "AgentService"
+    },
+    {
+      "name": "ArtifactService"
+    },
+    {
+      "name": "AuditService"
+    },
+    {
+      "name": "BuildService"
+    },
+    {
+      "name": "ComplianceService"
+    },
+    {
+      "name": "DeploymentService"
+    },
+    {
+      "name": "IngestionService"
+    },
+    {
+      "name": "LLMService"
+    },
+    {
+      "name": "QualityService"
+    },
+    {
+      "name": "TenantService"
+    }
+  ],
+  "host": "api.sdx.stratogroup.io",
+  "basePath": "/api/v1",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/agents": {
+      "get": {
+        "operationId": "AgentService_ListAgents",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListAgentsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "typeFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "AGENT_TYPE_UNSPECIFIED",
+              "AGENT_TYPE_ARCHITECT",
+              "AGENT_TYPE_BUILDER",
+              "AGENT_TYPE_VERIFIER",
+              "AGENT_TYPE_SPEC",
+              "AGENT_TYPE_DOMAIN",
+              "AGENT_TYPE_TEST",
+              "AGENT_TYPE_SECURITY",
+              "AGENT_TYPE_COMPLIANCE",
+              "AGENT_TYPE_DEVOPS",
+              "AGENT_TYPE_DOC",
+              "AGENT_TYPE_REFACTOR",
+              "AGENT_TYPE_PERFORMANCE",
+              "AGENT_TYPE_LOCALISATION",
+              "AGENT_TYPE_MIGRATION",
+              "AGENT_TYPE_OBSERVABILITY",
+              "AGENT_TYPE_LEARNING"
+            ],
+            "default": "AGENT_TYPE_UNSPECIFIED"
+          },
+          {
+            "name": "statusFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "AGENT_STATUS_UNSPECIFIED",
+              "AGENT_STATUS_REGISTERED",
+              "AGENT_STATUS_IDLE",
+              "AGENT_STATUS_ASSIGNED",
+              "AGENT_STATUS_PROCESSING",
+              "AGENT_STATUS_RECOVERING",
+              "AGENT_STATUS_UNHEALTHY",
+              "AGENT_STATUS_TERMINATED"
+            ],
+            "default": "AGENT_STATUS_UNSPECIFIED"
+          },
+          {
+            "name": "regionFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "NEXO_REGION_UNSPECIFIED",
+              "NEXO_REGION_LAGOS",
+              "NEXO_REGION_LONDON",
+              "NEXO_REGION_ASHBURN",
+              "NEXO_REGION_SINGAPORE",
+              "NEXO_REGION_SAO_PAULO"
+            ],
+            "default": "NEXO_REGION_UNSPECIFIED"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      },
+      "post": {
+        "operationId": "AgentService_RegisterAgent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Agent"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RegisterAgentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/api/v1/agents/{agentId}": {
+      "get": {
+        "operationId": "AgentService_GetAgent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Agent"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/api/v1/agents/{agentId}/assign": {
+      "post": {
+        "operationId": "AgentService_AssignAgent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AssignAgentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AgentServiceAssignAgentBody"
+            }
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/api/v1/agents/{agentId}/health": {
+      "get": {
+        "operationId": "AgentService_GetAgentHealth",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AgentHealthReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/api/v1/agents/{agentId}/heartbeat": {
+      "post": {
+        "operationId": "AgentService_RecordHeartbeat",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RecordHeartbeatResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AgentServiceRecordHeartbeatBody"
+            }
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/api/v1/agents/{agentId}/metrics": {
+      "get": {
+        "operationId": "AgentService_GetAgentMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AgentMetrics"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "period.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "period.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/api/v1/agents/{agentId}/release": {
+      "post": {
+        "operationId": "AgentService_ReleaseAgent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Agent"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AgentServiceReleaseAgentBody"
+            }
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/api/v1/agents/{agentId}/terminate": {
+      "post": {
+        "operationId": "AgentService_TerminateAgent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Agent"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "agentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AgentServiceTerminateAgentBody"
+            }
+          }
+        ],
+        "tags": [
+          "AgentService"
+        ]
+      }
+    },
+    "/api/v1/artifacts": {
+      "get": {
+        "summary": "List artifacts for a build or tenant.",
+        "operationId": "ArtifactService_ListArtifacts",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListArtifactsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "description": "Optional; filter by build",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "typeFilter",
+            "description": "Optional",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ARTIFACT_TYPE_UNSPECIFIED",
+              "ARTIFACT_TYPE_SOURCE_CODE",
+              "ARTIFACT_TYPE_BINARY",
+              "ARTIFACT_TYPE_CONTAINER_IMAGE",
+              "ARTIFACT_TYPE_HELM_CHART",
+              "ARTIFACT_TYPE_TERRAFORM_MODULE",
+              "ARTIFACT_TYPE_SBOM",
+              "ARTIFACT_TYPE_COMPLIANCE_PACKAGE",
+              "ARTIFACT_TYPE_DOCS",
+              "ARTIFACT_TYPE_TEST_REPORT",
+              "ARTIFACT_TYPE_SECURITY_REPORT",
+              "ARTIFACT_TYPE_PERF_REPORT"
+            ],
+            "default": "ARTIFACT_TYPE_UNSPECIFIED"
+          },
+          {
+            "name": "statusFilter",
+            "description": "Optional",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ARTIFACT_STATUS_UNSPECIFIED",
+              "ARTIFACT_STATUS_CREATED",
+              "ARTIFACT_STATUS_SIGNED",
+              "ARTIFACT_STATUS_PUBLISHED",
+              "ARTIFACT_STATUS_DEPLOYED",
+              "ARTIFACT_STATUS_REVOKED"
+            ],
+            "default": "ARTIFACT_STATUS_UNSPECIFIED"
+          },
+          {
+            "name": "dateRange.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dateRange.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId_1}": {
+      "get": {
+        "summary": "Get artifact metadata and download URL.",
+        "operationId": "ArtifactService_GetArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Artifact"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId_1}/download": {
+      "get": {
+        "summary": "Get a pre-signed download URL for an artifact.",
+        "operationId": "ArtifactService_GetArtifactDownloadURL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetArtifactDownloadURLResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId_1}/verify": {
+      "post": {
+        "summary": "Verify artifact integrity and provenance.",
+        "operationId": "ArtifactService_VerifyArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1VerifyArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId}": {
+      "get": {
+        "summary": "── Artifacts ──",
+        "operationId": "SDXGatewayService_GetArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Artifact"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId}/download": {
+      "get": {
+        "operationId": "SDXGatewayService_GetArtifactDownloadURL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetArtifactDownloadURLResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId}/provenance": {
+      "post": {
+        "summary": "Attach provenance attestation to an artifact.",
+        "operationId": "ArtifactService_AttachProvenance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AttachProvenanceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ArtifactServiceAttachProvenanceBody"
+            }
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId}/provenance/generate": {
+      "post": {
+        "summary": "Generate SLSA provenance for an artifact.",
+        "operationId": "ArtifactService_GenerateProvenance",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GenerateProvenanceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ArtifactServiceGenerateProvenanceBody"
+            }
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId}/publish": {
+      "post": {
+        "summary": "Publish a signed artifact to the registry.",
+        "operationId": "ArtifactService_PublishArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PublishArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ArtifactServicePublishArtifactBody"
+            }
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId}/revoke": {
+      "post": {
+        "summary": "Revoke an artifact (security finding or policy violation).",
+        "operationId": "ArtifactService_RevokeArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RevokeArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ArtifactServiceRevokeArtifactBody"
+            }
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId}/sign": {
+      "post": {
+        "summary": "Sign an artifact (internal; called by sdx-workflow-engine).",
+        "operationId": "ArtifactService_SignArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SignArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ArtifactServiceSignArtifactBody"
+            }
+          }
+        ],
+        "tags": [
+          "ArtifactService"
+        ]
+      }
+    },
+    "/api/v1/artifacts/{artifactId}/verify": {
+      "post": {
+        "operationId": "SDXGatewayService_VerifyArtifact",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1VerifyArtifactResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "artifactId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/audit-log": {
+      "get": {
+        "operationId": "AuditService_QueryAuditLog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1QueryAuditLogResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "eventTypes",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "actorTypeFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ACTOR_TYPE_UNSPECIFIED",
+              "ACTOR_TYPE_AGENT",
+              "ACTOR_TYPE_HUMAN",
+              "ACTOR_TYPE_SYSTEM"
+            ],
+            "default": "ACTOR_TYPE_UNSPECIFIED"
+          },
+          {
+            "name": "actorIdFilter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "targetTypeFilter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "targetIdFilter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "dateRange.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dateRange.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AuditService"
+        ]
+      }
+    },
+    "/api/v1/audit-log/export": {
+      "post": {
+        "operationId": "AuditService_ExportEvidence",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ExportEvidenceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ExportEvidenceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuditService"
+        ]
+      }
+    },
+    "/api/v1/audit-log/stats": {
+      "get": {
+        "operationId": "AuditService_GetAuditStats",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1AuditStats"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AuditService"
+        ]
+      }
+    },
+    "/api/v1/audit-log/verify": {
+      "post": {
+        "operationId": "AuditService_VerifyIntegrity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1VerifyIntegrityResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1VerifyIntegrityRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuditService"
+        ]
+      }
+    },
+    "/api/v1/builds": {
+      "get": {
+        "summary": "List Builds for the tenant with filters.",
+        "operationId": "BuildService_ListBuilds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListBuildsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "statusFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "BUILD_STATUS_UNSPECIFIED",
+              "BUILD_STATUS_INITIATED",
+              "BUILD_STATUS_DOMAIN_MODELLING",
+              "BUILD_STATUS_ARCHITECTING",
+              "BUILD_STATUS_CONTRACTING",
+              "BUILD_STATUS_TESTING_RED",
+              "BUILD_STATUS_CODING_GREEN",
+              "BUILD_STATUS_VERIFYING",
+              "BUILD_STATUS_CERTIFYING",
+              "BUILD_STATUS_SIGNING",
+              "BUILD_STATUS_DEPLOYING",
+              "BUILD_STATUS_COMPLETED",
+              "BUILD_STATUS_FAILED",
+              "BUILD_STATUS_RECOVERING"
+            ],
+            "default": "BUILD_STATUS_UNSPECIFIED"
+          },
+          {
+            "name": "workItemIdFilter",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "dateRange.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dateRange.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "sortBy",
+            "description": "created_at, updated_at, current_stage",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sortOrder",
+            "description": "ASC, DESC",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BuildService"
+        ]
+      }
+    },
+    "/api/v1/builds/{buildId_1}": {
+      "get": {
+        "summary": "Get a Build by ID.",
+        "operationId": "BuildService_GetBuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Build"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BuildService"
+        ]
+      }
+    },
+    "/api/v1/builds/{buildId_1}/cancel": {
+      "post": {
+        "summary": "Cancel a running build (triggers graceful shutdown).",
+        "operationId": "BuildService_CancelBuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelBuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1BuildServiceCancelBuildBody"
+            }
+          }
+        ],
+        "tags": [
+          "BuildService"
+        ]
+      }
+    },
+    "/api/v1/builds/{buildId_1}/gates": {
+      "get": {
+        "summary": "Get detailed gate results for a build.",
+        "operationId": "BuildService_GetBuildGateResults",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetBuildGateResultsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "gateIdFilter",
+            "description": "Optional; filter by specific gate",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BuildService"
+        ]
+      }
+    },
+    "/api/v1/builds/{buildId}": {
+      "get": {
+        "summary": "── Builds ──",
+        "operationId": "SDXGatewayService_GetBuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Build"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/builds/{buildId}/cancel": {
+      "post": {
+        "operationId": "SDXGatewayService_CancelBuild",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CancelBuildResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SDXGatewayServiceCancelBuildBody"
+            }
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/builds/{buildId}/gates": {
+      "get": {
+        "operationId": "SDXGatewayService_GetBuildGateResults",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetBuildGateResultsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "gateIdFilter",
+            "description": "Optional; filter by specific gate",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/builds/{buildId}/stages": {
+      "get": {
+        "summary": "Get stage history for a build.",
+        "operationId": "BuildService_GetBuildStages",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetBuildStagesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "BuildService"
+        ]
+      }
+    },
+    "/api/v1/compliance/badges/{buildId}": {
+      "get": {
+        "operationId": "ComplianceService_GetComplianceBadge",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ComplianceBadge"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ComplianceService"
+        ]
+      }
+    },
+    "/api/v1/compliance/controls": {
+      "get": {
+        "operationId": "ComplianceService_GetControlCatalog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetControlCatalogResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "framework",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "COMPLIANCE_FRAMEWORK_UNSPECIFIED",
+              "COMPLIANCE_FRAMEWORK_SOC2_TYPE_II",
+              "COMPLIANCE_FRAMEWORK_HIPAA",
+              "COMPLIANCE_FRAMEWORK_GDPR",
+              "COMPLIANCE_FRAMEWORK_ISO_27001",
+              "COMPLIANCE_FRAMEWORK_PCI_DSS_V4",
+              "COMPLIANCE_FRAMEWORK_NIST_800_53",
+              "COMPLIANCE_FRAMEWORK_OWASP_TOP_10",
+              "COMPLIANCE_FRAMEWORK_SLSA_LEVEL_3"
+            ],
+            "default": "COMPLIANCE_FRAMEWORK_UNSPECIFIED"
+          }
+        ],
+        "tags": [
+          "ComplianceService"
+        ]
+      }
+    },
+    "/api/v1/compliance/evidence": {
+      "post": {
+        "operationId": "ComplianceService_GenerateEvidence",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GenerateEvidenceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GenerateEvidenceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ComplianceService"
+        ]
+      }
+    },
+    "/api/v1/compliance/map": {
+      "post": {
+        "operationId": "ComplianceService_MapControls",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1MapControlsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1MapControlsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ComplianceService"
+        ]
+      }
+    },
+    "/api/v1/compliance/reports": {
+      "get": {
+        "operationId": "ComplianceService_ListComplianceReports",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListComplianceReportsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "frameworkFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "COMPLIANCE_FRAMEWORK_UNSPECIFIED",
+              "COMPLIANCE_FRAMEWORK_SOC2_TYPE_II",
+              "COMPLIANCE_FRAMEWORK_HIPAA",
+              "COMPLIANCE_FRAMEWORK_GDPR",
+              "COMPLIANCE_FRAMEWORK_ISO_27001",
+              "COMPLIANCE_FRAMEWORK_PCI_DSS_V4",
+              "COMPLIANCE_FRAMEWORK_NIST_800_53",
+              "COMPLIANCE_FRAMEWORK_OWASP_TOP_10",
+              "COMPLIANCE_FRAMEWORK_SLSA_LEVEL_3"
+            ],
+            "default": "COMPLIANCE_FRAMEWORK_UNSPECIFIED"
+          },
+          {
+            "name": "dateRange.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dateRange.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ComplianceService"
+        ]
+      }
+    },
+    "/api/v1/compliance/reports/{buildId}": {
+      "get": {
+        "operationId": "ComplianceService_GetComplianceReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ComplianceReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ComplianceService"
+        ]
+      }
+    },
+    "/api/v1/deployments": {
+      "get": {
+        "operationId": "DeploymentService_ListDeployments",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListDeploymentsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "envFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "TARGET_ENVIRONMENT_UNSPECIFIED",
+              "TARGET_ENVIRONMENT_DEV",
+              "TARGET_ENVIRONMENT_STAGING",
+              "TARGET_ENVIRONMENT_PROD"
+            ],
+            "default": "TARGET_ENVIRONMENT_UNSPECIFIED"
+          },
+          {
+            "name": "statusFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "DEPLOYMENT_STATUS_UNSPECIFIED",
+              "DEPLOYMENT_STATUS_PENDING",
+              "DEPLOYMENT_STATUS_APPLYING",
+              "DEPLOYMENT_STATUS_SMOKE_TESTING",
+              "DEPLOYMENT_STATUS_SLO_VALIDATING",
+              "DEPLOYMENT_STATUS_DEPLOYED",
+              "DEPLOYMENT_STATUS_ROLLED_BACK",
+              "DEPLOYMENT_STATUS_FAILED"
+            ],
+            "default": "DEPLOYMENT_STATUS_UNSPECIFIED"
+          },
+          {
+            "name": "dateRange.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dateRange.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DeploymentService"
+        ]
+      },
+      "post": {
+        "operationId": "DeploymentService_Deploy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeployResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DeployRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DeploymentService"
+        ]
+      }
+    },
+    "/api/v1/deployments/{deploymentId}": {
+      "get": {
+        "operationId": "DeploymentService_GetDeployment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Deployment"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deploymentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DeploymentService"
+        ]
+      }
+    },
+    "/api/v1/deployments/{deploymentId}/logs": {
+      "get": {
+        "operationId": "DeploymentService_GetDeploymentLogs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetDeploymentLogsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deploymentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lines",
+            "description": "Max 500",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DeploymentService"
+        ]
+      }
+    },
+    "/api/v1/deployments/{deploymentId}/rollback": {
+      "post": {
+        "operationId": "DeploymentService_RollbackDeployment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Deployment"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deploymentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeploymentServiceRollbackDeploymentBody"
+            }
+          }
+        ],
+        "tags": [
+          "DeploymentService"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "summary": "── Health ──",
+        "operationId": "SDXGatewayService_HealthCheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HealthCheckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/llm/completions": {
+      "post": {
+        "summary": "Execute an LLM completion with automatic routing and fallback.",
+        "operationId": "LLMService_Complete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CompleteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CompleteRequest"
+            }
+          }
+        ],
+        "tags": [
+          "LLMService"
+        ]
+      }
+    },
+    "/api/v1/llm/costs": {
+      "get": {
+        "summary": "Get cost report per tenant/build/model.",
+        "operationId": "LLMService_GetCostReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1CostReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "description": "Optional; admin can omit for global",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "buildId",
+            "description": "Optional; filter by build",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "period.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "period.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "LLMService"
+        ]
+      }
+    },
+    "/api/v1/llm/embeddings": {
+      "post": {
+        "summary": "Generate embeddings.",
+        "operationId": "LLMService_Embed",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EmbedResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EmbedRequest"
+            }
+          }
+        ],
+        "tags": [
+          "LLMService"
+        ]
+      }
+    },
+    "/api/v1/llm/models": {
+      "get": {
+        "summary": "List available models and their routing config.",
+        "operationId": "LLMService_ListModels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListModelsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "LLMService"
+        ]
+      }
+    },
+    "/api/v1/llm/status": {
+      "get": {
+        "summary": "Get model availability and circuit breaker status.",
+        "operationId": "LLMService_GetModelStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetModelStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "LLMService"
+        ]
+      }
+    },
+    "/api/v1/quality/gates": {
+      "get": {
+        "operationId": "QualityService_GetGateDefinitions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetGateDefinitionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "QualityService"
+        ]
+      }
+    },
+    "/api/v1/quality/gates/evaluate": {
+      "post": {
+        "operationId": "QualityService_EvaluateGate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EvaluateGateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EvaluateGateRequest"
+            }
+          }
+        ],
+        "tags": [
+          "QualityService"
+        ]
+      }
+    },
+    "/api/v1/quality/metrics/{gateId}": {
+      "get": {
+        "operationId": "QualityService_GetGateMetrics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetGateMetricsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gateId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "period.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "period.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "QualityService"
+        ]
+      }
+    },
+    "/api/v1/quality/remediation": {
+      "post": {
+        "operationId": "QualityService_TriggerRemediation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TriggerRemediationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TriggerRemediationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "QualityService"
+        ]
+      }
+    },
+    "/api/v1/quality/reports": {
+      "get": {
+        "operationId": "QualityService_ListQualityReports",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListQualityReportsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "dateRange.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dateRange.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "QualityService"
+        ]
+      }
+    },
+    "/api/v1/quality/reports/{buildId}": {
+      "get": {
+        "operationId": "QualityService_GetQualityReport",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1QualityReport"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "buildId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "QualityService"
+        ]
+      }
+    },
+    "/api/v1/tenants": {
+      "get": {
+        "operationId": "TenantService_ListTenants",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListTenantsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "planFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "PLAN_TIER_UNSPECIFIED",
+              "PLAN_TIER_STARTER",
+              "PLAN_TIER_GROWTH",
+              "PLAN_TIER_ENTERPRISE",
+              "PLAN_TIER_SOVEREIGN"
+            ],
+            "default": "PLAN_TIER_UNSPECIFIED"
+          },
+          {
+            "name": "statusFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "TENANT_STATUS_UNSPECIFIED",
+              "TENANT_STATUS_PROVISIONING",
+              "TENANT_STATUS_ACTIVE",
+              "TENANT_STATUS_SUSPENDED",
+              "TENANT_STATUS_DEPROVISIONED"
+            ],
+            "default": "TENANT_STATUS_UNSPECIFIED"
+          },
+          {
+            "name": "regionFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "NEXO_REGION_UNSPECIFIED",
+              "NEXO_REGION_LAGOS",
+              "NEXO_REGION_LONDON",
+              "NEXO_REGION_ASHBURN",
+              "NEXO_REGION_SINGAPORE",
+              "NEXO_REGION_SAO_PAULO"
+            ],
+            "default": "NEXO_REGION_UNSPECIFIED"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      },
+      "post": {
+        "operationId": "TenantService_CreateTenant",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Tenant"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateTenantRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}": {
+      "get": {
+        "operationId": "TenantService_GetTenant",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Tenant"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/compliance-profile": {
+      "get": {
+        "operationId": "TenantService_GetComplianceProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ComplianceProfile"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "profileId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      },
+      "put": {
+        "operationId": "TenantService_SetComplianceProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ComplianceProfile"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TenantServiceSetComplianceProfileBody"
+            }
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/plan": {
+      "patch": {
+        "operationId": "TenantService_UpdatePlan",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Tenant"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TenantServiceUpdatePlanBody"
+            }
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/quotas": {
+      "get": {
+        "operationId": "TenantService_GetQuotaStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1QuotaStatus"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/reactivate": {
+      "post": {
+        "operationId": "TenantService_ReactivateTenant",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Tenant"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/suspend": {
+      "post": {
+        "operationId": "TenantService_SuspendTenant",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Tenant"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TenantServiceSuspendTenantBody"
+            }
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/workspaces": {
+      "get": {
+        "operationId": "TenantService_ListWorkspaces",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListWorkspacesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      },
+      "post": {
+        "operationId": "TenantService_CreateWorkspace",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Workspace"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TenantServiceCreateWorkspaceBody"
+            }
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/workspaces/{workspaceId}/members": {
+      "post": {
+        "operationId": "TenantService_AddWorkspaceMember",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WorkspaceMember"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TenantServiceAddWorkspaceMemberBody"
+            }
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/tenants/{tenantId}/workspaces/{workspaceId}/members/{userId}": {
+      "delete": {
+        "operationId": "TenantService_RemoveWorkspaceMember",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RemoveWorkspaceMemberResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenantId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workspaceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "TenantService"
+        ]
+      }
+    },
+    "/api/v1/webhooks": {
+      "get": {
+        "operationId": "SDXGatewayService_ListWebhooks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListWebhooksResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      },
+      "post": {
+        "summary": "── Webhooks ──",
+        "operationId": "SDXGatewayService_CreateWebhook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WebhookConfig"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateWebhookRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{webhookId}": {
+      "delete": {
+        "operationId": "SDXGatewayService_DeleteWebhook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteWebhookResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{webhookId}/test": {
+      "post": {
+        "operationId": "SDXGatewayService_TestWebhook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TestWebhookResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/work-items": {
+      "get": {
+        "summary": "List WorkItems for the tenant with filters.",
+        "operationId": "IngestionService_ListWorkItems",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListWorkItemsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "statusFilter",
+            "description": "Optional; 0 = all",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "WORK_ITEM_STATUS_UNSPECIFIED",
+              "WORK_ITEM_STATUS_DRAFT",
+              "WORK_ITEM_STATUS_PARSED",
+              "WORK_ITEM_STATUS_MANIFEST_REVIEW",
+              "WORK_ITEM_STATUS_APPROVED",
+              "WORK_ITEM_STATUS_MODELLING",
+              "WORK_ITEM_STATUS_COMPLETED",
+              "WORK_ITEM_STATUS_FAILED"
+            ],
+            "default": "WORK_ITEM_STATUS_UNSPECIFIED"
+          },
+          {
+            "name": "sourceTypeFilter",
+            "description": "Optional; 0 = all",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "INPUT_SOURCE_TYPE_UNSPECIFIED",
+              "INPUT_SOURCE_TYPE_PRD",
+              "INPUT_SOURCE_TYPE_USER_STORY",
+              "INPUT_SOURCE_TYPE_API_SPEC",
+              "INPUT_SOURCE_TYPE_CODEBASE",
+              "INPUT_SOURCE_TYPE_BUG_REPORT"
+            ],
+            "default": "INPUT_SOURCE_TYPE_UNSPECIFIED"
+          },
+          {
+            "name": "dateRange.start",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "dateRange.end",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "search",
+            "description": "Full-text search on requirements",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "pagination.pageSize",
+            "description": "Max 100, default 20",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.pageToken",
+            "description": "Opaque cursor; empty for first page",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "IngestionService"
+        ]
+      },
+      "post": {
+        "summary": "Submit a new WorkItem for parsing and processing.",
+        "operationId": "IngestionService_SubmitWorkItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SubmitWorkItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SubmitWorkItemRequest"
+            }
+          }
+        ],
+        "tags": [
+          "IngestionService"
+        ]
+      }
+    },
+    "/api/v1/work-items/{workItemId_1}": {
+      "get": {
+        "summary": "Get a WorkItem by ID.",
+        "operationId": "IngestionService_GetWorkItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WorkItem"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workItemId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "IngestionService"
+        ]
+      }
+    },
+    "/api/v1/work-items/{workItemId_1}/ambiguities/{ambiguityId}": {
+      "patch": {
+        "summary": "Resolve an ambiguity detected during parsing.",
+        "operationId": "IngestionService_ResolveAmbiguity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResolveAmbiguityResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workItemId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "ambiguityId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1IngestionServiceResolveAmbiguityBody"
+            }
+          }
+        ],
+        "tags": [
+          "IngestionService"
+        ]
+      }
+    },
+    "/api/v1/work-items/{workItemId_1}/approve": {
+      "post": {
+        "summary": "Approve the manifest after parsing and ambiguity resolution.",
+        "operationId": "IngestionService_ApproveManifest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ApproveManifestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workItemId_1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1IngestionServiceApproveManifestBody"
+            }
+          }
+        ],
+        "tags": [
+          "IngestionService"
+        ]
+      }
+    },
+    "/api/v1/work-items/{workItemId}": {
+      "get": {
+        "operationId": "SDXGatewayService_GetWorkItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WorkItem"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workItemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete a WorkItem (soft delete; only DRAFT or FAILED).",
+        "operationId": "IngestionService_DeleteWorkItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteWorkItemResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workItemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "IngestionService"
+        ]
+      }
+    },
+    "/api/v1/work-items/{workItemId}/ambiguities/{ambiguityId}": {
+      "patch": {
+        "operationId": "SDXGatewayService_ResolveAmbiguity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResolveAmbiguityResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workItemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "ambiguityId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SDXGatewayServiceResolveAmbiguityBody"
+            }
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/work-items/{workItemId}/approve": {
+      "post": {
+        "operationId": "SDXGatewayService_ApproveManifest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ApproveManifestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workItemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SDXGatewayServiceApproveManifestBody"
+            }
+          }
+        ],
+        "tags": [
+          "SDXGatewayService"
+        ]
+      }
+    },
+    "/api/v1/work-items/{workItemId}/restart": {
+      "post": {
+        "summary": "Restart a FAILED WorkItem back to DRAFT.",
+        "operationId": "IngestionService_RestartWorkItem",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1WorkItem"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workItemId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "IngestionService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "AgentServiceAssignAgentBody": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        },
+        "stageNumber": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "AgentServiceRecordHeartbeatBody": {
+      "type": "object",
+      "properties": {
+        "health": {
+          "$ref": "#/definitions/v1HealthStatus"
+        }
+      }
+    },
+    "AgentServiceReleaseAgentBody": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        }
+      }
+    },
+    "AgentServiceTerminateAgentBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "ArtifactServiceAttachProvenanceBody": {
+      "type": "object",
+      "properties": {
+        "provenance": {
+          "$ref": "#/definitions/v1ProvenanceRef"
+        }
+      }
+    },
+    "ArtifactServiceGenerateProvenanceBody": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        }
+      }
+    },
+    "ArtifactServicePublishArtifactBody": {
+      "type": "object",
+      "properties": {
+        "registryUri": {
+          "type": "string",
+          "title": "Target registry (e.g., OCI registry for container images)"
+        }
+      }
+    },
+    "ArtifactServiceRevokeArtifactBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "ArtifactServiceSignArtifactBody": {
+      "type": "object"
+    },
+    "DeploymentServiceRollbackDeploymentBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        },
+        "rollbackToDeploymentId": {
+          "type": "string",
+          "title": "Optional; defaults to previous"
+        }
+      }
+    },
+    "TenantServiceAddWorkspaceMemberBody": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/v1WorkspaceMemberRole"
+        }
+      }
+    },
+    "TenantServiceCreateWorkspaceBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantServiceSetComplianceProfileBody": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "$ref": "#/definitions/v1ComplianceProfile"
+        }
+      }
+    },
+    "TenantServiceSuspendTenantBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "TenantServiceUpdatePlanBody": {
+      "type": "object",
+      "properties": {
+        "newPlan": {
+          "$ref": "#/definitions/v1PlanTier"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com. As of May 2023, there are no widely used type server\nimplementations and no plans to implement one.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(\u0026foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n    // or ...\n    if (any.isSameTypeAs(Foo.getDefaultInstance())) {\n      foo = any.unpack(Foo.getDefaultInstance());\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := \u0026pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := \u0026pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": \u003cstring\u003e,\n      \"lastName\": \u003cstring\u003e\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1ActorType": {
+      "type": "string",
+      "enum": [
+        "ACTOR_TYPE_UNSPECIFIED",
+        "ACTOR_TYPE_AGENT",
+        "ACTOR_TYPE_HUMAN",
+        "ACTOR_TYPE_SYSTEM"
+      ],
+      "default": "ACTOR_TYPE_UNSPECIFIED"
+    },
+    "v1Agent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1AgentType"
+        },
+        "status": {
+          "$ref": "#/definitions/v1AgentStatus"
+        },
+        "spiffeId": {
+          "type": "string"
+        },
+        "modelConfig": {
+          "$ref": "#/definitions/v1ModelRoutingConfig"
+        },
+        "health": {
+          "$ref": "#/definitions/v1HealthStatus"
+        },
+        "currentBuildId": {
+          "type": "string",
+          "title": "Empty if not assigned"
+        },
+        "currentStage": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "podName": {
+          "type": "string"
+        },
+        "nexoRegion": {
+          "$ref": "#/definitions/v1NexoRegion"
+        },
+        "heartbeatAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1AgentAssignment": {
+      "type": "object",
+      "properties": {
+        "agentId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "assignedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1AgentHealthReport": {
+      "type": "object",
+      "properties": {
+        "agentId": {
+          "type": "string"
+        },
+        "current": {
+          "$ref": "#/definitions/v1HealthStatus"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1HealthStatus"
+          },
+          "title": "Last 24h"
+        }
+      }
+    },
+    "v1AgentMetrics": {
+      "type": "object",
+      "properties": {
+        "agentId": {
+          "type": "string"
+        },
+        "buildsCompleted": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "stagesProcessed": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "totalTokensUsed": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "totalCostMicrodollars": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "avgStageDurationMs": {
+          "type": "number",
+          "format": "double"
+        },
+        "utilisationPct": {
+          "type": "number",
+          "format": "double"
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1AgentStatus": {
+      "type": "string",
+      "enum": [
+        "AGENT_STATUS_UNSPECIFIED",
+        "AGENT_STATUS_REGISTERED",
+        "AGENT_STATUS_IDLE",
+        "AGENT_STATUS_ASSIGNED",
+        "AGENT_STATUS_PROCESSING",
+        "AGENT_STATUS_RECOVERING",
+        "AGENT_STATUS_UNHEALTHY",
+        "AGENT_STATUS_TERMINATED"
+      ],
+      "default": "AGENT_STATUS_UNSPECIFIED"
+    },
+    "v1AgentType": {
+      "type": "string",
+      "enum": [
+        "AGENT_TYPE_UNSPECIFIED",
+        "AGENT_TYPE_ARCHITECT",
+        "AGENT_TYPE_BUILDER",
+        "AGENT_TYPE_VERIFIER",
+        "AGENT_TYPE_SPEC",
+        "AGENT_TYPE_DOMAIN",
+        "AGENT_TYPE_TEST",
+        "AGENT_TYPE_SECURITY",
+        "AGENT_TYPE_COMPLIANCE",
+        "AGENT_TYPE_DEVOPS",
+        "AGENT_TYPE_DOC",
+        "AGENT_TYPE_REFACTOR",
+        "AGENT_TYPE_PERFORMANCE",
+        "AGENT_TYPE_LOCALISATION",
+        "AGENT_TYPE_MIGRATION",
+        "AGENT_TYPE_OBSERVABILITY",
+        "AGENT_TYPE_LEARNING"
+      ],
+      "default": "AGENT_TYPE_UNSPECIFIED"
+    },
+    "v1Ambiguity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "resolution": {
+          "type": "string",
+          "title": "Empty if unresolved"
+        },
+        "resolvedBy": {
+          "type": "string",
+          "title": "User ID or agent ID"
+        },
+        "resolvedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ApproveManifestResponse": {
+      "type": "object",
+      "properties": {
+        "workItem": {
+          "$ref": "#/definitions/v1WorkItem"
+        },
+        "buildId": {
+          "type": "string",
+          "title": "Build is automatically initiated"
+        }
+      }
+    },
+    "v1Artifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "buildId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1ArtifactType"
+        },
+        "status": {
+          "$ref": "#/definitions/v1ArtifactStatus"
+        },
+        "contentHash": {
+          "$ref": "#/definitions/v1ContentHash"
+        },
+        "storageUri": {
+          "$ref": "#/definitions/v1S3URI"
+        },
+        "signatureRef": {
+          "$ref": "#/definitions/v1SignatureRef"
+        },
+        "provenanceRef": {
+          "$ref": "#/definitions/v1ProvenanceRef"
+        },
+        "sbomRef": {
+          "$ref": "#/definitions/v1SBOMRef"
+        },
+        "sizeBytes": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "signedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ArtifactRef": {
+      "type": "object",
+      "properties": {
+        "artifactId": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1ArtifactType"
+        },
+        "storageUri": {
+          "$ref": "#/definitions/v1S3URI"
+        },
+        "contentHash": {
+          "$ref": "#/definitions/v1ContentHash"
+        }
+      }
+    },
+    "v1ArtifactStatus": {
+      "type": "string",
+      "enum": [
+        "ARTIFACT_STATUS_UNSPECIFIED",
+        "ARTIFACT_STATUS_CREATED",
+        "ARTIFACT_STATUS_SIGNED",
+        "ARTIFACT_STATUS_PUBLISHED",
+        "ARTIFACT_STATUS_DEPLOYED",
+        "ARTIFACT_STATUS_REVOKED"
+      ],
+      "default": "ARTIFACT_STATUS_UNSPECIFIED"
+    },
+    "v1ArtifactType": {
+      "type": "string",
+      "enum": [
+        "ARTIFACT_TYPE_UNSPECIFIED",
+        "ARTIFACT_TYPE_SOURCE_CODE",
+        "ARTIFACT_TYPE_BINARY",
+        "ARTIFACT_TYPE_CONTAINER_IMAGE",
+        "ARTIFACT_TYPE_HELM_CHART",
+        "ARTIFACT_TYPE_TERRAFORM_MODULE",
+        "ARTIFACT_TYPE_SBOM",
+        "ARTIFACT_TYPE_COMPLIANCE_PACKAGE",
+        "ARTIFACT_TYPE_DOCS",
+        "ARTIFACT_TYPE_TEST_REPORT",
+        "ARTIFACT_TYPE_SECURITY_REPORT",
+        "ARTIFACT_TYPE_PERF_REPORT"
+      ],
+      "default": "ARTIFACT_TYPE_UNSPECIFIED"
+    },
+    "v1AssignAgentResponse": {
+      "type": "object",
+      "properties": {
+        "assigned": {
+          "type": "boolean"
+        },
+        "agentId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AttachProvenanceResponse": {
+      "type": "object",
+      "properties": {
+        "attached": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1AuditEntry": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "title": "ULID"
+        },
+        "eventType": {
+          "type": "string"
+        },
+        "actorType": {
+          "$ref": "#/definitions/v1ActorType"
+        },
+        "actorId": {
+          "type": "string"
+        },
+        "targetType": {
+          "type": "string",
+          "title": "Aggregate type"
+        },
+        "targetId": {
+          "type": "string",
+          "title": "Aggregate ID"
+        },
+        "action": {
+          "type": "string",
+          "description": "created, updated, signed, deployed, etc."
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "buildId": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "prevHash": {
+          "$ref": "#/definitions/v1ContentHash",
+          "title": "SHA-256 of previous entry"
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1AuditStats": {
+      "type": "object",
+      "properties": {
+        "totalEntries": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "oldestEntry": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "newestEntry": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "chainVerified": {
+          "type": "boolean"
+        },
+        "lastVerification": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1BillingMeter": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/v1BillingMeterType"
+        },
+        "currentValue": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "limit": {
+          "type": "string",
+          "format": "uint64",
+          "title": "0 = unlimited"
+        },
+        "periodStart": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "periodEnd": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1BillingMeterType": {
+      "type": "string",
+      "enum": [
+        "BILLING_METER_TYPE_UNSPECIFIED",
+        "BILLING_METER_TYPE_PIPELINES",
+        "BILLING_METER_TYPE_LLM_TOKENS",
+        "BILLING_METER_TYPE_COMPUTE_MINUTES",
+        "BILLING_METER_TYPE_STORAGE_GB"
+      ],
+      "default": "BILLING_METER_TYPE_UNSPECIFIED"
+    },
+    "v1Build": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "ULID"
+        },
+        "workItemId": {
+          "type": "string",
+          "title": "ULID"
+        },
+        "tenantId": {
+          "type": "string",
+          "title": "ULID"
+        },
+        "status": {
+          "$ref": "#/definitions/v1BuildStatus"
+        },
+        "currentStage": {
+          "type": "integer",
+          "format": "int64",
+          "title": "1..16"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PipelineStageRecord"
+          }
+        },
+        "gateResults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GateResult"
+          }
+        },
+        "remediationLoops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1RemediationRecord"
+          }
+        },
+        "checkpointHash": {
+          "$ref": "#/definitions/v1ContentHash"
+        },
+        "checkpointedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "recoveryAttempts": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "domainModelRef": {
+          "type": "string"
+        },
+        "blueprintRef": {
+          "type": "string"
+        },
+        "contractRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "artifactRefs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ArtifactRef"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "summary": {
+          "$ref": "#/definitions/v1BuildSummary",
+          "title": "Computed summary for dashboard"
+        }
+      }
+    },
+    "v1BuildServiceCancelBuildBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "v1BuildStatus": {
+      "type": "string",
+      "enum": [
+        "BUILD_STATUS_UNSPECIFIED",
+        "BUILD_STATUS_INITIATED",
+        "BUILD_STATUS_DOMAIN_MODELLING",
+        "BUILD_STATUS_ARCHITECTING",
+        "BUILD_STATUS_CONTRACTING",
+        "BUILD_STATUS_TESTING_RED",
+        "BUILD_STATUS_CODING_GREEN",
+        "BUILD_STATUS_VERIFYING",
+        "BUILD_STATUS_CERTIFYING",
+        "BUILD_STATUS_SIGNING",
+        "BUILD_STATUS_DEPLOYING",
+        "BUILD_STATUS_COMPLETED",
+        "BUILD_STATUS_FAILED",
+        "BUILD_STATUS_RECOVERING"
+      ],
+      "default": "BUILD_STATUS_UNSPECIFIED"
+    },
+    "v1BuildSummary": {
+      "type": "object",
+      "properties": {
+        "totalDurationMs": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "gatesPassed": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "gatesFailed": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "remediationCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "codebleuScore": {
+          "type": "number",
+          "format": "double"
+        },
+        "coveragePct": {
+          "type": "number",
+          "format": "double"
+        },
+        "vulnerabilityCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "complianceBadges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Frameworks that passed"
+        },
+        "totalTokenUsage": {
+          "$ref": "#/definitions/v1TokenUsage"
+        }
+      }
+    },
+    "v1CancelBuildResponse": {
+      "type": "object",
+      "properties": {
+        "finalStatus": {
+          "$ref": "#/definitions/v1BuildStatus"
+        }
+      }
+    },
+    "v1CircuitBreakerState": {
+      "type": "string",
+      "enum": [
+        "CIRCUIT_BREAKER_STATE_UNSPECIFIED",
+        "CIRCUIT_BREAKER_STATE_CLOSED",
+        "CIRCUIT_BREAKER_STATE_OPEN",
+        "CIRCUIT_BREAKER_STATE_HALF_OPEN"
+      ],
+      "default": "CIRCUIT_BREAKER_STATE_UNSPECIFIED"
+    },
+    "v1CodeBLEUReport": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "number",
+          "format": "double"
+        },
+        "nGramMatch": {
+          "type": "number",
+          "format": "double"
+        },
+        "syntaxMatch": {
+          "type": "number",
+          "format": "double"
+        },
+        "semanticMatch": {
+          "type": "number",
+          "format": "double"
+        },
+        "referenceCorpus": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CompleteRequest": {
+      "type": "object",
+      "properties": {
+        "taskClass": {
+          "$ref": "#/definitions/v1TaskClass"
+        },
+        "systemPrompt": {
+          "type": "string"
+        },
+        "userPrompt": {
+          "type": "string"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "temperature": {
+          "type": "number",
+          "format": "double"
+        },
+        "agentId": {
+          "type": "string"
+        },
+        "buildId": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CompleteResponse": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "modelUsed": {
+          "$ref": "#/definitions/v1ModelID"
+        },
+        "fallbackUsed": {
+          "type": "boolean"
+        },
+        "tokenUsage": {
+          "$ref": "#/definitions/v1TokenUsage"
+        },
+        "latencyMs": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "finishReason": {
+          "type": "string",
+          "title": "stop, length, content_filter"
+        }
+      }
+    },
+    "v1ComplexFunction": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "functionName": {
+          "type": "string"
+        },
+        "complexity": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1ComplexityReport": {
+      "type": "object",
+      "properties": {
+        "maxPerFunction": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "average": {
+          "type": "number",
+          "format": "double"
+        },
+        "functionsExceeding": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "totalFunctions": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "complexFunctions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ComplexFunction"
+          }
+        }
+      }
+    },
+    "v1ComplianceBadge": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        },
+        "frameworkStatus": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean"
+          },
+          "title": "framework_name -\u003e pass/fail"
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ComplianceFramework": {
+      "type": "string",
+      "enum": [
+        "COMPLIANCE_FRAMEWORK_UNSPECIFIED",
+        "COMPLIANCE_FRAMEWORK_SOC2_TYPE_II",
+        "COMPLIANCE_FRAMEWORK_HIPAA",
+        "COMPLIANCE_FRAMEWORK_GDPR",
+        "COMPLIANCE_FRAMEWORK_ISO_27001",
+        "COMPLIANCE_FRAMEWORK_PCI_DSS_V4",
+        "COMPLIANCE_FRAMEWORK_NIST_800_53",
+        "COMPLIANCE_FRAMEWORK_OWASP_TOP_10",
+        "COMPLIANCE_FRAMEWORK_SLSA_LEVEL_3"
+      ],
+      "default": "COMPLIANCE_FRAMEWORK_UNSPECIFIED"
+    },
+    "v1ComplianceProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ComplianceFramework"
+          }
+        },
+        "controlOverrides": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "autoEvidence": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1ComplianceReport": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "buildId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "frameworkResults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FrameworkResult"
+          }
+        },
+        "badge": {
+          "$ref": "#/definitions/v1ComplianceBadge"
+        },
+        "evidencePackageUri": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1ContentHash": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "title": "Always \"SHA-256\""
+        },
+        "hexDigest": {
+          "type": "string",
+          "title": "64 lowercase hex chars"
+        }
+      }
+    },
+    "v1ControlDefinition": {
+      "type": "object",
+      "properties": {
+        "controlId": {
+          "type": "string"
+        },
+        "framework": {
+          "$ref": "#/definitions/v1ComplianceFramework"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "evidenceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ControlGap": {
+      "type": "object",
+      "properties": {
+        "controlId": {
+          "type": "string"
+        },
+        "controlName": {
+          "type": "string"
+        },
+        "gapDescription": {
+          "type": "string"
+        },
+        "remediationSuggestion": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CostReport": {
+      "type": "object",
+      "properties": {
+        "byModel": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ModelCostBreakdown"
+          }
+        },
+        "totalCostMicrodollars": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "totalInputTokens": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "totalOutputTokens": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "onPremPct": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "v1CoverageReport": {
+      "type": "object",
+      "properties": {
+        "linePct": {
+          "type": "number",
+          "format": "double"
+        },
+        "branchPct": {
+          "type": "number",
+          "format": "double"
+        },
+        "linesCovered": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "linesTotal": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "branchesCovered": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "branchesTotal": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "uncoveredFiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1UncoveredFile"
+          }
+        }
+      }
+    },
+    "v1CreateTenantRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "#/definitions/v1PlanTier"
+        },
+        "nexoRegion": {
+          "$ref": "#/definitions/v1NexoRegion"
+        },
+        "complianceFrameworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ComplianceFramework"
+          }
+        },
+        "billingAccountRef": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "targetUrl": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "secret": {
+          "type": "string"
+        }
+      }
+    },
+    "v1DateRange": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1DeleteWebhookResponse": {
+      "type": "object",
+      "properties": {
+        "deleted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteWorkItemResponse": {
+      "type": "object",
+      "properties": {
+        "deleted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeployRequest": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        },
+        "artifactIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetEnv": {
+          "$ref": "#/definitions/v1TargetEnvironment"
+        },
+        "targetRegion": {
+          "$ref": "#/definitions/v1NexoRegion"
+        }
+      }
+    },
+    "v1DeployResponse": {
+      "type": "object",
+      "properties": {
+        "deploymentId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1DeploymentStatus"
+        }
+      }
+    },
+    "v1Deployment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "buildId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "artifactIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetEnv": {
+          "$ref": "#/definitions/v1TargetEnvironment"
+        },
+        "targetRegion": {
+          "$ref": "#/definitions/v1NexoRegion"
+        },
+        "status": {
+          "$ref": "#/definitions/v1DeploymentStatus"
+        },
+        "smokeTestResults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SmokeTestResult"
+          }
+        },
+        "sloValidation": {
+          "$ref": "#/definitions/v1SLOValidation"
+        },
+        "rollbackRef": {
+          "type": "string",
+          "title": "Previous deployment ID if rolled back"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deployedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1DeploymentStatus": {
+      "type": "string",
+      "enum": [
+        "DEPLOYMENT_STATUS_UNSPECIFIED",
+        "DEPLOYMENT_STATUS_PENDING",
+        "DEPLOYMENT_STATUS_APPLYING",
+        "DEPLOYMENT_STATUS_SMOKE_TESTING",
+        "DEPLOYMENT_STATUS_SLO_VALIDATING",
+        "DEPLOYMENT_STATUS_DEPLOYED",
+        "DEPLOYMENT_STATUS_ROLLED_BACK",
+        "DEPLOYMENT_STATUS_FAILED"
+      ],
+      "default": "DEPLOYMENT_STATUS_UNSPECIFIED"
+    },
+    "v1EmbedRequest": {
+      "type": "object",
+      "properties": {
+        "texts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model": {
+          "$ref": "#/definitions/v1ModelID",
+          "title": "Optional; defaults to TEXT_EMBEDDING_3_LARGE"
+        }
+      }
+    },
+    "v1EmbedResponse": {
+      "type": "object",
+      "properties": {
+        "embeddings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Embedding"
+          }
+        },
+        "tokenUsage": {
+          "$ref": "#/definitions/v1TokenUsage"
+        }
+      }
+    },
+    "v1Embedding": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "dimensions": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1EvaluateGateRequest": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        },
+        "gateId": {
+          "type": "string"
+        },
+        "artifactRef": {
+          "type": "string"
+        }
+      }
+    },
+    "v1EvaluateGateResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/v1GateResult"
+        },
+        "remediationAction": {
+          "type": "string",
+          "title": "Populated if failed"
+        }
+      }
+    },
+    "v1ExportEvidenceRequest": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ComplianceFramework"
+          }
+        },
+        "format": {
+          "type": "string",
+          "title": "JSON, CSV, PDF"
+        }
+      }
+    },
+    "v1ExportEvidenceResponse": {
+      "type": "object",
+      "properties": {
+        "downloadUrl": {
+          "type": "string"
+        },
+        "expiresInSeconds": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "entryCount": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1FrameworkResult": {
+      "type": "object",
+      "properties": {
+        "framework": {
+          "$ref": "#/definitions/v1ComplianceFramework"
+        },
+        "controlsMapped": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "controlsTotal": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "coveragePct": {
+          "type": "number",
+          "format": "double"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ControlGap"
+          }
+        }
+      }
+    },
+    "v1GateDefinition": {
+      "type": "object",
+      "properties": {
+        "gateId": {
+          "type": "string",
+          "title": "G-01..G-14"
+        },
+        "name": {
+          "type": "string"
+        },
+        "metricName": {
+          "type": "string"
+        },
+        "threshold": {
+          "type": "number",
+          "format": "double"
+        },
+        "operator": {
+          "type": "string",
+          "title": "GTE, LTE, EQ, LT, GT"
+        },
+        "blocking": {
+          "type": "boolean",
+          "title": "If true, failure stops pipeline"
+        },
+        "remediable": {
+          "type": "boolean",
+          "title": "If false, failure = build fail (G-07 CRITICAL, G-14)"
+        },
+        "responsibleAgent": {
+          "$ref": "#/definitions/v1AgentType"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "v1GateResult": {
+      "type": "object",
+      "properties": {
+        "gateId": {
+          "type": "string",
+          "title": "G-01..G-14"
+        },
+        "metricName": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number",
+          "format": "double"
+        },
+        "threshold": {
+          "type": "number",
+          "format": "double"
+        },
+        "operator": {
+          "type": "string",
+          "title": "GTE, LTE, EQ"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "evaluatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1GenerateEvidenceRequest": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ComplianceFramework"
+          }
+        }
+      }
+    },
+    "v1GenerateEvidenceResponse": {
+      "type": "object",
+      "properties": {
+        "evidencePackageUri": {
+          "type": "string"
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FrameworkResult"
+          }
+        },
+        "badge": {
+          "$ref": "#/definitions/v1ComplianceBadge"
+        }
+      }
+    },
+    "v1GenerateProvenanceResponse": {
+      "type": "object",
+      "properties": {
+        "provenance": {
+          "$ref": "#/definitions/v1ProvenanceRef"
+        }
+      }
+    },
+    "v1GetArtifactDownloadURLResponse": {
+      "type": "object",
+      "properties": {
+        "downloadUrl": {
+          "type": "string",
+          "title": "Pre-signed S3 URL"
+        },
+        "expiresInSeconds": {
+          "type": "integer",
+          "format": "int64",
+          "title": "TTL (default 3600)"
+        },
+        "contentHash": {
+          "$ref": "#/definitions/v1ContentHash",
+          "title": "For client-side verification"
+        }
+      }
+    },
+    "v1GetBuildGateResultsResponse": {
+      "type": "object",
+      "properties": {
+        "gateResults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GateResult"
+          }
+        }
+      }
+    },
+    "v1GetBuildStagesResponse": {
+      "type": "object",
+      "properties": {
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1PipelineStageRecord"
+          }
+        }
+      }
+    },
+    "v1GetControlCatalogResponse": {
+      "type": "object",
+      "properties": {
+        "controls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ControlDefinition"
+          }
+        }
+      }
+    },
+    "v1GetDeploymentLogsResponse": {
+      "type": "object",
+      "properties": {
+        "logLines": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1GetGateDefinitionsResponse": {
+      "type": "object",
+      "properties": {
+        "gates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GateDefinition"
+          }
+        }
+      }
+    },
+    "v1GetGateMetricsResponse": {
+      "type": "object",
+      "properties": {
+        "gateId": {
+          "type": "string"
+        },
+        "passRate": {
+          "type": "number",
+          "format": "double"
+        },
+        "avgValue": {
+          "type": "number",
+          "format": "double"
+        },
+        "minValue": {
+          "type": "number",
+          "format": "double"
+        },
+        "maxValue": {
+          "type": "number",
+          "format": "double"
+        },
+        "evaluationCount": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1GetModelStatusResponse": {
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ModelStatus"
+          }
+        }
+      }
+    },
+    "v1HealthCheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "title": "SERVING, NOT_SERVING"
+        },
+        "version": {
+          "type": "string"
+        },
+        "components": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "component -\u003e status"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1HealthState": {
+      "type": "string",
+      "enum": [
+        "HEALTH_STATE_UNSPECIFIED",
+        "HEALTH_STATE_HEALTHY",
+        "HEALTH_STATE_DEGRADED",
+        "HEALTH_STATE_UNHEALTHY"
+      ],
+      "default": "HEALTH_STATE_UNSPECIFIED"
+    },
+    "v1HealthStatus": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/v1HealthState"
+        },
+        "lastCheck": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "latencyMs": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "errorCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "consecutiveFailures": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "v1IngestionServiceApproveManifestBody": {
+      "type": "object",
+      "properties": {
+        "manifestOverride": {
+          "$ref": "#/definitions/v1WorkItemManifest",
+          "title": "Optional; override parsed manifest"
+        }
+      }
+    },
+    "v1IngestionServiceResolveAmbiguityBody": {
+      "type": "object",
+      "properties": {
+        "resolution": {
+          "type": "string"
+        }
+      }
+    },
+    "v1InputSource": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/v1InputSourceType"
+        },
+        "rawContent": {
+          "type": "string",
+          "title": "Original text (≤ 5MB)"
+        },
+        "parsedContent": {
+          "type": "string",
+          "title": "Canonicalised content"
+        },
+        "hash": {
+          "$ref": "#/definitions/v1ContentHash"
+        }
+      }
+    },
+    "v1InputSourceType": {
+      "type": "string",
+      "enum": [
+        "INPUT_SOURCE_TYPE_UNSPECIFIED",
+        "INPUT_SOURCE_TYPE_PRD",
+        "INPUT_SOURCE_TYPE_USER_STORY",
+        "INPUT_SOURCE_TYPE_API_SPEC",
+        "INPUT_SOURCE_TYPE_CODEBASE",
+        "INPUT_SOURCE_TYPE_BUG_REPORT"
+      ],
+      "default": "INPUT_SOURCE_TYPE_UNSPECIFIED"
+    },
+    "v1LanguageCode": {
+      "type": "string",
+      "enum": [
+        "LANGUAGE_CODE_UNSPECIFIED",
+        "LANGUAGE_CODE_GO",
+        "LANGUAGE_CODE_RUST",
+        "LANGUAGE_CODE_PYTHON",
+        "LANGUAGE_CODE_TYPESCRIPT",
+        "LANGUAGE_CODE_FLUTTER",
+        "LANGUAGE_CODE_SWIFT",
+        "LANGUAGE_CODE_KOTLIN",
+        "LANGUAGE_CODE_JAVA",
+        "LANGUAGE_CODE_C",
+        "LANGUAGE_CODE_CPP",
+        "LANGUAGE_CODE_SQL",
+        "LANGUAGE_CODE_HCL"
+      ],
+      "default": "LANGUAGE_CODE_UNSPECIFIED"
+    },
+    "v1ListAgentsResponse": {
+      "type": "object",
+      "properties": {
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Agent"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListArtifactsResponse": {
+      "type": "object",
+      "properties": {
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Artifact"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListBuildsResponse": {
+      "type": "object",
+      "properties": {
+        "builds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Build"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListComplianceReportsResponse": {
+      "type": "object",
+      "properties": {
+        "reports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ComplianceReport"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListDeploymentsResponse": {
+      "type": "object",
+      "properties": {
+        "deployments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Deployment"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListModelsResponse": {
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ModelConfig"
+          }
+        }
+      }
+    },
+    "v1ListQualityReportsResponse": {
+      "type": "object",
+      "properties": {
+        "reports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1QualityReport"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListTenantsResponse": {
+      "type": "object",
+      "properties": {
+        "tenants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Tenant"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListWebhooksResponse": {
+      "type": "object",
+      "properties": {
+        "webhooks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WebhookConfig"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListWorkItemsResponse": {
+      "type": "object",
+      "properties": {
+        "workItems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WorkItem"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1ListWorkspacesResponse": {
+      "type": "object",
+      "properties": {
+        "workspaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Workspace"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1MapControlsRequest": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        },
+        "frameworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ComplianceFramework"
+          }
+        }
+      }
+    },
+    "v1MapControlsResponse": {
+      "type": "object",
+      "properties": {
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1FrameworkResult"
+          }
+        }
+      }
+    },
+    "v1ModelConfig": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/v1ModelID"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string",
+          "title": "anthropic, openai, google, on_prem"
+        },
+        "isOnPrem": {
+          "type": "boolean"
+        },
+        "supportedTasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TaskClass"
+          }
+        },
+        "maxContextTokens": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "costPerMillionInput": {
+          "type": "string",
+          "format": "uint64",
+          "title": "microdollars"
+        },
+        "costPerMillionOutput": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1ModelCostBreakdown": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/v1ModelID"
+        },
+        "inputTokens": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "outputTokens": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "costMicrodollars": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "requestCount": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "avgLatencyMs": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "v1ModelID": {
+      "type": "string",
+      "enum": [
+        "MODEL_ID_UNSPECIFIED",
+        "MODEL_ID_CLAUDE_OPUS_4",
+        "MODEL_ID_CLAUDE_SONNET_4",
+        "MODEL_ID_CLAUDE_HAIKU",
+        "MODEL_ID_GPT_4O",
+        "MODEL_ID_GEMINI_ULTRA",
+        "MODEL_ID_MISTRAL_LARGE",
+        "MODEL_ID_LLAMA_3_1_70B",
+        "MODEL_ID_LLAMA_3_1_8B",
+        "MODEL_ID_MIXTRAL_8X22B",
+        "MODEL_ID_MIXTRAL_8X7B",
+        "MODEL_ID_NOMIC_EMBED",
+        "MODEL_ID_TEXT_EMBEDDING_3_LARGE"
+      ],
+      "default": "MODEL_ID_UNSPECIFIED"
+    },
+    "v1ModelRoutingConfig": {
+      "type": "object",
+      "properties": {
+        "primaryModel": {
+          "$ref": "#/definitions/v1ModelID"
+        },
+        "fallbackModel": {
+          "$ref": "#/definitions/v1ModelID"
+        },
+        "onPremTrigger": {
+          "type": "string",
+          "title": "NEVER, LATENCY_EXCEEDS_3S, ALWAYS_ON_PREM, COST_OPTIMISED"
+        },
+        "maxTokens": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "temperature": {
+          "type": "number",
+          "format": "double"
+        },
+        "timeout": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ModelStatus": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "$ref": "#/definitions/v1ModelID"
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "circuitBreaker": {
+          "$ref": "#/definitions/v1CircuitBreakerState"
+        },
+        "avgLatencyMs": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "errorRatePct": {
+          "type": "number",
+          "format": "double"
+        },
+        "isOnPrem": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1NexoRegion": {
+      "type": "string",
+      "enum": [
+        "NEXO_REGION_UNSPECIFIED",
+        "NEXO_REGION_LAGOS",
+        "NEXO_REGION_LONDON",
+        "NEXO_REGION_ASHBURN",
+        "NEXO_REGION_SINGAPORE",
+        "NEXO_REGION_SAO_PAULO"
+      ],
+      "default": "NEXO_REGION_UNSPECIFIED"
+    },
+    "v1PaginationRequest": {
+      "type": "object",
+      "properties": {
+        "pageSize": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Max 100, default 20"
+        },
+        "pageToken": {
+          "type": "string",
+          "title": "Opaque cursor; empty for first page"
+        }
+      }
+    },
+    "v1PaginationResponse": {
+      "type": "object",
+      "properties": {
+        "nextPageToken": {
+          "type": "string",
+          "title": "Empty if last page"
+        },
+        "totalCount": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1PerformanceBudget": {
+      "type": "object",
+      "properties": {
+        "p99LatencyMs": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Target p99 latency"
+        },
+        "memoryBudgetMb": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Max memory growth per hour"
+        },
+        "targetRps": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Target requests per second"
+        }
+      }
+    },
+    "v1PipelineStageRecord": {
+      "type": "object",
+      "properties": {
+        "stageNumber": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1StageStatus"
+        },
+        "agentId": {
+          "type": "string"
+        },
+        "outputRef": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        },
+        "durationMs": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1PlanTier": {
+      "type": "string",
+      "enum": [
+        "PLAN_TIER_UNSPECIFIED",
+        "PLAN_TIER_STARTER",
+        "PLAN_TIER_GROWTH",
+        "PLAN_TIER_ENTERPRISE",
+        "PLAN_TIER_SOVEREIGN"
+      ],
+      "default": "PLAN_TIER_UNSPECIFIED"
+    },
+    "v1Priority": {
+      "type": "string",
+      "enum": [
+        "PRIORITY_UNSPECIFIED",
+        "PRIORITY_P0",
+        "PRIORITY_P1",
+        "PRIORITY_P2"
+      ],
+      "default": "PRIORITY_UNSPECIFIED"
+    },
+    "v1ProvenanceMaterial": {
+      "type": "object",
+      "properties": {
+        "uri": {
+          "type": "string"
+        },
+        "digest": {
+          "$ref": "#/definitions/v1ContentHash"
+        }
+      }
+    },
+    "v1ProvenanceRef": {
+      "type": "object",
+      "properties": {
+        "slsaLevel": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Always 3"
+        },
+        "builderId": {
+          "type": "string"
+        },
+        "buildType": {
+          "type": "string"
+        },
+        "materials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ProvenanceMaterial"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1PublishArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "publishedUri": {
+          "type": "string"
+        },
+        "publishedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1QualityReport": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "buildId": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "gateResults": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1GateResult"
+          }
+        },
+        "overallScore": {
+          "type": "number",
+          "format": "double",
+          "title": "Weighted composite score"
+        },
+        "allGatesPassed": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "codebleu": {
+          "$ref": "#/definitions/v1CodeBLEUReport",
+          "title": "Detail sub-reports"
+        },
+        "coverage": {
+          "$ref": "#/definitions/v1CoverageReport"
+        },
+        "complexity": {
+          "$ref": "#/definitions/v1ComplexityReport"
+        },
+        "securitySummary": {
+          "$ref": "#/definitions/v1SecurityScanSummary"
+        }
+      }
+    },
+    "v1QueryAuditLogResponse": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1AuditEntry"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/v1PaginationResponse"
+        }
+      }
+    },
+    "v1QuotaStatus": {
+      "type": "object",
+      "properties": {
+        "tenantId": {
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "#/definitions/v1PlanTier"
+        },
+        "meters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1BillingMeter"
+          }
+        }
+      }
+    },
+    "v1RecordHeartbeatResponse": {
+      "type": "object",
+      "properties": {
+        "acknowledged": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1RegisterAgentRequest": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/v1AgentType"
+        },
+        "spiffeId": {
+          "type": "string"
+        },
+        "modelConfig": {
+          "$ref": "#/definitions/v1ModelRoutingConfig"
+        },
+        "podName": {
+          "type": "string"
+        },
+        "nexoRegion": {
+          "$ref": "#/definitions/v1NexoRegion"
+        }
+      }
+    },
+    "v1RemediationRecord": {
+      "type": "object",
+      "properties": {
+        "gateId": {
+          "type": "string"
+        },
+        "attempt": {
+          "type": "integer",
+          "format": "int64",
+          "title": "1..3"
+        },
+        "agentId": {
+          "type": "string"
+        },
+        "actionTaken": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string",
+          "title": "FIXED or STILL_FAILING"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1RemoveWorkspaceMemberResponse": {
+      "type": "object",
+      "properties": {
+        "removed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1Requirement": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "priority": {
+          "$ref": "#/definitions/v1Priority"
+        },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bddScenarios": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ResolveAmbiguityResponse": {
+      "type": "object",
+      "properties": {
+        "ambiguity": {
+          "$ref": "#/definitions/v1Ambiguity"
+        },
+        "remainingAmbiguities": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "allResolved": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1RevokeArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "newStatus": {
+          "$ref": "#/definitions/v1ArtifactStatus"
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1S3URI": {
+      "type": "object",
+      "properties": {
+        "bucket": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "region": {
+          "$ref": "#/definitions/v1NexoRegion"
+        }
+      }
+    },
+    "v1SBOMRef": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "title": "SPDX or CYCLONEDX"
+        },
+        "generator": {
+          "type": "string",
+          "title": "SYFT"
+        },
+        "storageUri": {
+          "$ref": "#/definitions/v1S3URI"
+        },
+        "contentHash": {
+          "$ref": "#/definitions/v1ContentHash"
+        }
+      }
+    },
+    "v1SDXGatewayServiceApproveManifestBody": {
+      "type": "object",
+      "properties": {
+        "manifestOverride": {
+          "$ref": "#/definitions/v1WorkItemManifest",
+          "title": "Optional; override parsed manifest"
+        }
+      }
+    },
+    "v1SDXGatewayServiceCancelBuildBody": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SDXGatewayServiceResolveAmbiguityBody": {
+      "type": "object",
+      "properties": {
+        "resolution": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SLOValidation": {
+      "type": "object",
+      "properties": {
+        "passed": {
+          "type": "boolean"
+        },
+        "p99LatencyMs": {
+          "type": "number",
+          "format": "double"
+        },
+        "errorRatePct": {
+          "type": "number",
+          "format": "double"
+        },
+        "availabilityPct": {
+          "type": "number",
+          "format": "double"
+        },
+        "validationDurationMin": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "violations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1SLOViolation"
+          }
+        }
+      }
+    },
+    "v1SLOViolation": {
+      "type": "object",
+      "properties": {
+        "sloName": {
+          "type": "string"
+        },
+        "expected": {
+          "type": "number",
+          "format": "double"
+        },
+        "actual": {
+          "type": "number",
+          "format": "double"
+        },
+        "detectedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1SecurityScanSummary": {
+      "type": "object",
+      "properties": {
+        "criticalCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "highCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "mediumCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "lowCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "secretsDetected": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "sbomComplete": {
+          "type": "boolean"
+        },
+        "licenseCompliant": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1SignArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "signatureRef": {
+          "$ref": "#/definitions/v1SignatureRef"
+        },
+        "provenanceRef": {
+          "$ref": "#/definitions/v1ProvenanceRef"
+        }
+      }
+    },
+    "v1SignatureRef": {
+      "type": "object",
+      "properties": {
+        "signer": {
+          "type": "string",
+          "title": "\"COSIGN\""
+        },
+        "signature": {
+          "type": "string",
+          "format": "byte"
+        },
+        "certificate": {
+          "type": "string",
+          "title": "PEM"
+        },
+        "transparencyLogEntry": {
+          "type": "string",
+          "title": "Rekor URL"
+        }
+      }
+    },
+    "v1SmokeTestResult": {
+      "type": "object",
+      "properties": {
+        "testName": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        },
+        "durationMs": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1StageStatus": {
+      "type": "string",
+      "enum": [
+        "STAGE_STATUS_UNSPECIFIED",
+        "STAGE_STATUS_PENDING",
+        "STAGE_STATUS_RUNNING",
+        "STAGE_STATUS_COMPLETED",
+        "STAGE_STATUS_FAILED",
+        "STAGE_STATUS_SKIPPED"
+      ],
+      "default": "STAGE_STATUS_UNSPECIFIED"
+    },
+    "v1SubmitWorkItemRequest": {
+      "type": "object",
+      "properties": {
+        "sourceType": {
+          "$ref": "#/definitions/v1InputSourceType"
+        },
+        "rawContent": {
+          "type": "string",
+          "title": "PRD text, user story, etc. (≤ 5MB)"
+        },
+        "preferredLanguages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1LanguageCode"
+          },
+          "title": "Optional; ArchitectAgent may override"
+        },
+        "complianceFrameworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ComplianceFramework"
+          },
+          "title": "Required"
+        },
+        "targetEnvironment": {
+          "type": "string",
+          "title": "Optional; default PROD"
+        }
+      }
+    },
+    "v1SubmitWorkItemResponse": {
+      "type": "object",
+      "properties": {
+        "workItemId": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/v1WorkItemStatus"
+        },
+        "requirementCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ambiguityCount": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1TargetEnvironment": {
+      "type": "string",
+      "enum": [
+        "TARGET_ENVIRONMENT_UNSPECIFIED",
+        "TARGET_ENVIRONMENT_DEV",
+        "TARGET_ENVIRONMENT_STAGING",
+        "TARGET_ENVIRONMENT_PROD"
+      ],
+      "default": "TARGET_ENVIRONMENT_UNSPECIFIED"
+    },
+    "v1TaskClass": {
+      "type": "string",
+      "enum": [
+        "TASK_CLASS_UNSPECIFIED",
+        "TASK_CLASS_ARCHITECTURE",
+        "TASK_CLASS_CODE_GEN_COMPLEX",
+        "TASK_CLASS_CODE_GEN_BOILERPLATE",
+        "TASK_CLASS_SECURITY_COMPLIANCE",
+        "TASK_CLASS_TEST_GENERATION",
+        "TASK_CLASS_DOCUMENTATION",
+        "TASK_CLASS_EMBEDDING"
+      ],
+      "default": "TASK_CLASS_UNSPECIFIED"
+    },
+    "v1Tenant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "plan": {
+          "$ref": "#/definitions/v1PlanTier"
+        },
+        "status": {
+          "$ref": "#/definitions/v1TenantStatus"
+        },
+        "nexoRegion": {
+          "$ref": "#/definitions/v1NexoRegion"
+        },
+        "quotas": {
+          "$ref": "#/definitions/v1TenantQuotas"
+        },
+        "complianceProfiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1ComplianceProfile"
+          }
+        },
+        "workspaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Workspace"
+          }
+        },
+        "billingAccountRef": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1TenantQuotas": {
+      "type": "object",
+      "properties": {
+        "maxPipelinesPerMonth": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "maxLanguages": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "maxStorageGb": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "maxConcurrentAgents": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "allowedLanguages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1LanguageCode"
+          }
+        }
+      }
+    },
+    "v1TenantStatus": {
+      "type": "string",
+      "enum": [
+        "TENANT_STATUS_UNSPECIFIED",
+        "TENANT_STATUS_PROVISIONING",
+        "TENANT_STATUS_ACTIVE",
+        "TENANT_STATUS_SUSPENDED",
+        "TENANT_STATUS_DEPROVISIONED"
+      ],
+      "default": "TENANT_STATUS_UNSPECIFIED"
+    },
+    "v1TestWebhookResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "statusCode": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "latencyMs": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TokenUsage": {
+      "type": "object",
+      "properties": {
+        "inputTokens": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "outputTokens": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "model": {
+          "$ref": "#/definitions/v1ModelID"
+        },
+        "costMicrodollars": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "v1TriggerRemediationRequest": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string"
+        },
+        "gateId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TriggerRemediationResponse": {
+      "type": "object",
+      "properties": {
+        "triggered": {
+          "type": "boolean"
+        },
+        "attemptNumber": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "agentId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UncoveredFile": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "coveragePct": {
+          "type": "number",
+          "format": "double"
+        },
+        "uncoveredLines": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "v1VerifyArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "contentHashValid": {
+          "type": "boolean"
+        },
+        "signatureValid": {
+          "type": "boolean"
+        },
+        "provenanceValid": {
+          "type": "boolean"
+        },
+        "sbomPresent": {
+          "type": "boolean"
+        },
+        "verificationErrors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1VerifyIntegrityRequest": {
+      "type": "object",
+      "properties": {
+        "startEntryId": {
+          "type": "string",
+          "title": "Optional; if omitted, start from beginning"
+        },
+        "endEntryId": {
+          "type": "string",
+          "title": "Optional; if omitted, verify to latest"
+        },
+        "dateRange": {
+          "$ref": "#/definitions/v1DateRange",
+          "title": "Alternative to entry IDs"
+        }
+      }
+    },
+    "v1VerifyIntegrityResponse": {
+      "type": "object",
+      "properties": {
+        "chainValid": {
+          "type": "boolean"
+        },
+        "entriesVerified": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "firstBrokenEntryId": {
+          "type": "string",
+          "title": "Only if chain_valid == false"
+        },
+        "breakDescription": {
+          "type": "string"
+        }
+      }
+    },
+    "v1WebhookConfig": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "tenantId": {
+          "type": "string"
+        },
+        "targetUrl": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "build.completed, build.failed, gate.failed, artifact.signed, compliance.certified"
+        },
+        "secret": {
+          "type": "string",
+          "title": "HMAC-SHA256 secret (write-only; never returned in reads)"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastTriggeredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "failureCount": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Consecutive failures"
+        }
+      }
+    },
+    "v1WorkItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "ULID"
+        },
+        "tenantId": {
+          "type": "string",
+          "title": "ULID"
+        },
+        "status": {
+          "$ref": "#/definitions/v1WorkItemStatus"
+        },
+        "source": {
+          "$ref": "#/definitions/v1InputSource"
+        },
+        "manifest": {
+          "$ref": "#/definitions/v1WorkItemManifest",
+          "title": "Populated after parsing"
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Requirement"
+          }
+        },
+        "ambiguities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Ambiguity"
+          }
+        },
+        "assignedAgents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1AgentAssignment"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1WorkItemManifest": {
+      "type": "object",
+      "properties": {
+        "languages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1LanguageCode"
+          }
+        },
+        "complianceFrameworks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ComplianceFramework"
+          }
+        },
+        "targetEnvironment": {
+          "type": "string",
+          "title": "DEV, STAGING, PROD"
+        },
+        "performanceBudget": {
+          "$ref": "#/definitions/v1PerformanceBudget"
+        }
+      }
+    },
+    "v1WorkItemStatus": {
+      "type": "string",
+      "enum": [
+        "WORK_ITEM_STATUS_UNSPECIFIED",
+        "WORK_ITEM_STATUS_DRAFT",
+        "WORK_ITEM_STATUS_PARSED",
+        "WORK_ITEM_STATUS_MANIFEST_REVIEW",
+        "WORK_ITEM_STATUS_APPROVED",
+        "WORK_ITEM_STATUS_MODELLING",
+        "WORK_ITEM_STATUS_COMPLETED",
+        "WORK_ITEM_STATUS_FAILED"
+      ],
+      "default": "WORK_ITEM_STATUS_UNSPECIFIED"
+    },
+    "v1Workspace": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1WorkspaceMember"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1WorkspaceMember": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/definitions/v1WorkspaceMemberRole"
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "v1WorkspaceMemberRole": {
+      "type": "string",
+      "enum": [
+        "WORKSPACE_MEMBER_ROLE_UNSPECIFIED",
+        "WORKSPACE_MEMBER_ROLE_OWNER",
+        "WORKSPACE_MEMBER_ROLE_ADMIN",
+        "WORKSPACE_MEMBER_ROLE_MEMBER",
+        "WORKSPACE_MEMBER_ROLE_VIEWER"
+      ],
+      "default": "WORKSPACE_MEMBER_ROLE_UNSPECIFIED"
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "type": "apiKey",
+      "description": "API key mapped to a tenant.",
+      "name": "X-API-Key",
+      "in": "header"
+    },
+    "BearerAuth": {
+      "type": "apiKey",
+      "description": "Bearer JWT token from Authentik OIDC. Format: 'Bearer {token}'",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

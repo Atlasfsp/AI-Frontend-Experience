@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+service QualityService {
+  rpc EvaluateGate(EvaluateGateRequest) returns (EvaluateGateResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/quality/gates/evaluate"
+      body: "*"
+    };
+  }
+  rpc GetGateDefinitions(GetGateDefinitionsRequest) returns (GetGateDefinitionsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/quality/gates"
+    };
+  }
+  rpc GetQualityReport(GetQualityReportRequest) returns (QualityReport) {
+    option (google.api.http) = {
+      get: "/api/v1/quality/reports/{build_id}"
+    };
+  }
+  rpc ListQualityReports(ListQualityReportsRequest) returns (ListQualityReportsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/quality/reports"
+    };
+  }
+  rpc TriggerRemediation(TriggerRemediationRequest) returns (TriggerRemediationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/quality/remediation"
+      body: "*"
+    };
+  }
+  rpc GetGateMetrics(GetGateMetricsRequest) returns (GetGateMetricsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/quality/metrics/{gate_id}"
+    };
+  }
+}
+
+message GateDefinition {
+  string gate_id = 1;       // G-01..G-14
+  string name = 2;
+  string metric_name = 3;
+  double threshold = 4;
+  string operator = 5;      // GTE, LTE, EQ, LT, GT
+  bool blocking = 6;        // If true, failure stops pipeline
+  bool remediable = 7;      // If false, failure = build fail (G-07 CRITICAL, G-14)
+  AgentType responsible_agent = 8;
+  string description = 9;
+}
+
+message QualityReport {
+  string id = 1;
+  string build_id = 2;
+  string tenant_id = 3;
+  repeated GateResult gate_results = 4;
+  double overall_score = 5;           // Weighted composite score
+  bool all_gates_passed = 6;
+  google.protobuf.Timestamp created_at = 7;
+
+  // Detail sub-reports
+  CodeBLEUReport codebleu = 8;
+  CoverageReport coverage = 9;
+  ComplexityReport complexity = 10;
+  SecurityScanSummary security_summary = 11;
+}
+
+message CodeBLEUReport {
+  double score = 1;
+  double n_gram_match = 2;
+  double syntax_match = 3;
+  double semantic_match = 4;
+  string reference_corpus = 5;
+}
+
+message CoverageReport {
+  double line_pct = 1;
+  double branch_pct = 2;
+  uint64 lines_covered = 3;
+  uint64 lines_total = 4;
+  uint64 branches_covered = 5;
+  uint64 branches_total = 6;
+  repeated UncoveredFile uncovered_files = 7;
+}
+
+message UncoveredFile {
+  string path = 1;
+  double coverage_pct = 2;
+  repeated uint32 uncovered_lines = 3;
+}
+
+message ComplexityReport {
+  uint32 max_per_function = 1;
+  double average = 2;
+  uint32 functions_exceeding = 3;
+  uint32 total_functions = 4;
+  repeated ComplexFunction complex_functions = 5;
+}
+
+message ComplexFunction {
+  string file = 1;
+  string function_name = 2;
+  uint32 complexity = 3;
+}
+
+message SecurityScanSummary {
+  uint32 critical_count = 1;
+  uint32 high_count = 2;
+  uint32 medium_count = 3;
+  uint32 low_count = 4;
+  uint32 secrets_detected = 5;
+  bool sbom_complete = 6;
+  bool license_compliant = 7;
+}
+
+// ─── Requests ───
+
+message EvaluateGateRequest {
+  string build_id = 1;
+  string gate_id = 2;
+  string artifact_ref = 3;
+}
+
+message EvaluateGateResponse {
+  GateResult result = 1;
+  string remediation_action = 2;  // Populated if failed
+}
+
+message GetGateDefinitionsRequest {}
+
+message GetGateDefinitionsResponse {
+  repeated GateDefinition gates = 1;
+}
+
+message GetQualityReportRequest { string build_id = 1; }
+
+message ListQualityReportsRequest {
+  DateRange date_range = 1;
+  PaginationRequest pagination = 2;
+}
+
+message ListQualityReportsResponse {
+  repeated QualityReport reports = 1;
+  PaginationResponse pagination = 2;
+}
+
+message TriggerRemediationRequest {
+  string build_id = 1;
+  string gate_id = 2;
+}
+
+message TriggerRemediationResponse {
+  bool triggered = 1;
+  uint32 attempt_number = 2;
+  string agent_id = 3;
+}
+
+message GetGateMetricsRequest {
+  string gate_id = 1;
+  DateRange period = 2;
+}
+
+message GetGateMetricsResponse {
+  string gate_id = 1;
+  double pass_rate = 2;
+  double avg_value = 3;
+  double min_value = 4;
+  double max_value = 5;
+  uint64 evaluation_count = 6;
+}

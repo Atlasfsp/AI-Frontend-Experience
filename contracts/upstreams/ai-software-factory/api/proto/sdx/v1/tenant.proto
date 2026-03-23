@@ -1,0 +1,241 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+service TenantService {
+  rpc CreateTenant(CreateTenantRequest) returns (Tenant) {
+    option (google.api.http) = {
+      post: "/api/v1/tenants"
+      body: "*"
+    };
+  }
+  rpc GetTenant(GetTenantRequest) returns (Tenant) {
+    option (google.api.http) = {
+      get: "/api/v1/tenants/{tenant_id}"
+    };
+  }
+  rpc ListTenants(ListTenantsRequest) returns (ListTenantsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tenants"
+    };
+  }
+  rpc UpdatePlan(UpdatePlanRequest) returns (Tenant) {
+    option (google.api.http) = {
+      patch: "/api/v1/tenants/{tenant_id}/plan"
+      body: "*"
+    };
+  }
+  rpc SuspendTenant(SuspendTenantRequest) returns (Tenant) {
+    option (google.api.http) = {
+      post: "/api/v1/tenants/{tenant_id}/suspend"
+      body: "*"
+    };
+  }
+  rpc ReactivateTenant(ReactivateTenantRequest) returns (Tenant) {
+    option (google.api.http) = {
+      post: "/api/v1/tenants/{tenant_id}/reactivate"
+    };
+  }
+  rpc GetQuotaStatus(GetQuotaStatusRequest) returns (QuotaStatus) {
+    option (google.api.http) = {
+      get: "/api/v1/tenants/{tenant_id}/quotas"
+    };
+  }
+  rpc CreateWorkspace(CreateWorkspaceRequest) returns (Workspace) {
+    option (google.api.http) = {
+      post: "/api/v1/tenants/{tenant_id}/workspaces"
+      body: "*"
+    };
+  }
+  rpc ListWorkspaces(ListWorkspacesRequest) returns (ListWorkspacesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/tenants/{tenant_id}/workspaces"
+    };
+  }
+  rpc AddWorkspaceMember(AddWorkspaceMemberRequest) returns (WorkspaceMember) {
+    option (google.api.http) = {
+      post: "/api/v1/tenants/{tenant_id}/workspaces/{workspace_id}/members"
+      body: "*"
+    };
+  }
+  rpc RemoveWorkspaceMember(RemoveWorkspaceMemberRequest) returns (RemoveWorkspaceMemberResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/tenants/{tenant_id}/workspaces/{workspace_id}/members/{user_id}"
+    };
+  }
+  rpc SetComplianceProfile(SetComplianceProfileRequest) returns (ComplianceProfile) {
+    option (google.api.http) = {
+      put: "/api/v1/tenants/{tenant_id}/compliance-profile"
+      body: "*"
+    };
+  }
+  rpc GetComplianceProfile(GetComplianceProfileRequest) returns (ComplianceProfile) {
+    option (google.api.http) = {
+      get: "/api/v1/tenants/{tenant_id}/compliance-profile"
+    };
+  }
+}
+
+enum TenantStatus {
+  TENANT_STATUS_UNSPECIFIED = 0;
+  TENANT_STATUS_PROVISIONING = 1;
+  TENANT_STATUS_ACTIVE = 2;
+  TENANT_STATUS_SUSPENDED = 3;
+  TENANT_STATUS_DEPROVISIONED = 4;
+}
+
+enum WorkspaceMemberRole {
+  WORKSPACE_MEMBER_ROLE_UNSPECIFIED = 0;
+  WORKSPACE_MEMBER_ROLE_OWNER = 1;
+  WORKSPACE_MEMBER_ROLE_ADMIN = 2;
+  WORKSPACE_MEMBER_ROLE_MEMBER = 3;
+  WORKSPACE_MEMBER_ROLE_VIEWER = 4;
+}
+
+enum BillingMeterType {
+  BILLING_METER_TYPE_UNSPECIFIED = 0;
+  BILLING_METER_TYPE_PIPELINES = 1;
+  BILLING_METER_TYPE_LLM_TOKENS = 2;
+  BILLING_METER_TYPE_COMPUTE_MINUTES = 3;
+  BILLING_METER_TYPE_STORAGE_GB = 4;
+}
+
+message Tenant {
+  string id = 1;
+  string name = 2;
+  PlanTier plan = 3;
+  TenantStatus status = 4;
+  NexoRegion nexo_region = 5;
+  TenantQuotas quotas = 6;
+  repeated ComplianceProfile compliance_profiles = 7;
+  repeated Workspace workspaces = 8;
+  string billing_account_ref = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+message TenantQuotas {
+  uint32 max_pipelines_per_month = 1;
+  uint32 max_languages = 2;
+  uint32 max_storage_gb = 3;
+  uint32 max_concurrent_agents = 4;
+  repeated LanguageCode allowed_languages = 5;
+}
+
+message Workspace {
+  string id = 1;
+  string name = 2;
+  repeated WorkspaceMember members = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message WorkspaceMember {
+  string user_id = 1;
+  WorkspaceMemberRole role = 2;
+  google.protobuf.Timestamp joined_at = 3;
+}
+
+message ComplianceProfile {
+  string id = 1;
+  repeated ComplianceFramework frameworks = 2;
+  repeated string control_overrides = 3;
+  bool auto_evidence = 4;
+}
+
+message QuotaStatus {
+  string tenant_id = 1;
+  PlanTier plan = 2;
+  repeated BillingMeter meters = 3;
+}
+
+message BillingMeter {
+  BillingMeterType type = 1;
+  uint64 current_value = 2;
+  uint64 limit = 3;           // 0 = unlimited
+  google.protobuf.Timestamp period_start = 4;
+  google.protobuf.Timestamp period_end = 5;
+}
+
+// ─── Requests ───
+
+message CreateTenantRequest {
+  string name = 1;
+  PlanTier plan = 2;
+  NexoRegion nexo_region = 3;
+  repeated ComplianceFramework compliance_frameworks = 4;
+  string billing_account_ref = 5;
+}
+
+message GetTenantRequest { string tenant_id = 1; }
+
+message ListTenantsRequest {
+  PlanTier plan_filter = 1;
+  TenantStatus status_filter = 2;
+  NexoRegion region_filter = 3;
+  PaginationRequest pagination = 4;
+}
+
+message ListTenantsResponse {
+  repeated Tenant tenants = 1;
+  PaginationResponse pagination = 2;
+}
+
+message UpdatePlanRequest {
+  string tenant_id = 1;
+  PlanTier new_plan = 2;
+}
+
+message SuspendTenantRequest {
+  string tenant_id = 1;
+  string reason = 2;
+}
+
+message ReactivateTenantRequest { string tenant_id = 1; }
+
+message GetQuotaStatusRequest { string tenant_id = 1; }
+
+message CreateWorkspaceRequest {
+  string tenant_id = 1;
+  string name = 2;
+}
+
+message ListWorkspacesRequest {
+  string tenant_id = 1;
+  PaginationRequest pagination = 2;
+}
+
+message ListWorkspacesResponse {
+  repeated Workspace workspaces = 1;
+  PaginationResponse pagination = 2;
+}
+
+message AddWorkspaceMemberRequest {
+  string tenant_id = 1;
+  string workspace_id = 2;
+  string user_id = 3;
+  WorkspaceMemberRole role = 4;
+}
+
+message RemoveWorkspaceMemberRequest {
+  string tenant_id = 1;
+  string workspace_id = 2;
+  string user_id = 3;
+}
+
+message RemoveWorkspaceMemberResponse { bool removed = 1; }
+
+message SetComplianceProfileRequest {
+  string tenant_id = 1;
+  ComplianceProfile profile = 2;
+}
+
+message GetComplianceProfileRequest {
+  string tenant_id = 1;
+  string profile_id = 2;
+}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "stitch-exploratory-prompts-mobile",
+  "version": "1.0.0",
+  "target": "ai-companion-mobile",
+  "promptBundles": [
+    {
+      "id": "mobile.ops-glanceability",
+      "objective": "Explore mobile-first layouts for approvals, alerts, and incident response."
+    },
+    {
+      "id": "mobile.role-aware-entry",
+      "objective": "Explore role-specific briefing and quick-action patterns for operators, executives, and compliance reviewers."
+    }
+  ]
+}

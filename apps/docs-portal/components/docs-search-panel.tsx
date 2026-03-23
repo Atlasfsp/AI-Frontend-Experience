@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { EmptyState, cn } from '@bac/ui';
 

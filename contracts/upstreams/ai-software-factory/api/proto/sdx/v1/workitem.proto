@@ -1,0 +1,227 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+// ─────────────────────────────────────────────
+// WorkItem Service
+// ─────────────────────────────────────────────
+
+service IngestionService {
+  // Submit a new WorkItem for parsing and processing.
+  rpc SubmitWorkItem(SubmitWorkItemRequest) returns (SubmitWorkItemResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/work-items"
+      body: "*"
+    };
+  }
+
+  // Get a WorkItem by ID.
+  rpc GetWorkItem(GetWorkItemRequest) returns (WorkItem) {
+    option (google.api.http) = {
+      get: "/api/v1/work-items/{work_item_id}"
+    };
+  }
+
+  // List WorkItems for the tenant with filters.
+  rpc ListWorkItems(ListWorkItemsRequest) returns (ListWorkItemsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/work-items"
+    };
+  }
+
+  // Resolve an ambiguity detected during parsing.
+  rpc ResolveAmbiguity(ResolveAmbiguityRequest) returns (ResolveAmbiguityResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/work-items/{work_item_id}/ambiguities/{ambiguity_id}"
+      body: "*"
+    };
+  }
+
+  // Approve the manifest after parsing and ambiguity resolution.
+  rpc ApproveManifest(ApproveManifestRequest) returns (ApproveManifestResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/work-items/{work_item_id}/approve"
+      body: "*"
+    };
+  }
+
+  // Restart a FAILED WorkItem back to DRAFT.
+  rpc RestartWorkItem(RestartWorkItemRequest) returns (WorkItem) {
+    option (google.api.http) = {
+      post: "/api/v1/work-items/{work_item_id}/restart"
+    };
+  }
+
+  // Delete a WorkItem (soft delete; only DRAFT or FAILED).
+  rpc DeleteWorkItem(DeleteWorkItemRequest) returns (DeleteWorkItemResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/work-items/{work_item_id}"
+    };
+  }
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum WorkItemStatus {
+  WORK_ITEM_STATUS_UNSPECIFIED = 0;
+  WORK_ITEM_STATUS_DRAFT = 1;
+  WORK_ITEM_STATUS_PARSED = 2;
+  WORK_ITEM_STATUS_MANIFEST_REVIEW = 3;
+  WORK_ITEM_STATUS_APPROVED = 4;
+  WORK_ITEM_STATUS_MODELLING = 5;
+  WORK_ITEM_STATUS_COMPLETED = 6;
+  WORK_ITEM_STATUS_FAILED = 7;
+}
+
+enum InputSourceType {
+  INPUT_SOURCE_TYPE_UNSPECIFIED = 0;
+  INPUT_SOURCE_TYPE_PRD = 1;
+  INPUT_SOURCE_TYPE_USER_STORY = 2;
+  INPUT_SOURCE_TYPE_API_SPEC = 3;
+  INPUT_SOURCE_TYPE_CODEBASE = 4;
+  INPUT_SOURCE_TYPE_BUG_REPORT = 5;
+}
+
+enum Priority {
+  PRIORITY_UNSPECIFIED = 0;
+  PRIORITY_P0 = 1;
+  PRIORITY_P1 = 2;
+  PRIORITY_P2 = 3;
+}
+
+// ─────────────────────────────────────────────
+// Messages
+// ─────────────────────────────────────────────
+
+message WorkItem {
+  string id = 1;                                   // ULID
+  string tenant_id = 2;                            // ULID
+  WorkItemStatus status = 3;
+  InputSource source = 4;
+  WorkItemManifest manifest = 5;                   // Populated after parsing
+  repeated Requirement requirements = 6;
+  repeated Ambiguity ambiguities = 7;
+  repeated AgentAssignment assigned_agents = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message InputSource {
+  InputSourceType type = 1;
+  string raw_content = 2;   // Original text (≤ 5MB)
+  string parsed_content = 3; // Canonicalised content
+  ContentHash hash = 4;
+}
+
+message WorkItemManifest {
+  repeated LanguageCode languages = 1;
+  repeated ComplianceFramework compliance_frameworks = 2;
+  string target_environment = 3;  // DEV, STAGING, PROD
+  PerformanceBudget performance_budget = 4;
+}
+
+message PerformanceBudget {
+  uint32 p99_latency_ms = 1;    // Target p99 latency
+  uint32 memory_budget_mb = 2;  // Max memory growth per hour
+  uint32 target_rps = 3;        // Target requests per second
+}
+
+message Requirement {
+  string id = 1;
+  string description = 2;
+  Priority priority = 3;
+  repeated string acceptance_criteria = 4;
+  repeated string bdd_scenarios = 5;
+}
+
+message Ambiguity {
+  string id = 1;
+  string question = 2;
+  string resolution = 3;      // Empty if unresolved
+  string resolved_by = 4;     // User ID or agent ID
+  google.protobuf.Timestamp resolved_at = 5;
+}
+
+message AgentAssignment {
+  string agent_id = 1;
+  string role = 2;
+  google.protobuf.Timestamp assigned_at = 3;
+}
+
+// ─────────────────────────────────────────────
+// Request / Response Messages
+// ─────────────────────────────────────────────
+
+message SubmitWorkItemRequest {
+  InputSourceType source_type = 1;
+  string raw_content = 2;                                  // PRD text, user story, etc. (≤ 5MB)
+  repeated LanguageCode preferred_languages = 3;           // Optional; ArchitectAgent may override
+  repeated ComplianceFramework compliance_frameworks = 4;  // Required
+  string target_environment = 5;                           // Optional; default PROD
+}
+
+message SubmitWorkItemResponse {
+  string work_item_id = 1;
+  WorkItemStatus status = 2;
+  int32 requirement_count = 3;
+  int32 ambiguity_count = 4;
+}
+
+message GetWorkItemRequest {
+  string work_item_id = 1;
+}
+
+message ListWorkItemsRequest {
+  WorkItemStatus status_filter = 1;         // Optional; 0 = all
+  InputSourceType source_type_filter = 2;   // Optional; 0 = all
+  DateRange date_range = 3;                 // Optional
+  string search = 4;                        // Full-text search on requirements
+  PaginationRequest pagination = 5;
+}
+
+message ListWorkItemsResponse {
+  repeated WorkItem work_items = 1;
+  PaginationResponse pagination = 2;
+}
+
+message ResolveAmbiguityRequest {
+  string work_item_id = 1;
+  string ambiguity_id = 2;
+  string resolution = 3;
+}
+
+message ResolveAmbiguityResponse {
+  Ambiguity ambiguity = 1;
+  int32 remaining_ambiguities = 2;
+  bool all_resolved = 3;
+}
+
+message ApproveManifestRequest {
+  string work_item_id = 1;
+  WorkItemManifest manifest_override = 2; // Optional; override parsed manifest
+}
+
+message ApproveManifestResponse {
+  WorkItem work_item = 1;
+  string build_id = 2; // Build is automatically initiated
+}
+
+message RestartWorkItemRequest {
+  string work_item_id = 1;
+}
+
+message DeleteWorkItemRequest {
+  string work_item_id = 1;
+}
+
+message DeleteWorkItemResponse {
+  bool deleted = 1;
+}

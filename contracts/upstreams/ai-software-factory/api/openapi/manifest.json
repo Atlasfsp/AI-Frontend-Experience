@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "ai-software-factory",
+  "artifactSet": "software-factory-openapi",
+  "artifacts": [
+    {
+      "artifactId": "software-factory-openapi",
+      "version": "1.0.0",
+      "format": "openapi-3.1",
+      "path": "api/openapi/openapi.json",
+      "sourcePath": "api/openapi/openapi.yaml",
+      "releaseTag": "contracts/software-factory-openapi/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience",
+        "ai-companion-mobile"
+      ]
+    },
+    {
+      "artifactId": "software-factory-swagger",
+      "version": "1.0.0",
+      "format": "swagger-json",
+      "path": "api/openapi/sdx-gateway-v1.swagger.json",
+      "releaseTag": "contracts/software-factory-swagger/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience"
+      ]
+    }
+  ]
+}

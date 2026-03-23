@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "stitch-exploratory-prompts-web",
+  "version": "1.0.0",
+  "target": "ai-frontend-experience",
+  "promptBundles": [
+    {
+      "id": "web.shell-density",
+      "objective": "Explore premium enterprise shells that balance density and clarity."
+    },
+    {
+      "id": "web.explorer-workflows",
+      "objective": "Explore contract-heavy interaction patterns for Swagger, GraphQL, and compliance surfaces."
+    }
+  ]
+}

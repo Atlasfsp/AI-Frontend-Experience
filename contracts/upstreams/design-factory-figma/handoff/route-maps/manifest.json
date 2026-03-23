@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "design-factory-figma",
+  "artifactSet": "figma-route-maps",
+  "artifacts": [
+    {
+      "artifactId": "figma-web-route-map",
+      "version": "1.0.0",
+      "path": "handoff/route-maps/frontend-web.json",
+      "releaseTag": "handoff/figma-web-route-map/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience"
+      ]
+    },
+    {
+      "artifactId": "figma-mobile-route-map",
+      "version": "1.0.0",
+      "path": "handoff/route-maps/operator-mobile.json",
+      "releaseTag": "handoff/figma-mobile-route-map/v1.0.0",
+      "consumers": [
+        "ai-companion-mobile"
+      ]
+    }
+  ]
+}

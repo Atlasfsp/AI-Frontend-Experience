@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "ai-platform-automation",
+  "artifactSet": "platform-automation-openapi",
+  "artifacts": [
+    {
+      "artifactId": "platform-automation-openapi",
+      "version": "1.0.0",
+      "format": "openapi-3.1",
+      "path": "api/openapi/platform-automation-v1.openapi.json",
+      "sourcePath": "api/openapi/platform-automation-v1.openapi.yaml",
+      "releaseTag": "contracts/platform-automation-openapi/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience",
+        "ai-companion-mobile"
+      ]
+    }
+  ]
+}

@@ -8,10 +8,21 @@ export interface SentryConfig {
 }
 
 export function initSentry(config: SentryConfig): void {
-  Sentry.init({
+  const initOptions: {
+    dsn: string;
+    environment: string;
+    release?: string;
+    tracesSampleRate: number;
+    replaysSessionSampleRate: number;
+    replaysOnErrorSampleRate: number;
+    initialScope: {
+      tags: {
+        app: string;
+      };
+    };
+  } = {
     dsn: config.dsn,
     environment: config.environment,
-    release: config.release,
     tracesSampleRate: config.environment === 'production' ? 0.2 : 1.0,
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: config.environment === 'production' ? 1.0 : 0,
@@ -20,16 +31,27 @@ export function initSentry(config: SentryConfig): void {
         app: config.app,
       },
     },
-  });
+  };
+
+  if (config.release) {
+    initOptions.release = config.release;
+  }
+
+  Sentry.init(initOptions);
 }
 
 export function captureException(
   error: unknown,
   context?: Record<string, unknown>,
 ): void {
-  Sentry.captureException(error, {
-    extra: context,
-  });
+  if (context) {
+    Sentry.captureException(error, {
+      extra: context,
+    });
+    return;
+  }
+
+  Sentry.captureException(error);
 }
 
 export function captureMessage(
@@ -56,12 +78,17 @@ export function addBreadcrumb(
   message: string,
   data?: Record<string, unknown>,
 ): void {
-  Sentry.addBreadcrumb({
+  const breadcrumb: Sentry.Breadcrumb = {
     category,
     message,
-    data,
     level: 'info',
-  });
+  };
+
+  if (data) {
+    breadcrumb.data = data;
+  }
+
+  Sentry.addBreadcrumb(breadcrumb);
 }
 
 export async function withSentrySpan<T>(

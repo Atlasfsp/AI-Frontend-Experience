@@ -1,0 +1,298 @@
+syntax = "proto3";
+
+package neuroforge.sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/api/proto/neuroforge/sdx/v1;sdxv1";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+service SDXService {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (LoginResponse);
+  rpc HealthLive(google.protobuf.Empty) returns (HealthResponse);
+  rpc HealthReady(google.protobuf.Empty) returns (ReadinessResponse);
+  rpc CreateWorkflow(WorkflowRequest) returns (WorkflowResponse);
+  rpc GetWorkflow(GetWorkflowRequest) returns (WorkflowResponse);
+  rpc ListWorkflows(ListWorkflowsRequest) returns (ListWorkflowsResponse);
+  rpc CancelWorkflow(GetWorkflowRequest) returns (google.protobuf.Empty);
+  rpc GetWorkflowArtifacts(GetWorkflowRequest) returns (WorkflowArtifactsResponse);
+  rpc GeneratePRD(PRDRequest) returns (PRDResponse);
+  rpc GetPRD(GetPRDRequest) returns (PRDResponse);
+  rpc GenerateWireframes(DesignRequest) returns (DesignResponse);
+  rpc ExtractTokens(ExtractTokensRequest) returns (ExtractTokensResponse);
+  rpc GenerateCode(CodeRequest) returns (CodeResponse);
+  rpc GenerateTests(GenerateTestsRequest) returns (GenerateTestsResponse);
+  rpc SecurityScan(SecurityScanRequest) returns (SecurityScanQueuedResponse);
+  rpc GetSecurityFindings(GetSecurityFindingsRequest) returns (SecurityScanResponse);
+  rpc PerformanceTest(PerformanceTestRequest) returns (PerformanceStartResponse);
+  rpc GetPerformanceResults(GetPerformanceResultsRequest) returns (PerformanceTestResponse);
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int32 expires_in = 3;
+  string token_type = 4;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message HealthResponse {
+  string status = 1;
+}
+
+message ReadinessResponse {
+  string status = 1;
+  map<string, string> checks = 2;
+}
+
+message Pagination {
+  int32 page = 1;
+  int32 size = 2;
+  int32 total = 3;
+  int32 pages = 4;
+}
+
+message WorkflowRequest {
+  string prompt = 1;
+  string domain = 2;
+  string git_strategy = 3;
+  repeated string target_languages = 4;
+  repeated string regions = 5;
+  google.protobuf.Struct metadata = 6;
+}
+
+message WorkflowLinks {
+  string self = 1;
+  string artifacts = 2;
+  string cancel = 3;
+}
+
+message WorkflowResponse {
+  string workflow_id = 1;
+  string status = 2;
+  string current_stage = 3;
+  double progress = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+  google.protobuf.Timestamp estimated_completion = 8;
+  map<string, string> artifacts = 9;
+  repeated string errors = 10;
+  WorkflowLinks links = 11;
+}
+
+message GetWorkflowRequest {
+  string workflow_id = 1;
+}
+
+message ListWorkflowsRequest {
+  int32 page = 1;
+  int32 size = 2;
+  string status = 3;
+}
+
+message ListWorkflowsResponse {
+  repeated WorkflowResponse workflows = 1;
+  Pagination pagination = 2;
+}
+
+message ArtifactDescriptor {
+  string url = 1;
+  string type = 2;
+  int32 size = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message WorkflowArtifactsResponse {
+  map<string, ArtifactDescriptor> artifacts = 1;
+}
+
+message PRDRequest {
+  string prompt = 1;
+  string domain = 2;
+  repeated string reference_prds = 3;
+}
+
+message SuccessMetric {
+  string name = 1;
+  string target = 2;
+  string measurement = 3;
+}
+
+message PRDResponse {
+  string prd_id = 1;
+  string markdown = 2;
+  google.protobuf.Struct json = 3;
+  repeated SuccessMetric success_metrics = 4;
+  repeated string user_stories = 5;
+  repeated string technical_requirements = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetPRDRequest {
+  string prd_id = 1;
+}
+
+message DesignRequest {
+  string prd_id = 1;
+  string style = 2;
+  string color_scheme = 3;
+}
+
+message DesignAsset {
+  string screen_name = 1;
+  string url = 2;
+}
+
+message DesignTokens {
+  map<string, string> colors = 1;
+  map<string, string> typography = 2;
+  map<string, string> spacing = 3;
+}
+
+message DesignResponse {
+  string design_id = 1;
+  repeated DesignAsset wireframes = 2;
+  repeated DesignAsset hifi_designs = 3;
+  DesignTokens tokens = 4;
+}
+
+message ExtractTokensRequest {
+  string design_id = 1;
+}
+
+message ExtractTokensResponse {
+  google.protobuf.Struct tokens = 1;
+}
+
+message CodeSpecification {
+  string description = 1;
+  string interface = 2;
+  repeated string requirements = 3;
+}
+
+message CodeRequest {
+  CodeSpecification specification = 1;
+  string language = 2;
+  string framework = 3;
+}
+
+message CodeValidation {
+  bool valid = 1;
+  repeated string errors = 2;
+}
+
+message CodeResponse {
+  string code_id = 1;
+  string code = 2;
+  string language = 3;
+  string file_path = 4;
+  string tests = 5;
+  CodeValidation validation = 6;
+}
+
+message GenerateTestsRequest {
+  string code = 1;
+  string language = 2;
+}
+
+message GenerateTestsResponse {
+  string tests = 1;
+  double coverage = 2;
+}
+
+message SecurityScanRequest {
+  string target = 1;
+  repeated string scan_types = 2;
+}
+
+message GetSecurityFindingsRequest {
+  string scan_id = 1;
+}
+
+message SecurityFindingLocation {
+  string file = 1;
+  int32 line = 2;
+  int32 column = 3;
+}
+
+message SecurityFinding {
+  string finding_id = 1;
+  string severity = 2;
+  string category = 3;
+  string description = 4;
+  SecurityFindingLocation location = 5;
+  string remediation = 6;
+  repeated string cwe = 7;
+  double cvss_score = 8;
+}
+
+message SecuritySummary {
+  int32 critical = 1;
+  int32 high = 2;
+  int32 medium = 3;
+  int32 low = 4;
+  int32 info = 5;
+}
+
+message SecurityScanQueuedResponse {
+  string scan_id = 1;
+  string status = 2;
+}
+
+message SecurityScanResponse {
+  string scan_id = 1;
+  string status = 2;
+  repeated SecurityFinding findings = 3;
+  SecuritySummary summary = 4;
+  string sbom = 5;
+  string signature = 6;
+}
+
+message PerformanceTestRequest {
+  string endpoint = 1;
+  string duration = 2;
+  int32 virtual_users = 3;
+  repeated string regions = 4;
+}
+
+message PerformanceStartResponse {
+  string test_id = 1;
+}
+
+message GetPerformanceResultsRequest {
+  string test_id = 1;
+}
+
+message PerformanceMetrics {
+  double requests_per_second = 1;
+  double latency_p50 = 2;
+  double latency_p95 = 3;
+  double latency_p99 = 4;
+  double error_rate = 5;
+}
+
+message ThresholdResult {
+  string metric = 1;
+  double threshold = 2;
+  double actual = 3;
+  bool passed = 4;
+}
+
+message PerformanceTestResponse {
+  string test_id = 1;
+  string status = 2;
+  PerformanceMetrics metrics = 3;
+  bool passed = 4;
+  repeated ThresholdResult thresholds = 5;
+}

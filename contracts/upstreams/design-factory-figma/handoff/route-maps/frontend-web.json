@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "figma-web-route-map",
+  "version": "1.0.0",
+  "targets": [
+    {
+      "app": "software-factory-web",
+      "platform": "web",
+      "routes": [
+        { "routeId": "software-factory.dashboard", "screenId": "software-factory-dashboard", "path": "/software-factory/dashboard" },
+        { "routeId": "software-factory.workspaces", "screenId": "software-factory-workspaces", "path": "/software-factory/workspaces" },
+        { "routeId": "software-factory.prd-intake", "screenId": "software-factory-prd-intake", "path": "/software-factory/prd-intake" },
+        { "routeId": "software-factory.api-contracts", "screenId": "software-factory-api-contracts", "path": "/software-factory/api-contracts" },
+        { "routeId": "software-factory.swagger", "screenId": "software-factory-swagger-explorer", "path": "/software-factory/swagger" },
+        { "routeId": "software-factory.builds", "screenId": "software-factory-builds", "path": "/software-factory/builds" },
+        { "routeId": "software-factory.release-manager", "screenId": "software-factory-release-manager", "path": "/software-factory/release-manager" }
+      ]
+    },
+    {
+      "app": "platform-automation-web",
+      "platform": "web",
+      "routes": [
+        { "routeId": "platform.dashboard", "screenId": "platform-dashboard", "path": "/platform/dashboard" },
+        { "routeId": "platform.regions", "screenId": "platform-regions", "path": "/platform/regions" },
+        { "routeId": "platform.clusters", "screenId": "platform-clusters", "path": "/platform/clusters" },
+        { "routeId": "platform.workspace-factory", "screenId": "platform-workspace-factory", "path": "/platform/workspace-factory" },
+        { "routeId": "platform.gitops", "screenId": "platform-gitops", "path": "/platform/gitops" },
+        { "routeId": "platform.observability", "screenId": "platform-observability", "path": "/platform/observability" },
+        { "routeId": "platform.policy", "screenId": "platform-policy", "path": "/platform/policy" },
+        { "routeId": "platform.graphql-explorer", "screenId": "platform-graphql-explorer", "path": "/platform/graphql-explorer" }
+      ]
+    },
+    {
+      "app": "docs-portal",
+      "platform": "web",
+      "routes": [
+        { "routeId": "docs.home", "screenId": "docs-home", "path": "/" },
+        { "routeId": "docs.getting-started", "screenId": "docs-getting-started", "path": "/getting-started" },
+        { "routeId": "docs.architecture", "screenId": "docs-architecture", "path": "/architecture" },
+        { "routeId": "docs.api-reference", "screenId": "docs-api-reference", "path": "/api-reference" },
+        { "routeId": "docs.runbooks", "screenId": "docs-runbooks", "path": "/runbooks" },
+        { "routeId": "docs.search", "screenId": "docs-search", "path": "/search" }
+      ]
+    }
+  ]
+}

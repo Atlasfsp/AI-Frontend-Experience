@@ -30,13 +30,14 @@ export async function POST() {
   }
 
   const env = loadAppEnv();
+  const refreshConfig = {
+    tokenUrl: env.authTokenUrl,
+    clientId: env.authClientId,
+    ...(env.authClientSecret ? { clientSecret: env.authClientSecret } : {}),
+  };
 
   try {
-    const newTokens = await refreshTokens(session.refreshToken, {
-      tokenUrl: env.authTokenUrl,
-      clientId: env.authClientId,
-      clientSecret: env.authClientSecret,
-    });
+    const newTokens = await refreshTokens(session.refreshToken, refreshConfig);
 
     const updatedSession = createRefreshResponse(session, newTokens);
     const response = NextResponse.json({ ok: true, expiresAt: updatedSession.expiresAt });

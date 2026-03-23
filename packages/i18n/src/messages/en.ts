@@ -87,4 +87,8 @@ export const en = {
   },
 } as const;
 
-export type TranslationKeys = typeof en;
+export type TranslationKeys = {
+  [Section in keyof typeof en]: {
+    [Key in keyof (typeof en)[Section]]: string;
+  };
+};

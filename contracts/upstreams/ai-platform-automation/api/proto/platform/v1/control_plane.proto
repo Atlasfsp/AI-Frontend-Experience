@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package platform.v1;
+
+option go_package = "github.com/stratogroup/bac-platform/gen/go/platform/v1;platformv1";
+
+message PageRequest {
+  int32 page_size = 1;
+  string cursor = 2;
+}
+
+message PageInfo {
+  string next_cursor = 1;
+  int32 page_size = 2;
+}
+
+message RegionSummary {
+  string region_id = 1;
+  string name = 2;
+  string status = 3;
+  int32 cluster_count = 4;
+  int32 workspace_count = 5;
+}
+
+message ClusterSummary {
+  string cluster_id = 1;
+  string region_id = 2;
+  string status = 3;
+  int32 node_count = 4;
+  int32 workspace_count = 5;
+}
+
+message WorkspaceSummary {
+  string workspace_id = 1;
+  string tenant_id = 2;
+  string region_id = 3;
+  string status = 4;
+  int32 promise_count = 5;
+}
+
+message PromiseSummary {
+  string promise_id = 1;
+  string name = 2;
+  string category = 3;
+  string version = 4;
+  string status = 5;
+}
+
+message IncidentSummary {
+  string incident_id = 1;
+  string severity = 2;
+  string status = 3;
+  string summary = 4;
+  string workspace_id = 5;
+}
+
+message ControlPlaneSummary {
+  int32 regions = 1;
+  int32 clusters = 2;
+  int32 workspaces = 3;
+  int32 active_incidents = 4;
+  string policy_posture = 5;
+}
+
+message PolicySummary {
+  string posture = 1;
+  int32 open_findings = 2;
+  string drift_score = 3;
+}
+
+message QuotaSummary {
+  string budget_burn = 1;
+  string quota_headroom = 2;
+  int32 workspace_count = 3;
+}
+
+message ListRegionsRequest {
+  PageRequest page = 1;
+}
+
+message ListRegionsResponse {
+  repeated RegionSummary items = 1;
+  PageInfo page_info = 2;
+}
+
+message ListClustersRequest {
+  PageRequest page = 1;
+  string region_id = 2;
+}
+
+message ListClustersResponse {
+  repeated ClusterSummary items = 1;
+  PageInfo page_info = 2;
+}
+
+message ListWorkspacesRequest {
+  PageRequest page = 1;
+  string tenant_id = 2;
+}
+
+message ListWorkspacesResponse {
+  repeated WorkspaceSummary items = 1;
+  PageInfo page_info = 2;
+}
+
+message ListPromisesRequest {}
+
+message ListPromisesResponse {
+  repeated PromiseSummary items = 1;
+}
+
+message ListIncidentsRequest {}
+
+message ListIncidentsResponse {
+  repeated IncidentSummary items = 1;
+}
+
+message GetControlPlaneSummaryRequest {}
+
+message GetPolicySummaryRequest {}
+
+message GetQuotaSummaryRequest {}
+
+service PlatformControlPlaneService {
+  rpc GetControlPlaneSummary(GetControlPlaneSummaryRequest) returns (ControlPlaneSummary);
+  rpc ListRegions(ListRegionsRequest) returns (ListRegionsResponse);
+  rpc ListClusters(ListClustersRequest) returns (ListClustersResponse);
+  rpc ListWorkspaces(ListWorkspacesRequest) returns (ListWorkspacesResponse);
+  rpc ListPromises(ListPromisesRequest) returns (ListPromisesResponse);
+  rpc ListIncidents(ListIncidentsRequest) returns (ListIncidentsResponse);
+  rpc GetPolicySummary(GetPolicySummaryRequest) returns (PolicySummary);
+  rpc GetQuotaSummary(GetQuotaSummaryRequest) returns (QuotaSummary);
+}

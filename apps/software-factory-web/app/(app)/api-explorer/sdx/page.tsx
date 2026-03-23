@@ -1,3 +1,4 @@
+import React from 'react';
 import { DataTable, DocsCodePanel, PageHeader } from '@bac/ui';
 
 const contractRows = [

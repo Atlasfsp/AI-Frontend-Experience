@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "figma-component-specs-web",
+  "version": "1.0.0",
+  "target": "web",
+  "components": [
+    { "componentId": "bac.app-shell", "implementationName": "AppShell", "fileHint": "packages/ui/src/components/app-shell.tsx", "tokenRefs": ["components.appShell"] },
+    { "componentId": "bac.command-palette", "implementationName": "CommandPalette", "fileHint": "packages/ui/src/components/command-palette.tsx", "tokenRefs": [] },
+    { "componentId": "bac.workspace-switcher", "implementationName": "WorkspaceSwitcher", "fileHint": "packages/ui/src/components/workspace-switcher.tsx", "tokenRefs": [] },
+    { "componentId": "bac.data-table", "implementationName": "DataTable", "fileHint": "packages/ui/src/components/data-table.tsx", "tokenRefs": ["components.table"] },
+    { "componentId": "bac.modal", "implementationName": "Modal", "fileHint": "packages/ui/src/components/modal.tsx", "tokenRefs": [] },
+    { "componentId": "bac.drawer", "implementationName": "Drawer", "fileHint": "packages/ui/src/components/drawer.tsx", "tokenRefs": [] },
+    { "componentId": "bac.docs-code-panel", "implementationName": "DocsCodePanel", "fileHint": "packages/ui/src/components/docs-code-panel.tsx", "tokenRefs": [] },
+    { "componentId": "bac.terminal-panel", "implementationName": "TerminalPanel", "fileHint": "packages/ui/src/components/terminal-panel.tsx", "tokenRefs": [] },
+    { "componentId": "bac.mini-bar-chart", "implementationName": "MiniBarChart", "fileHint": "packages/ui/src/components/mini-bar-chart.tsx", "tokenRefs": [] }
+  ]
+}

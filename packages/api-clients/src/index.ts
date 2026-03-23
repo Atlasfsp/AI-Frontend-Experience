@@ -12,6 +12,7 @@ export type {
 export type { RequestContext } from './http';
 export { requestJson } from './http';
 export { BacQueryProvider, createQueryClient } from './hooks';
+export { generatedContractBindings, platformAutomationPaths, softwareFactoryPaths } from './generated/contract-registry';
 export {
   useAgents,
   useBuild,

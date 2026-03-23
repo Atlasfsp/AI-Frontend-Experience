@@ -1,0 +1,157 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+service LLMService {
+  // Execute an LLM completion with automatic routing and fallback.
+  rpc Complete(CompleteRequest) returns (CompleteResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/llm/completions"
+      body: "*"
+    };
+  }
+
+  // Generate embeddings.
+  rpc Embed(EmbedRequest) returns (EmbedResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/llm/embeddings"
+      body: "*"
+    };
+  }
+
+  // Get model availability and circuit breaker status.
+  rpc GetModelStatus(GetModelStatusRequest) returns (GetModelStatusResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/llm/status"
+    };
+  }
+
+  // Get cost report per tenant/build/model.
+  rpc GetCostReport(GetCostReportRequest) returns (CostReport) {
+    option (google.api.http) = {
+      get: "/api/v1/llm/costs"
+    };
+  }
+
+  // List available models and their routing config.
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/llm/models"
+    };
+  }
+}
+
+enum TaskClass {
+  TASK_CLASS_UNSPECIFIED = 0;
+  TASK_CLASS_ARCHITECTURE = 1;
+  TASK_CLASS_CODE_GEN_COMPLEX = 2;
+  TASK_CLASS_CODE_GEN_BOILERPLATE = 3;
+  TASK_CLASS_SECURITY_COMPLIANCE = 4;
+  TASK_CLASS_TEST_GENERATION = 5;
+  TASK_CLASS_DOCUMENTATION = 6;
+  TASK_CLASS_EMBEDDING = 7;
+}
+
+enum CircuitBreakerState {
+  CIRCUIT_BREAKER_STATE_UNSPECIFIED = 0;
+  CIRCUIT_BREAKER_STATE_CLOSED = 1;
+  CIRCUIT_BREAKER_STATE_OPEN = 2;
+  CIRCUIT_BREAKER_STATE_HALF_OPEN = 3;
+}
+
+message CompleteRequest {
+  TaskClass task_class = 1;
+  string system_prompt = 2;
+  string user_prompt = 3;
+  uint32 max_tokens = 4;
+  double temperature = 5;
+  string agent_id = 6;
+  string build_id = 7;
+  google.protobuf.Duration timeout = 8;
+}
+
+message CompleteResponse {
+  string content = 1;
+  ModelID model_used = 2;
+  bool fallback_used = 3;
+  TokenUsage token_usage = 4;
+  uint64 latency_ms = 5;
+  string finish_reason = 6; // stop, length, content_filter
+}
+
+message EmbedRequest {
+  repeated string texts = 1;
+  ModelID model = 2;  // Optional; defaults to TEXT_EMBEDDING_3_LARGE
+}
+
+message EmbedResponse {
+  repeated Embedding embeddings = 1;
+  TokenUsage token_usage = 2;
+}
+
+message Embedding {
+  repeated float values = 1;
+  uint32 dimensions = 2;
+}
+
+message GetModelStatusRequest {}
+
+message GetModelStatusResponse {
+  repeated ModelStatus models = 1;
+}
+
+message ModelStatus {
+  ModelID model = 1;
+  bool available = 2;
+  CircuitBreakerState circuit_breaker = 3;
+  uint32 avg_latency_ms = 4;
+  double error_rate_pct = 5;
+  bool is_on_prem = 6;
+}
+
+message GetCostReportRequest {
+  string tenant_id = 1;  // Optional; admin can omit for global
+  string build_id = 2;   // Optional; filter by build
+  DateRange period = 3;
+}
+
+message CostReport {
+  repeated ModelCostBreakdown by_model = 1;
+  uint64 total_cost_microdollars = 2;
+  uint64 total_input_tokens = 3;
+  uint64 total_output_tokens = 4;
+  double on_prem_pct = 5;
+}
+
+message ModelCostBreakdown {
+  ModelID model = 1;
+  uint64 input_tokens = 2;
+  uint64 output_tokens = 3;
+  uint64 cost_microdollars = 4;
+  uint64 request_count = 5;
+  double avg_latency_ms = 6;
+}
+
+message ListModelsRequest {}
+
+message ListModelsResponse {
+  repeated ModelConfig models = 1;
+}
+
+message ModelConfig {
+  ModelID id = 1;
+  string display_name = 2;
+  string provider = 3;     // anthropic, openai, google, on_prem
+  bool is_on_prem = 4;
+  repeated TaskClass supported_tasks = 5;
+  uint32 max_context_tokens = 6;
+  uint64 cost_per_million_input = 7;   // microdollars
+  uint64 cost_per_million_output = 8;
+}

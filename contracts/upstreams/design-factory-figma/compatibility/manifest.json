@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "repo": "design-factory-figma",
+  "repoVersion": "0.1.0",
+  "handoffArtifacts": [
+    { "artifactId": "figma-web-route-map", "version": "1.0.0" },
+    { "artifactId": "figma-mobile-route-map", "version": "1.0.0" },
+    { "artifactId": "figma-component-specs-web", "version": "1.0.0" },
+    { "artifactId": "figma-component-specs-mobile", "version": "1.0.0" },
+    { "artifactId": "figma-design-tokens-enterprise", "version": "1.0.0" },
+    { "artifactId": "figma-design-tokens-consumer", "version": "1.0.0" }
+  ],
+  "compatibleConsumers": [
+    {
+      "repo": "ai-frontend-experience",
+      "supportedRange": "^0.1.0",
+      "requires": [
+        "figma-web-route-map@^1.0.0",
+        "figma-component-specs-web@^1.0.0",
+        "figma-design-tokens-enterprise@^1.0.0",
+        "figma-design-tokens-consumer@^1.0.0"
+      ]
+    },
+    {
+      "repo": "ai-companion-mobile",
+      "supportedRange": "^0.1.0",
+      "requires": [
+        "figma-mobile-route-map@^1.0.0",
+        "figma-component-specs-mobile@^1.0.0",
+        "figma-design-tokens-enterprise@^1.0.0",
+        "figma-design-tokens-consumer@^1.0.0"
+      ]
+    }
+  ]
+}

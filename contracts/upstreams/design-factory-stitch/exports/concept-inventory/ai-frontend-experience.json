@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "stitch-concept-inventory-web",
+  "version": "1.0.0",
+  "target": "ai-frontend-experience",
+  "concepts": [
+    {
+      "id": "web.enterprise-shell",
+      "title": "Enterprise shell hierarchy",
+      "summary": "Left-nav plus command palette operating model for authenticated BAC web surfaces."
+    },
+    {
+      "id": "web.contract-first-explorer",
+      "title": "Contract-first API exploration",
+      "summary": "Swagger and GraphQL explorer surfaces are treated as product experiences, not tooling leftovers."
+    },
+    {
+      "id": "web.control-plane-density",
+      "title": "High-density control-plane dashboards",
+      "summary": "Operator pages emphasize summary metrics, drilldown tables, terminal evidence, and incident posture."
+    }
+  ]
+}

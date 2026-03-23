@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "design-factory-stitch",
+  "artifactSet": "stitch-exploratory-prompts",
+  "artifacts": [
+    {
+      "artifactId": "stitch-exploratory-prompts-web",
+      "version": "1.0.0",
+      "path": "handoffs/exploratory-prompts/ai-frontend-experience.json",
+      "releaseTag": "handoff/stitch-exploratory-prompts-web/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience"
+      ]
+    },
+    {
+      "artifactId": "stitch-exploratory-prompts-mobile",
+      "version": "1.0.0",
+      "path": "handoffs/exploratory-prompts/ai-companion-mobile.json",
+      "releaseTag": "handoff/stitch-exploratory-prompts-mobile/v1.0.0",
+      "consumers": [
+        "ai-companion-mobile"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "figma-mobile-route-map",
+  "version": "1.0.0",
+  "targets": [
+    {
+      "app": "operator-mobile",
+      "platform": "mobile",
+      "routes": [
+        { "routeId": "mobile.sign-in", "screenId": "mobile-sign-in", "path": "/(auth)/login" },
+        { "routeId": "mobile.session-confirmation", "screenId": "mobile-session-confirmation", "path": "/(auth)/session-confirmation" },
+        { "routeId": "mobile.home", "screenId": "mobile-home", "path": "/(tabs)" },
+        { "routeId": "mobile.alerts", "screenId": "mobile-alerts", "path": "/(tabs)/alerts" },
+        { "routeId": "mobile.alert-detail", "screenId": "mobile-alert-detail", "path": "/alerts/[alertId]" },
+        { "routeId": "mobile.approvals", "screenId": "mobile-approvals", "path": "/(tabs)/approvals" },
+        { "routeId": "mobile.approval-detail", "screenId": "mobile-approval-detail", "path": "/approvals/[approvalId]" },
+        { "routeId": "mobile.incidents", "screenId": "mobile-incidents", "path": "/incidents" },
+        { "routeId": "mobile.incident-detail", "screenId": "mobile-incident-detail", "path": "/incidents/[incidentId]" },
+        { "routeId": "mobile.workspaces", "screenId": "mobile-workspaces", "path": "/workspaces" },
+        { "routeId": "mobile.workspace-detail", "screenId": "mobile-workspace-detail", "path": "/workspaces/[workspaceId]" },
+        { "routeId": "mobile.software-factory.summary", "screenId": "mobile-software-project-summary", "path": "/software-factory/project-summary" },
+        { "routeId": "mobile.software-factory.pipeline", "screenId": "mobile-pipeline-compliance", "path": "/software-factory/pipeline-compliance" },
+        { "routeId": "mobile.platform.summary", "screenId": "mobile-platform-summary", "path": "/platform" },
+        { "routeId": "mobile.platform.observability", "screenId": "mobile-observability-snapshot", "path": "/platform/observability" },
+        { "routeId": "mobile.platform.policy", "screenId": "mobile-policy-snapshot", "path": "/platform/policy" },
+        { "routeId": "mobile.notifications", "screenId": "mobile-notifications", "path": "/(tabs)/notifications" },
+        { "routeId": "mobile.settings", "screenId": "mobile-settings", "path": "/(tabs)/settings" }
+      ]
+    }
+  ]
+}

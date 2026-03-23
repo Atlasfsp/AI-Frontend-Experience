@@ -1,0 +1,42 @@
+name: Cross Repo Integration
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - name: Sync upstream contracts from GitHub Releases
+        env:
+          BAC_UPSTREAM_SOURCE_MODE: github-release
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm sync:contracts
+      - run: pnpm contracts:generate
+      - run: git diff --exit-code packages/api-clients/src/generated/contract-registry.ts packages/api-clients/contracts/generated-client.manifest.json
+      - run: pnpm check
+      - run: pnpm contracts:validate
+      - run: pnpm design:validate
+      - run: pnpm docs:validate
+      - run: pnpm release:validate
+      - run: pnpm integration:smoke
+      - run: pnpm compatibility:report > compatibility-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-frontend-experience-compatibility-report
+          path: compatibility-report.json

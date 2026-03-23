@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "repo": "ai-frontend-experience",
+  "repoVersion": "0.1.0",
+  "compatibleUpstreams": [
+    { "repo": "ai-software-factory", "artifactId": "software-factory-openapi", "supportedRange": "^1.0.0" },
+    { "repo": "ai-software-factory", "artifactId": "software-factory-proto", "supportedRange": "^1.0.0" },
+    { "repo": "ai-platform-automation", "artifactId": "platform-automation-openapi", "supportedRange": "^1.0.0" },
+    { "repo": "ai-platform-automation", "artifactId": "platform-automation-proto", "supportedRange": "^1.0.0" },
+    { "repo": "design-factory-figma", "artifactId": "figma-web-route-map", "supportedRange": "^1.0.0" },
+    { "repo": "design-factory-figma", "artifactId": "figma-component-specs-web", "supportedRange": "^1.0.0" },
+    { "repo": "design-factory-figma", "artifactId": "figma-design-tokens-enterprise", "supportedRange": "^1.0.0" },
+    { "repo": "design-factory-figma", "artifactId": "figma-design-tokens-consumer", "supportedRange": "^1.0.0" },
+    { "repo": "design-factory-stitch", "artifactId": "stitch-concept-inventory-web", "supportedRange": "^1.0.0" },
+    { "repo": "design-factory-stitch", "artifactId": "stitch-exploratory-prompts-web", "supportedRange": "^1.0.0" }
+  ]
+}

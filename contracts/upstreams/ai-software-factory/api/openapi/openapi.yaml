@@ -1,0 +1,1632 @@
+openapi: 3.1.0
+info:
+  title: AAISE v6 API
+  version: 6.0.0
+  description: '**Autonomous AI Software Engineering Platform API**
+
+
+    AAISE v6 provides a complete API for automating software development from
+
+    natural language prompts to production deployments.
+
+
+    ## Features
+
+    - Natural language to PRD generation
+
+    - Automated UI/UX design
+
+    - Multi-language code generation
+
+    - Comprehensive testing
+
+    - Security scanning
+
+    - Performance optimization
+
+    - GitOps deployment
+
+
+    ## Authentication
+
+    All API requests require a valid JWT token in the Authorization header:
+
+    ```
+
+    Authorization: Bearer <your-jwt-token>
+
+    ```
+
+
+    ## Rate Limiting
+
+    - 100 requests per minute per user
+
+    - 1000 requests per hour per organization
+
+
+    ## Regions
+
+    - Lagos (af-south-1)
+
+    - London (eu-west-2)
+
+    - Ashburn (us-east-1)
+
+    '
+  contact:
+    name: AAISE Platform Team
+    email: support@aaise.io
+    url: https://docs.aaise.io
+  license:
+    name: Proprietary
+    url: https://aaise.io/license
+servers:
+- url: https://api.aaise.io/v1
+  description: Production server
+- url: https://staging-api.aaise.io/v1
+  description: Staging server
+- url: http://localhost:8000/v1
+  description: Local development server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /auth/login endpoint
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for service-to-service authentication
+  schemas:
+    Error:
+      type: object
+      required:
+      - code
+      - message
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Invalid input parameters
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              error:
+                type: string
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          default: 1
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        total:
+          type: integer
+        pages:
+          type: integer
+    WorkflowStage:
+      type: string
+      enum:
+      - init
+      - prd
+      - design
+      - a11y
+      - architecture
+      - plan
+      - code
+      - test
+      - security
+      - performance
+      - package
+      - deploy
+      - eval
+      - done
+      - failed
+    GitStrategy:
+      type: string
+      enum:
+      - trunk-based
+      - gitflow
+      description: Git workflow strategy
+    WorkflowRequest:
+      type: object
+      required:
+      - prompt
+      properties:
+        prompt:
+          type: string
+          minLength: 50
+          maxLength: 5000
+          description: Natural language description of the software to build
+          example: Build a REST API for task management with user authentication,
+            real-time notifications, and mobile apps
+        domain:
+          type: string
+          enum:
+          - saas
+          - mobile_app
+          - api_service
+          - data_pipeline
+          - web_app
+          description: Application domain for template selection
+        git_strategy:
+          $ref: '#/components/schemas/GitStrategy'
+        target_languages:
+          type: array
+          items:
+            type: string
+            enum:
+            - python
+            - javascript
+            - typescript
+            - go
+            - java
+            - rust
+            - kotlin
+            - swift
+            - dart
+          example:
+          - python
+          - typescript
+        regions:
+          type: array
+          items:
+            type: string
+            enum:
+            - lagos
+            - london
+            - ashburn
+          example:
+          - lagos
+          - london
+        metadata:
+          type: object
+          additionalProperties: true
+    WorkflowResponse:
+      type: object
+      properties:
+        workflow_id:
+          type: string
+          format: uuid
+          example: wf_abc123
+        status:
+          type: string
+          enum:
+          - queued
+          - running
+          - completed
+          - failed
+        current_stage:
+          $ref: '#/components/schemas/WorkflowStage'
+        progress:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Progress from 0.0 to 1.0
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        estimated_completion:
+          type: string
+          format: date-time
+        artifacts:
+          type: object
+          additionalProperties:
+            type: string
+          description: Map of stage names to artifact URLs
+        errors:
+          type: array
+          items:
+            type: string
+        _links:
+          type: object
+          properties:
+            self:
+              type: string
+              format: uri
+            artifacts:
+              type: string
+              format: uri
+            cancel:
+              type: string
+              format: uri
+    PRDRequest:
+      type: object
+      required:
+      - prompt
+      properties:
+        prompt:
+          type: string
+          minLength: 50
+          maxLength: 5000
+        domain:
+          type: string
+        reference_prds:
+          type: array
+          items:
+            type: string
+            format: uri
+    PRDResponse:
+      type: object
+      properties:
+        prd_id:
+          type: string
+          format: uuid
+        markdown:
+          type: string
+          description: PRD in markdown format
+        json:
+          type: object
+          description: Structured PRD data
+        success_metrics:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              target:
+                type: string
+              measurement:
+                type: string
+        user_stories:
+          type: array
+          items:
+            type: string
+        technical_requirements:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+    DesignRequest:
+      type: object
+      required:
+      - prd_id
+      properties:
+        prd_id:
+          type: string
+        style:
+          type: string
+          enum:
+          - minimal
+          - modern
+          - professional
+          - playful
+        color_scheme:
+          type: string
+          enum:
+          - light
+          - dark
+          - auto
+    DesignResponse:
+      type: object
+      properties:
+        design_id:
+          type: string
+        wireframes:
+          type: array
+          items:
+            type: object
+            properties:
+              screen_name:
+                type: string
+              url:
+                type: string
+                format: uri
+        hifi_designs:
+          type: array
+          items:
+            type: object
+            properties:
+              screen_name:
+                type: string
+              url:
+                type: string
+                format: uri
+        tokens:
+          type: object
+          properties:
+            colors:
+              type: object
+            typography:
+              type: object
+            spacing:
+              type: object
+    CodeRequest:
+      type: object
+      required:
+      - specification
+      - language
+      properties:
+        specification:
+          type: object
+          properties:
+            description:
+              type: string
+            interface:
+              type: string
+            requirements:
+              type: array
+              items:
+                type: string
+        language:
+          type: string
+          enum:
+          - python
+          - javascript
+          - typescript
+          - go
+          - java
+          - rust
+          - kotlin
+          - swift
+          - dart
+        framework:
+          type: string
+          enum:
+          - fastapi
+          - django
+          - express
+          - gin
+          - springboot
+          - axum
+          - react
+          - vue
+          - nextjs
+          - flutter
+    CodeResponse:
+      type: object
+      properties:
+        code_id:
+          type: string
+        code:
+          type: string
+        language:
+          type: string
+        file_path:
+          type: string
+        tests:
+          type: string
+        validation:
+          type: object
+          properties:
+            valid:
+              type: boolean
+            errors:
+              type: array
+              items:
+                type: string
+    SecurityScanRequest:
+      type: object
+      required:
+      - target
+      properties:
+        target:
+          type: string
+          description: Repository path or URL to scan
+        scan_types:
+          type: array
+          items:
+            type: string
+            enum:
+            - sast
+            - sca
+            - dast
+            - secrets
+    SecurityFinding:
+      type: object
+      properties:
+        finding_id:
+          type: string
+        severity:
+          type: string
+          enum:
+          - critical
+          - high
+          - medium
+          - low
+          - info
+        category:
+          type: string
+          example: SQL Injection
+        description:
+          type: string
+        location:
+          type: object
+          properties:
+            file:
+              type: string
+            line:
+              type: integer
+            column:
+              type: integer
+        remediation:
+          type: string
+        cwe:
+          type: array
+          items:
+            type: string
+        cvss_score:
+          type: number
+    SecurityScanResponse:
+      type: object
+      properties:
+        scan_id:
+          type: string
+        status:
+          type: string
+          enum:
+          - running
+          - completed
+          - failed
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityFinding'
+        summary:
+          type: object
+          properties:
+            critical:
+              type: integer
+            high:
+              type: integer
+            medium:
+              type: integer
+            low:
+              type: integer
+            info:
+              type: integer
+        sbom:
+          type: string
+          format: uri
+        signature:
+          type: string
+    PerformanceTestRequest:
+      type: object
+      required:
+      - endpoint
+      properties:
+        endpoint:
+          type: string
+          format: uri
+        duration:
+          type: string
+          example: 5m
+        virtual_users:
+          type: integer
+          default: 100
+        regions:
+          type: array
+          items:
+            type: string
+    PerformanceTestResponse:
+      type: object
+      properties:
+        test_id:
+          type: string
+        status:
+          type: string
+          enum:
+          - running
+          - completed
+          - failed
+        metrics:
+          type: object
+          properties:
+            requests_per_second:
+              type: number
+            latency_p50:
+              type: number
+            latency_p95:
+              type: number
+            latency_p99:
+              type: number
+            error_rate:
+              type: number
+        passed:
+          type: boolean
+        thresholds:
+          type: array
+          items:
+            type: object
+            properties:
+              metric:
+                type: string
+              threshold:
+                type: number
+              actual:
+                type: number
+              passed:
+                type: boolean
+  parameters:
+    TenantHeader:
+      name: X-Tenant-ID
+      in: header
+      required: true
+      description: Tenant scope for the request. All protected API paths are isolated
+        by tenant.
+      schema:
+        type: string
+      example: tenant-a
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Optional idempotency key for mutating operations. Replaying the
+        same key inside the same tenant scope returns the original successful response.
+      schema:
+        type: string
+      example: idem-001
+paths:
+  /auth/login:
+    post:
+      tags:
+      - Authentication
+      summary: Authenticate user
+      description: Login with credentials to obtain JWT token
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  email: architect@neuroforge.io
+                  password: correct-horse-battery-staple
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  expires_in:
+                    type: integer
+                  token_type:
+                    type: string
+                    example: Bearer
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    access_token: nf_access_123
+                    refresh_token: nf_refresh_123
+                    expires_in: 3600
+                    token_type: Bearer
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                error:
+                  summary: Sample error
+                  value:
+                    code: TENANT_REQUIRED
+                    message: missing tenant scope
+                    details:
+                    - field: X-Tenant-ID
+                      error: header is required
+      parameters: []
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/auth/login -H ''Content-Type:
+          application/json'' -d ''{"email": "architect@neuroforge.io", "password":
+          "correct-horse-battery-staple"}'''
+  /auth/refresh:
+    post:
+      tags:
+      - Authentication
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  refresh_token: nf_refresh_123
+      responses:
+        '200':
+          description: New access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    access_token: nf_access_456
+                    expires_in: 3600
+      parameters: []
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/auth/refresh -H ''Content-Type:
+          application/json'' -d ''{"refresh_token": "nf_refresh_123"}'''
+  /workflows:
+    post:
+      tags:
+      - Workflows
+      summary: Create new workflow
+      description: Start a complete PRD-to-deployment workflow from a natural language
+        prompt
+      operationId: createWorkflow
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowRequest'
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  prompt: Build a production-grade autonomous workflow orchestration
+                    service with audit-ready controls and strict contract testing.
+                  domain: api_service
+                  git_strategy: trunk-based
+                  target_languages:
+                  - go
+                  - typescript
+                  regions:
+                  - lagos
+                  - london
+                  metadata:
+                    requested_by: product-lead
+      responses:
+        '201':
+          description: Workflow created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    workflow_id: wf-123
+                    status: queued
+                    current_stage: init
+                    progress: 0.05
+                    created_at: '2026-03-21T00:00:00Z'
+                    started_at: '2026-03-21T00:00:00Z'
+                    estimated_completion: '2026-03-21T00:45:00Z'
+                    artifacts:
+                      manifest: https://artifacts.neuroforge.local/workflows/wf-123/manifest.json
+                    _links:
+                      self: /v1/workflows/wf-123
+                      artifacts: /v1/workflows/wf-123/artifacts
+                      cancel: /v1/workflows/wf-123
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                error:
+                  summary: Sample error
+                  value:
+                    code: TENANT_REQUIRED
+                    message: missing tenant scope
+                    details:
+                    - field: X-Tenant-ID
+                      error: header is required
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                error:
+                  summary: Sample error
+                  value:
+                    code: TENANT_REQUIRED
+                    message: missing tenant scope
+                    details:
+                    - field: X-Tenant-ID
+                      error: header is required
+      parameters:
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/workflows -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'' -H ''Idempotency-Key: idem-001'' -d ''{"prompt": "Build a production-grade
+          autonomous workflow orchestration service with audit-ready controls and
+          strict contract testing.", "domain": "api_service", "git_strategy": "trunk-based",
+          "target_languages": ["go", "typescript"], "regions": ["lagos", "london"],
+          "metadata": {"requested_by": "product-lead"}}'''
+    get:
+      tags:
+      - Workflows
+      summary: List workflows
+      description: Get all workflows for the authenticated user
+      operationId: listWorkflows
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: size
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - queued
+          - running
+          - completed
+          - failed
+      - $ref: '#/components/parameters/TenantHeader'
+      responses:
+        '200':
+          description: List of workflows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workflows:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WorkflowResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    workflows:
+                    - workflow_id: wf-123
+                      status: queued
+                      current_stage: init
+                      progress: 0.05
+                      created_at: '2026-03-21T00:00:00Z'
+                    pagination:
+                      page: 1
+                      size: 20
+                      total: 1
+                      pages: 1
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X GET https://api.aaise.io/v1/workflows -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'''
+  /workflows/{workflow_id}:
+    get:
+      tags:
+      - Workflows
+      summary: Get workflow status
+      description: Get detailed status of a specific workflow
+      operationId: getWorkflow
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/TenantHeader'
+      responses:
+        '200':
+          description: Workflow details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    workflow_id: wf-123
+                    status: queued
+                    current_stage: init
+                    progress: 0.05
+                    created_at: '2026-03-21T00:00:00Z'
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                error:
+                  summary: Sample error
+                  value:
+                    code: TENANT_REQUIRED
+                    message: missing tenant scope
+                    details:
+                    - field: X-Tenant-ID
+                      error: header is required
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X GET https://api.aaise.io/v1/workflows/{workflow_id} -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'''
+    delete:
+      tags:
+      - Workflows
+      summary: Cancel workflow
+      description: Cancel a running workflow
+      operationId: cancelWorkflow
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      responses:
+        '200':
+          description: Workflow cancelled
+        '404':
+          description: Workflow not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                error:
+                  summary: Sample error
+                  value:
+                    code: TENANT_REQUIRED
+                    message: missing tenant scope
+                    details:
+                    - field: X-Tenant-ID
+                      error: header is required
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X DELETE https://api.aaise.io/v1/workflows/{workflow_id} -H
+          ''Content-Type: application/json'' -H ''Authorization: Bearer <token>''
+          -H ''X-Tenant-ID: tenant-a'' -H ''Idempotency-Key: idem-001'''
+  /workflows/{workflow_id}/artifacts:
+    get:
+      tags:
+      - Workflows
+      summary: Get workflow artifacts
+      description: Get all artifacts generated by the workflow
+      operationId: getWorkflowArtifacts
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/TenantHeader'
+      responses:
+        '200':
+          description: Workflow artifacts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artifacts:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                          format: uri
+                        type:
+                          type: string
+                        size:
+                          type: integer
+                        created_at:
+                          type: string
+                          format: date-time
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    artifacts:
+                      manifest:
+                        url: https://artifacts.neuroforge.local/workflows/wf-123/manifest.json
+                        type: application/json
+                        size: 2048
+                        created_at: '2026-03-21T00:00:00Z'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X GET https://api.aaise.io/v1/workflows/{workflow_id}/artifacts
+          -H ''Content-Type: application/json'' -H ''Authorization: Bearer <token>''
+          -H ''X-Tenant-ID: tenant-a'''
+  /prd/generate:
+    post:
+      tags:
+      - PRD
+      summary: Generate PRD
+      description: Generate a Product Requirements Document from natural language
+      operationId: generatePRD
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PRDRequest'
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  prompt: Generate a PRD for a secure AI-native software delivery
+                    platform with tenant-aware workflow orchestration.
+                  domain: saas
+      responses:
+        '201':
+          description: PRD generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PRDResponse'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    prd_id: prd-123
+                    markdown: '# NeuroForge SDX PRD'
+                    json:
+                      domain: saas
+                    success_metrics:
+                    - name: coverage
+                      target: '>=90%'
+                      measurement: line coverage
+                    user_stories:
+                    - As a product lead, I can submit a build prompt.
+                    technical_requirements:
+                    - OpenAPI 3.1 contract must remain source of truth.
+                    created_at: '2026-03-21T00:00:00Z'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                error:
+                  summary: Sample error
+                  value:
+                    code: TENANT_REQUIRED
+                    message: missing tenant scope
+                    details:
+                    - field: X-Tenant-ID
+                      error: header is required
+      parameters:
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/prd/generate -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'' -H ''Idempotency-Key: idem-001'' -d ''{"prompt": "Generate a
+          PRD for a secure AI-native software delivery platform with tenant-aware
+          workflow orchestration.", "domain": "saas"}'''
+  /prd/{prd_id}:
+    get:
+      tags:
+      - PRD
+      summary: Get PRD
+      description: Retrieve a generated PRD by ID
+      operationId: getPRD
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: prd_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/TenantHeader'
+      responses:
+        '200':
+          description: PRD details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PRDResponse'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    prd_id: prd-123
+                    markdown: '# NeuroForge SDX PRD'
+                    json:
+                      domain: saas
+                    created_at: '2026-03-21T00:00:00Z'
+        '404':
+          description: PRD not found
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X GET https://api.aaise.io/v1/prd/{prd_id} -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'''
+  /design/wireframes:
+    post:
+      tags:
+      - Design
+      summary: Generate wireframes
+      description: Generate low-fidelity wireframes from PRD
+      operationId: generateWireframes
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesignRequest'
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  prd_id: prd-123
+                  style: professional
+                  color_scheme: dark
+      responses:
+        '201':
+          description: Wireframes generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesignResponse'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    design_id: design-123
+                    wireframes:
+                    - screen_name: workflow-dashboard
+                      url: https://assets.neuroforge.local/designs/design-123/workflow-dashboard.png
+                    tokens:
+                      colors:
+                        surface.primary: '#0f172a'
+      parameters:
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/design/wireframes -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'' -H ''Idempotency-Key: idem-001'' -d ''{"prd_id": "prd-123", "style":
+          "professional", "color_scheme": "dark"}'''
+  /design/tokens:
+    post:
+      tags:
+      - Design
+      summary: Extract design tokens
+      description: Extract design tokens from high-fidelity designs
+      operationId: extractTokens
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                design_id:
+                  type: string
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  design_id: design-123
+      responses:
+        '200':
+          description: Design tokens extracted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokens:
+                    type: object
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    tokens:
+                      colors:
+                        brand.500: '#2563eb'
+                      spacing:
+                        space.4: 16px
+      parameters:
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/design/tokens -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'' -H ''Idempotency-Key: idem-001'' -d ''{"design_id": "design-123"}'''
+  /code/generate:
+    post:
+      tags:
+      - Code
+      summary: Generate code
+      description: Generate code from specification
+      operationId: generateCode
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CodeRequest'
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  specification:
+                    description: Generate an API handler scaffold
+                    interface: REST
+                    requirements:
+                    - otel
+                    - tenant-safety
+                  language: go
+                  framework: gin
+      responses:
+        '201':
+          description: Code generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeResponse'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    code_id: code-123
+                    code: package generated
+                    language: go
+                    file_path: internal/generated/go/handler.go
+                    tests: package generated
+                    validation:
+                      valid: true
+                      errors: []
+      parameters:
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/code/generate -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'' -H ''Idempotency-Key: idem-001'' -d ''{"specification": {"description":
+          "Generate an API handler scaffold", "interface": "REST", "requirements":
+          ["otel", "tenant-safety"]}, "language": "go", "framework": "gin"}'''
+  /code/test:
+    post:
+      tags:
+      - Code
+      summary: Generate tests
+      description: Generate unit and integration tests for code
+      operationId: generateTests
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                language:
+                  type: string
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  code: 'package main
+
+                    func main() {}
+
+                    '
+                  language: go
+      responses:
+        '200':
+          description: Tests generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tests:
+                    type: string
+                  coverage:
+                    type: number
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    tests: // generated tests scaffold
+                    coverage: 0.91
+      parameters:
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/code/test -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'' -H ''Idempotency-Key: idem-001'' -d ''{"code": "package main\nfunc
+          main() {}\n", "language": "go"}'''
+  /security/scan:
+    post:
+      tags:
+      - Security
+      summary: Run security scan
+      description: Run SAST, SCA, DAST, and secrets scanning
+      operationId: securityScan
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityScanRequest'
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  target: github.com/stratogroup/neuroforge-sdx
+                  scan_types:
+                  - sast
+                  - sca
+      responses:
+        '202':
+          description: Scan started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scan_id:
+                    type: string
+                  status:
+                    type: string
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    scan_id: scan-123
+                    status: running
+      parameters:
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/security/scan -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'' -H ''Idempotency-Key: idem-001'' -d ''{"target": "github.com/stratogroup/neuroforge-sdx",
+          "scan_types": ["sast", "sca"]}'''
+  /security/findings/{scan_id}:
+    get:
+      tags:
+      - Security
+      summary: Get security findings
+      description: Get results of security scan
+      operationId: getSecurityFindings
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: scan_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/TenantHeader'
+      responses:
+        '200':
+          description: Security scan results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityScanResponse'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    scan_id: scan-123
+                    status: completed
+                    summary:
+                      critical: 0
+                      high: 0
+                      medium: 1
+                      low: 0
+                      info: 1
+                    findings:
+                    - finding_id: finding-123
+                      severity: medium
+                      category: Secrets Management
+                      description: Vault-backed secret retrieval adapter is scaffolded
+                        but not wired to runtime credentials yet.
+                    sbom: https://artifacts.neuroforge.local/sbom/scan-123.spdx.json
+                    signature: cosign://rekor/neuroforge-sdx/scan-123
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X GET https://api.aaise.io/v1/security/findings/{scan_id} -H
+          ''Content-Type: application/json'' -H ''Authorization: Bearer <token>''
+          -H ''X-Tenant-ID: tenant-a'''
+  /performance/test:
+    post:
+      tags:
+      - Performance
+      summary: Run performance test
+      description: Run load testing with k6
+      operationId: performanceTest
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerformanceTestRequest'
+            examples:
+              sample:
+                summary: Sample request
+                value:
+                  endpoint: https://api.neuroforge.local/v1/workflows
+                  duration: 5m
+                  virtual_users: 100
+                  regions:
+                  - lagos
+      responses:
+        '202':
+          description: Performance test started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  test_id:
+                    type: string
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    test_id: perf-123
+      parameters:
+      - $ref: '#/components/parameters/TenantHeader'
+      - $ref: '#/components/parameters/IdempotencyKeyHeader'
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X POST https://api.aaise.io/v1/performance/test -H ''Content-Type:
+          application/json'' -H ''Authorization: Bearer <token>'' -H ''X-Tenant-ID:
+          tenant-a'' -H ''Idempotency-Key: idem-001'' -d ''{"endpoint": "https://api.neuroforge.local/v1/workflows",
+          "duration": "5m", "virtual_users": 100, "regions": ["lagos"]}'''
+  /performance/results/{test_id}:
+    get:
+      tags:
+      - Performance
+      summary: Get performance test results
+      description: Get results of performance test
+      operationId: getPerformanceResults
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: test_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/TenantHeader'
+      responses:
+        '200':
+          description: Performance test results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceTestResponse'
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    test_id: perf-123
+                    status: completed
+                    metrics:
+                      requests_per_second: 480.5
+                      latency_p50: 22.4
+                      latency_p95: 71.2
+                      latency_p99: 128.9
+                      error_rate: 0
+                    passed: true
+                    thresholds:
+                    - metric: latency_p99
+                      threshold: 200
+                      actual: 128.9
+                      passed: true
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X GET https://api.aaise.io/v1/performance/results/{test_id}
+          -H ''Content-Type: application/json'' -H ''Authorization: Bearer <token>''
+          -H ''X-Tenant-ID: tenant-a'''
+  /health/live:
+    get:
+      tags:
+      - Health
+      summary: Liveness probe
+      description: Check if service is alive
+      operationId: healthLive
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    status: ok
+      parameters: []
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X GET https://api.aaise.io/v1/health/live -H ''Content-Type:
+          application/json'''
+  /health/ready:
+    get:
+      tags:
+      - Health
+      summary: Readiness probe
+      description: Check if service is ready to accept requests
+      operationId: healthReady
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ready
+                  checks:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                      redis:
+                        type: string
+                      memory_fabric:
+                        type: string
+              examples:
+                success:
+                  summary: Sample response
+                  value:
+                    status: ready
+                    checks:
+                      database: configured
+                      redis: configured
+                      memory_fabric: configured
+      parameters: []
+      x-codeSamples:
+      - lang: curl
+        label: cURL
+        source: 'curl -X GET https://api.aaise.io/v1/health/ready -H ''Content-Type:
+          application/json'''
+security:
+- BearerAuth: []
+tags:
+- name: Authentication
+  description: User authentication and authorization
+- name: Workflows
+  description: Complete PRD-to-deployment workflows
+- name: PRD
+  description: Product Requirements Document generation
+- name: Design
+  description: UI/UX design and design tokens
+- name: Code
+  description: Code and test generation
+- name: Security
+  description: Security scanning and SBOM
+- name: Performance
+  description: Performance testing and optimization
+- name: Health
+  description: Service health and readiness checks

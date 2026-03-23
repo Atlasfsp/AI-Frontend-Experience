@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "ai-software-factory",
+  "artifactSet": "software-factory-proto",
+  "artifacts": [
+    {
+      "artifactId": "software-factory-proto",
+      "version": "1.0.0",
+      "format": "buf-proto",
+      "path": "api/proto",
+      "entrypoints": [
+        "api/proto/sdx/v1/gateway.proto",
+        "api/proto/sdx/v1/build.proto",
+        "api/proto/sdx/v1/workitem.proto",
+        "api/proto/sdx/v1/compliance.proto"
+      ],
+      "releaseTag": "contracts/software-factory-proto/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience",
+        "ai-companion-mobile"
+      ]
+    },
+    {
+      "artifactId": "software-factory-connect-typescript",
+      "version": "1.0.0",
+      "format": "connect-es",
+      "path": "gen/typescript/sdx",
+      "sourcePath": "api/proto",
+      "releaseTag": "contracts/software-factory-connect-es/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience",
+        "ai-companion-mobile"
+      ]
+    }
+  ]
+}

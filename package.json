@@ -15,11 +15,21 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "test:integration-scripts": "node --test scripts/integration/sync-upstreams.test.mjs",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration-scripts && pnpm build",
     "clean": "node scripts/clean.mjs",
+    "sync:contracts": "node scripts/integration/sync-upstreams.mjs",
     "sync:tokens": "bash scripts/sync-design-tokens.sh",
     "sync:proto": "bash scripts/sync-proto-types.sh",
-    "sync:openapi": "bash scripts/sync-openapi-spec.sh"
+    "sync:openapi": "bash scripts/sync-openapi-spec.sh",
+    "contracts:generate": "node scripts/integration/generate-client-bindings.mjs",
+    "contracts:validate": "node scripts/integration/validate-contract-drift.mjs",
+    "design:validate": "node scripts/integration/validate-design-drift.mjs",
+    "docs:validate": "node scripts/integration/validate-docs.mjs",
+    "release:validate": "node scripts/integration/validate-release-artifacts.mjs",
+    "compatibility:report": "node scripts/integration/report-compatibility.mjs",
+    "integration:smoke": "node scripts/integration/smoke-test.mjs",
+    "integration:check": "pnpm contracts:generate && pnpm contracts:validate && pnpm design:validate && pnpm docs:validate && pnpm release:validate && pnpm integration:smoke"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",

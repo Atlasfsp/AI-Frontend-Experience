@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "figma-component-specs-mobile",
+  "version": "1.0.0",
+  "target": "mobile",
+  "components": [
+    { "componentId": "bac-mobile.screen", "implementationName": "MobileScreen", "fileHint": "packages/ui-mobile/src/components.tsx", "tokenRefs": ["components.appShell"] },
+    { "componentId": "bac-mobile.section-card", "implementationName": "SectionCard", "fileHint": "packages/ui-mobile/src/components.tsx", "tokenRefs": ["components.card"] },
+    { "componentId": "bac-mobile.metric-card", "implementationName": "MetricCard", "fileHint": "packages/ui-mobile/src/components.tsx", "tokenRefs": ["components.card"] },
+    { "componentId": "bac-mobile.status-pill", "implementationName": "StatusPill", "fileHint": "packages/ui-mobile/src/components.tsx", "tokenRefs": [] },
+    { "componentId": "bac-mobile.action-list-item", "implementationName": "ActionListItem", "fileHint": "packages/ui-mobile/src/components.tsx", "tokenRefs": [] },
+    { "componentId": "bac-mobile.notification-list-item", "implementationName": "NotificationListItem", "fileHint": "packages/ui-mobile/src/components.tsx", "tokenRefs": [] },
+    { "componentId": "bac-mobile.timeline-card", "implementationName": "TimelineCard", "fileHint": "packages/ui-mobile/src/components.tsx", "tokenRefs": [] },
+    { "componentId": "bac-mobile.split-view", "implementationName": "SplitView", "fileHint": "packages/ui-mobile/src/tablet-layout.tsx", "tokenRefs": [] },
+    { "componentId": "bac-mobile.responsive-stack", "implementationName": "ResponsiveStack", "fileHint": "packages/ui-mobile/src/tablet-layout.tsx", "tokenRefs": [] }
+  ]
+}

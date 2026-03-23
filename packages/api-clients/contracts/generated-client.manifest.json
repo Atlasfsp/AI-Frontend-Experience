@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-03-23T04:59:42.682Z",
+  "sourceMode": "workspace",
+  "packageName": "@bac/api-clients",
+  "packageVersion": "1.0.0",
+  "upstreamArtifacts": [
+    {
+      "producerRepo": "ai-software-factory",
+      "artifactId": "software-factory-openapi",
+      "version": "1.0.0",
+      "releaseTag": null,
+      "endpointCount": 17
+    },
+    {
+      "producerRepo": "ai-platform-automation",
+      "artifactId": "platform-automation-openapi",
+      "version": "1.0.0",
+      "releaseTag": null,
+      "endpointCount": 8
+    }
+  ]
+}

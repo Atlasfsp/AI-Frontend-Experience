@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "stitch-concept-inventory-mobile",
+  "version": "1.0.0",
+  "target": "ai-companion-mobile",
+  "concepts": [
+    {
+      "id": "mobile.operator-briefing",
+      "title": "Role-aware operator briefing",
+      "summary": "Home should prioritize fast situational awareness over deep configuration."
+    },
+    {
+      "id": "mobile.quick-action-compression",
+      "title": "Compressed operational actions",
+      "summary": "Approvals, incidents, and workspace actions should complete in a few taps with minimal context loss."
+    },
+    {
+      "id": "mobile.executive-glanceability",
+      "title": "Executive glanceability",
+      "summary": "Executive and compliance personas need concise summaries with clear escalation entry points."
+    }
+  ]
+}

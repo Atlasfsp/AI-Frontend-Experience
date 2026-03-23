@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "design-factory-figma",
+  "artifactSet": "figma-design-tokens",
+  "artifacts": [
+    {
+      "artifactId": "figma-design-tokens-enterprise",
+      "version": "1.0.0",
+      "path": "design-system/tokens/enterprise.json",
+      "releaseTag": "handoff/figma-design-tokens-enterprise/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience",
+        "ai-companion-mobile"
+      ]
+    },
+    {
+      "artifactId": "figma-design-tokens-consumer",
+      "version": "1.0.0",
+      "path": "design-system/tokens/consumer.json",
+      "releaseTag": "handoff/figma-design-tokens-consumer/v1.0.0",
+      "consumers": [
+        "ai-frontend-experience",
+        "ai-companion-mobile"
+      ]
+    }
+  ]
+}

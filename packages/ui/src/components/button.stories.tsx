@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { ComponentProps } from 'react';
 
 import { Button } from './button';
 
@@ -73,7 +74,7 @@ export const Loading: Story = {
     disabled: true,
     'aria-busy': true,
   },
-  render: (args) => (
+  render: (args: ComponentProps<typeof Button>) => (
     <Button {...args}>
       <svg
         className="mr-2 h-4 w-4 animate-spin"

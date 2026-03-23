@@ -23,6 +23,12 @@
       ],
       "@bac/observability": [
         "../../packages/observability/src/index.ts"
+      ],
+      "@bac/observability/react": [
+        "../../packages/observability/src/react.ts"
+      ],
+      "@bac/observability/nextjs-server": [
+        "../../packages/observability/src/nextjs-server.ts"
       ]
     },
     "noEmit": true,

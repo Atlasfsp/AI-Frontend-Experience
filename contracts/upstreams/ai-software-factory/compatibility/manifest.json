@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "repo": "ai-software-factory",
+  "repoVersion": "0.1.0",
+  "contracts": [
+    {
+      "artifactId": "software-factory-openapi",
+      "version": "1.0.0"
+    },
+    {
+      "artifactId": "software-factory-proto",
+      "version": "1.0.0"
+    }
+  ],
+  "compatibleConsumers": [
+    {
+      "repo": "ai-frontend-experience",
+      "supportedRange": "^0.1.0",
+      "requires": [
+        "software-factory-openapi@^1.0.0",
+        "software-factory-proto@^1.0.0"
+      ]
+    },
+    {
+      "repo": "ai-companion-mobile",
+      "supportedRange": "^0.1.0",
+      "requires": [
+        "software-factory-openapi@^1.0.0",
+        "software-factory-proto@^1.0.0"
+      ]
+    }
+  ]
+}

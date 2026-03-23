@@ -1,0 +1,195 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+// ─────────────────────────────────────────────
+// Build Service (read-only public; orchestration is internal via Temporal)
+// ─────────────────────────────────────────────
+
+service BuildService {
+  // Get a Build by ID.
+  rpc GetBuild(GetBuildRequest) returns (Build) {
+    option (google.api.http) = {
+      get: "/api/v1/builds/{build_id}"
+    };
+  }
+
+  // List Builds for the tenant with filters.
+  rpc ListBuilds(ListBuildsRequest) returns (ListBuildsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/builds"
+    };
+  }
+
+  // Get detailed gate results for a build.
+  rpc GetBuildGateResults(GetBuildGateResultsRequest) returns (GetBuildGateResultsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/builds/{build_id}/gates"
+    };
+  }
+
+  // Get stage history for a build.
+  rpc GetBuildStages(GetBuildStagesRequest) returns (GetBuildStagesResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/builds/{build_id}/stages"
+    };
+  }
+
+  // Cancel a running build (triggers graceful shutdown).
+  rpc CancelBuild(CancelBuildRequest) returns (CancelBuildResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/builds/{build_id}/cancel"
+      body: "*"
+    };
+  }
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum BuildStatus {
+  BUILD_STATUS_UNSPECIFIED = 0;
+  BUILD_STATUS_INITIATED = 1;
+  BUILD_STATUS_DOMAIN_MODELLING = 2;
+  BUILD_STATUS_ARCHITECTING = 3;
+  BUILD_STATUS_CONTRACTING = 4;
+  BUILD_STATUS_TESTING_RED = 5;
+  BUILD_STATUS_CODING_GREEN = 6;
+  BUILD_STATUS_VERIFYING = 7;
+  BUILD_STATUS_CERTIFYING = 8;
+  BUILD_STATUS_SIGNING = 9;
+  BUILD_STATUS_DEPLOYING = 10;
+  BUILD_STATUS_COMPLETED = 11;
+  BUILD_STATUS_FAILED = 12;
+  BUILD_STATUS_RECOVERING = 13;
+}
+
+enum StageStatus {
+  STAGE_STATUS_UNSPECIFIED = 0;
+  STAGE_STATUS_PENDING = 1;
+  STAGE_STATUS_RUNNING = 2;
+  STAGE_STATUS_COMPLETED = 3;
+  STAGE_STATUS_FAILED = 4;
+  STAGE_STATUS_SKIPPED = 5;
+}
+
+// ─────────────────────────────────────────────
+// Messages
+// ─────────────────────────────────────────────
+
+message Build {
+  string id = 1;                                // ULID
+  string work_item_id = 2;                      // ULID
+  string tenant_id = 3;                         // ULID
+  BuildStatus status = 4;
+  uint32 current_stage = 5;                     // 1..16
+  repeated PipelineStageRecord stages = 6;
+  repeated GateResult gate_results = 7;
+  repeated RemediationRecord remediation_loops = 8;
+  ContentHash checkpoint_hash = 9;
+  google.protobuf.Timestamp checkpointed_at = 10;
+  uint32 recovery_attempts = 11;
+  string domain_model_ref = 12;
+  string blueprint_ref = 13;
+  repeated string contract_refs = 14;
+  repeated ArtifactRef artifact_refs = 15;
+  google.protobuf.Timestamp created_at = 16;
+  google.protobuf.Timestamp completed_at = 17;
+  BuildSummary summary = 18;                    // Computed summary for dashboard
+}
+
+message PipelineStageRecord {
+  uint32 stage_number = 1;
+  string name = 2;
+  StageStatus status = 3;
+  string agent_id = 4;
+  string output_ref = 5;
+  string error_message = 6;
+  uint64 duration_ms = 7;
+  google.protobuf.Timestamp started_at = 8;
+  google.protobuf.Timestamp completed_at = 9;
+}
+
+message RemediationRecord {
+  string gate_id = 1;
+  uint32 attempt = 2;       // 1..3
+  string agent_id = 3;
+  string action_taken = 4;
+  string result = 5;        // FIXED or STILL_FAILING
+  google.protobuf.Timestamp started_at = 6;
+  google.protobuf.Timestamp completed_at = 7;
+}
+
+message ArtifactRef {
+  string artifact_id = 1;
+  ArtifactType type = 2;
+  S3URI storage_uri = 3;
+  ContentHash content_hash = 4;
+}
+
+message BuildSummary {
+  uint64 total_duration_ms = 1;
+  uint32 gates_passed = 2;
+  uint32 gates_failed = 3;
+  uint32 remediation_count = 4;
+  double codebleu_score = 5;
+  double coverage_pct = 6;
+  uint32 vulnerability_count = 7;
+  repeated string compliance_badges = 8;   // Frameworks that passed
+  TokenUsage total_token_usage = 9;
+}
+
+// ─────────────────────────────────────────────
+// Request / Response Messages
+// ─────────────────────────────────────────────
+
+message GetBuildRequest {
+  string build_id = 1;
+}
+
+message ListBuildsRequest {
+  BuildStatus status_filter = 1;
+  string work_item_id_filter = 2;
+  DateRange date_range = 3;
+  string sort_by = 4;           // created_at, updated_at, current_stage
+  string sort_order = 5;        // ASC, DESC
+  PaginationRequest pagination = 6;
+}
+
+message ListBuildsResponse {
+  repeated Build builds = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetBuildGateResultsRequest {
+  string build_id = 1;
+  string gate_id_filter = 2; // Optional; filter by specific gate
+}
+
+message GetBuildGateResultsResponse {
+  repeated GateResult gate_results = 1;
+}
+
+message GetBuildStagesRequest {
+  string build_id = 1;
+}
+
+message GetBuildStagesResponse {
+  repeated PipelineStageRecord stages = 1;
+}
+
+message CancelBuildRequest {
+  string build_id = 1;
+  string reason = 2;
+}
+
+message CancelBuildResponse {
+  BuildStatus final_status = 1;
+}

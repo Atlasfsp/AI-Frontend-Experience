@@ -1,0 +1,2379 @@
+{
+  "components": {
+    "parameters": {
+      "IdempotencyKeyHeader": {
+        "description": "Optional idempotency key for mutating operations. Replaying the same key inside the same tenant scope returns the original successful response.",
+        "example": "idem-001",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "TenantHeader": {
+        "description": "Tenant scope for the request. All protected API paths are isolated by tenant.",
+        "example": "tenant-a",
+        "in": "header",
+        "name": "X-Tenant-ID",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "CodeRequest": {
+        "properties": {
+          "framework": {
+            "enum": [
+              "fastapi",
+              "django",
+              "express",
+              "gin",
+              "springboot",
+              "axum",
+              "react",
+              "vue",
+              "nextjs",
+              "flutter"
+            ],
+            "type": "string"
+          },
+          "language": {
+            "enum": [
+              "python",
+              "javascript",
+              "typescript",
+              "go",
+              "java",
+              "rust",
+              "kotlin",
+              "swift",
+              "dart"
+            ],
+            "type": "string"
+          },
+          "specification": {
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "interface": {
+                "type": "string"
+              },
+              "requirements": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "specification",
+          "language"
+        ],
+        "type": "object"
+      },
+      "CodeResponse": {
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "code_id": {
+            "type": "string"
+          },
+          "file_path": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "tests": {
+            "type": "string"
+          },
+          "validation": {
+            "properties": {
+              "errors": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "valid": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "DesignRequest": {
+        "properties": {
+          "color_scheme": {
+            "enum": [
+              "light",
+              "dark",
+              "auto"
+            ],
+            "type": "string"
+          },
+          "prd_id": {
+            "type": "string"
+          },
+          "style": {
+            "enum": [
+              "minimal",
+              "modern",
+              "professional",
+              "playful"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "prd_id"
+        ],
+        "type": "object"
+      },
+      "DesignResponse": {
+        "properties": {
+          "design_id": {
+            "type": "string"
+          },
+          "hifi_designs": {
+            "items": {
+              "properties": {
+                "screen_name": {
+                  "type": "string"
+                },
+                "url": {
+                  "format": "uri",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "tokens": {
+            "properties": {
+              "colors": {
+                "type": "object"
+              },
+              "spacing": {
+                "type": "object"
+              },
+              "typography": {
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "wireframes": {
+            "items": {
+              "properties": {
+                "screen_name": {
+                  "type": "string"
+                },
+                "url": {
+                  "format": "uri",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Error": {
+        "properties": {
+          "code": {
+            "example": "VALIDATION_ERROR",
+            "type": "string"
+          },
+          "details": {
+            "items": {
+              "properties": {
+                "error": {
+                  "type": "string"
+                },
+                "field": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "message": {
+            "example": "Invalid input parameters",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "GitStrategy": {
+        "description": "Git workflow strategy",
+        "enum": [
+          "trunk-based",
+          "gitflow"
+        ],
+        "type": "string"
+      },
+      "PRDRequest": {
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "prompt": {
+            "maxLength": 5000,
+            "minLength": 50,
+            "type": "string"
+          },
+          "reference_prds": {
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "PRDResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "json": {
+            "description": "Structured PRD data",
+            "type": "object"
+          },
+          "markdown": {
+            "description": "PRD in markdown format",
+            "type": "string"
+          },
+          "prd_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "success_metrics": {
+            "items": {
+              "properties": {
+                "measurement": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "technical_requirements": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "user_stories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "Pagination": {
+        "properties": {
+          "page": {
+            "default": 1,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "pages": {
+            "type": "integer"
+          },
+          "size": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PerformanceTestRequest": {
+        "properties": {
+          "duration": {
+            "example": "5m",
+            "type": "string"
+          },
+          "endpoint": {
+            "format": "uri",
+            "type": "string"
+          },
+          "regions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "virtual_users": {
+            "default": 100,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "endpoint"
+        ],
+        "type": "object"
+      },
+      "PerformanceTestResponse": {
+        "properties": {
+          "metrics": {
+            "properties": {
+              "error_rate": {
+                "type": "number"
+              },
+              "latency_p50": {
+                "type": "number"
+              },
+              "latency_p95": {
+                "type": "number"
+              },
+              "latency_p99": {
+                "type": "number"
+              },
+              "requests_per_second": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "completed",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "test_id": {
+            "type": "string"
+          },
+          "thresholds": {
+            "items": {
+              "properties": {
+                "actual": {
+                  "type": "number"
+                },
+                "metric": {
+                  "type": "string"
+                },
+                "passed": {
+                  "type": "boolean"
+                },
+                "threshold": {
+                  "type": "number"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SecurityFinding": {
+        "properties": {
+          "category": {
+            "example": "SQL Injection",
+            "type": "string"
+          },
+          "cvss_score": {
+            "type": "number"
+          },
+          "cwe": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "finding_id": {
+            "type": "string"
+          },
+          "location": {
+            "properties": {
+              "column": {
+                "type": "integer"
+              },
+              "file": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "remediation": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "info"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SecurityScanRequest": {
+        "properties": {
+          "scan_types": {
+            "items": {
+              "enum": [
+                "sast",
+                "sca",
+                "dast",
+                "secrets"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "target": {
+            "description": "Repository path or URL to scan",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "type": "object"
+      },
+      "SecurityScanResponse": {
+        "properties": {
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/SecurityFinding"
+            },
+            "type": "array"
+          },
+          "sbom": {
+            "format": "uri",
+            "type": "string"
+          },
+          "scan_id": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "completed",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "summary": {
+            "properties": {
+              "critical": {
+                "type": "integer"
+              },
+              "high": {
+                "type": "integer"
+              },
+              "info": {
+                "type": "integer"
+              },
+              "low": {
+                "type": "integer"
+              },
+              "medium": {
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "WorkflowRequest": {
+        "properties": {
+          "domain": {
+            "description": "Application domain for template selection",
+            "enum": [
+              "saas",
+              "mobile_app",
+              "api_service",
+              "data_pipeline",
+              "web_app"
+            ],
+            "type": "string"
+          },
+          "git_strategy": {
+            "$ref": "#/components/schemas/GitStrategy"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "prompt": {
+            "description": "Natural language description of the software to build",
+            "example": "Build a REST API for task management with user authentication, real-time notifications, and mobile apps",
+            "maxLength": 5000,
+            "minLength": 50,
+            "type": "string"
+          },
+          "regions": {
+            "example": [
+              "lagos",
+              "london"
+            ],
+            "items": {
+              "enum": [
+                "lagos",
+                "london",
+                "ashburn"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "target_languages": {
+            "example": [
+              "python",
+              "typescript"
+            ],
+            "items": {
+              "enum": [
+                "python",
+                "javascript",
+                "typescript",
+                "go",
+                "java",
+                "rust",
+                "kotlin",
+                "swift",
+                "dart"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "WorkflowResponse": {
+        "properties": {
+          "_links": {
+            "properties": {
+              "artifacts": {
+                "format": "uri",
+                "type": "string"
+              },
+              "cancel": {
+                "format": "uri",
+                "type": "string"
+              },
+              "self": {
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "artifacts": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Map of stage names to artifact URLs",
+            "type": "object"
+          },
+          "completed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "current_stage": {
+            "$ref": "#/components/schemas/WorkflowStage"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "estimated_completion": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "progress": {
+            "description": "Progress from 0.0 to 1.0",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "completed",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "workflow_id": {
+            "example": "wf_abc123",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WorkflowStage": {
+        "enum": [
+          "init",
+          "prd",
+          "design",
+          "a11y",
+          "architecture",
+          "plan",
+          "code",
+          "test",
+          "security",
+          "performance",
+          "package",
+          "deploy",
+          "eval",
+          "done",
+          "failed"
+        ],
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "description": "API key for service-to-service authentication",
+        "in": "header",
+        "name": "X-API-Key",
+        "type": "apiKey"
+      },
+      "BearerAuth": {
+        "bearerFormat": "JWT",
+        "description": "JWT token obtained from /auth/login endpoint",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "support@aaise.io",
+      "name": "AAISE Platform Team",
+      "url": "https://docs.aaise.io"
+    },
+    "description": "**Autonomous AI Software Engineering Platform API**\n\nAAISE v6 provides a complete API for automating software development from\nnatural language prompts to production deployments.\n\n## Features\n- Natural language to PRD generation\n- Automated UI/UX design\n- Multi-language code generation\n- Comprehensive testing\n- Security scanning\n- Performance optimization\n- GitOps deployment\n\n## Authentication\nAll API requests require a valid JWT token in the Authorization header:\n```\nAuthorization: Bearer \u003cyour-jwt-token\u003e\n```\n\n## Rate Limiting\n- 100 requests per minute per user\n- 1000 requests per hour per organization\n\n## Regions\n- Lagos (af-south-1)\n- London (eu-west-2)\n- Ashburn (us-east-1)\n",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://aaise.io/license"
+    },
+    "title": "AAISE v6 API",
+    "version": "6.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "description": "Login with credentials to obtain JWT token",
+        "operationId": "login",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "email": "architect@neuroforge.io",
+                    "password": "correct-horse-battery-staple"
+                  }
+                }
+              },
+              "schema": {
+                "properties": {
+                  "email": {
+                    "format": "email",
+                    "type": "string"
+                  },
+                  "password": {
+                    "format": "password",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "access_token": "nf_access_123",
+                      "expires_in": 3600,
+                      "refresh_token": "nf_refresh_123",
+                      "token_type": "Bearer"
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "access_token": {
+                      "type": "string"
+                    },
+                    "expires_in": {
+                      "type": "integer"
+                    },
+                    "refresh_token": {
+                      "type": "string"
+                    },
+                    "token_type": {
+                      "example": "Bearer",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successfully authenticated"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "summary": "Sample error",
+                    "value": {
+                      "code": "TENANT_REQUIRED",
+                      "details": [
+                        {
+                          "error": "header is required",
+                          "field": "X-Tenant-ID"
+                        }
+                      ],
+                      "message": "missing tenant scope"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Authenticate user",
+        "tags": [
+          "Authentication"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\": \"architect@neuroforge.io\", \"password\": \"correct-horse-battery-staple\"}'"
+          }
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "refreshToken",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "refresh_token": "nf_refresh_123"
+                  }
+                }
+              },
+              "schema": {
+                "properties": {
+                  "refresh_token": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "refresh_token"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "access_token": "nf_access_456",
+                      "expires_in": 3600
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "access_token": {
+                      "type": "string"
+                    },
+                    "expires_in": {
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "New access token"
+          }
+        },
+        "summary": "Refresh access token",
+        "tags": [
+          "Authentication"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/auth/refresh -H 'Content-Type: application/json' -d '{\"refresh_token\": \"nf_refresh_123\"}'"
+          }
+        ]
+      }
+    },
+    "/code/generate": {
+      "post": {
+        "description": "Generate code from specification",
+        "operationId": "generateCode",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "framework": "gin",
+                    "language": "go",
+                    "specification": {
+                      "description": "Generate an API handler scaffold",
+                      "interface": "REST",
+                      "requirements": [
+                        "otel",
+                        "tenant-safety"
+                      ]
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "code": "package generated",
+                      "code_id": "code-123",
+                      "file_path": "internal/generated/go/handler.go",
+                      "language": "go",
+                      "tests": "package generated",
+                      "validation": {
+                        "errors": [],
+                        "valid": true
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CodeResponse"
+                }
+              }
+            },
+            "description": "Code generated"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Generate code",
+        "tags": [
+          "Code"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/code/generate -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001' -d '{\"specification\": {\"description\": \"Generate an API handler scaffold\", \"interface\": \"REST\", \"requirements\": [\"otel\", \"tenant-safety\"]}, \"language\": \"go\", \"framework\": \"gin\"}'"
+          }
+        ]
+      }
+    },
+    "/code/test": {
+      "post": {
+        "description": "Generate unit and integration tests for code",
+        "operationId": "generateTests",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "code": "package main\nfunc main() {}\n",
+                    "language": "go"
+                  }
+                }
+              },
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "coverage": 0.91,
+                      "tests": "// generated tests scaffold"
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "coverage": {
+                      "type": "number"
+                    },
+                    "tests": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Tests generated"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Generate tests",
+        "tags": [
+          "Code"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/code/test -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001' -d '{\"code\": \"package main\\nfunc main() {}\\n\", \"language\": \"go\"}'"
+          }
+        ]
+      }
+    },
+    "/design/tokens": {
+      "post": {
+        "description": "Extract design tokens from high-fidelity designs",
+        "operationId": "extractTokens",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "design_id": "design-123"
+                  }
+                }
+              },
+              "schema": {
+                "properties": {
+                  "design_id": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "tokens": {
+                        "colors": {
+                          "brand.500": "#2563eb"
+                        },
+                        "spacing": {
+                          "space.4": "16px"
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "tokens": {
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Design tokens extracted"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Extract design tokens",
+        "tags": [
+          "Design"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/design/tokens -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001' -d '{\"design_id\": \"design-123\"}'"
+          }
+        ]
+      }
+    },
+    "/design/wireframes": {
+      "post": {
+        "description": "Generate low-fidelity wireframes from PRD",
+        "operationId": "generateWireframes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "color_scheme": "dark",
+                    "prd_id": "prd-123",
+                    "style": "professional"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/DesignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "design_id": "design-123",
+                      "tokens": {
+                        "colors": {
+                          "surface.primary": "#0f172a"
+                        }
+                      },
+                      "wireframes": [
+                        {
+                          "screen_name": "workflow-dashboard",
+                          "url": "https://assets.neuroforge.local/designs/design-123/workflow-dashboard.png"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DesignResponse"
+                }
+              }
+            },
+            "description": "Wireframes generated"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Generate wireframes",
+        "tags": [
+          "Design"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/design/wireframes -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001' -d '{\"prd_id\": \"prd-123\", \"style\": \"professional\", \"color_scheme\": \"dark\"}'"
+          }
+        ]
+      }
+    },
+    "/health/live": {
+      "get": {
+        "description": "Check if service is alive",
+        "operationId": "healthLive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "status": "ok"
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "status": {
+                      "example": "ok",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Service is alive"
+          }
+        },
+        "summary": "Liveness probe",
+        "tags": [
+          "Health"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X GET https://api.aaise.io/v1/health/live -H 'Content-Type: application/json'"
+          }
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "description": "Check if service is ready to accept requests",
+        "operationId": "healthReady",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "checks": {
+                        "database": "configured",
+                        "memory_fabric": "configured",
+                        "redis": "configured"
+                      },
+                      "status": "ready"
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "checks": {
+                      "properties": {
+                        "database": {
+                          "type": "string"
+                        },
+                        "memory_fabric": {
+                          "type": "string"
+                        },
+                        "redis": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "status": {
+                      "example": "ready",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Service is ready"
+          }
+        },
+        "summary": "Readiness probe",
+        "tags": [
+          "Health"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X GET https://api.aaise.io/v1/health/ready -H 'Content-Type: application/json'"
+          }
+        ]
+      }
+    },
+    "/performance/results/{test_id}": {
+      "get": {
+        "description": "Get results of performance test",
+        "operationId": "getPerformanceResults",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "test_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "metrics": {
+                        "error_rate": 0,
+                        "latency_p50": 22.4,
+                        "latency_p95": 71.2,
+                        "latency_p99": 128.9,
+                        "requests_per_second": 480.5
+                      },
+                      "passed": true,
+                      "status": "completed",
+                      "test_id": "perf-123",
+                      "thresholds": [
+                        {
+                          "actual": 128.9,
+                          "metric": "latency_p99",
+                          "passed": true,
+                          "threshold": 200
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PerformanceTestResponse"
+                }
+              }
+            },
+            "description": "Performance test results"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Get performance test results",
+        "tags": [
+          "Performance"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X GET https://api.aaise.io/v1/performance/results/{test_id} -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a'"
+          }
+        ]
+      }
+    },
+    "/performance/test": {
+      "post": {
+        "description": "Run load testing with k6",
+        "operationId": "performanceTest",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "duration": "5m",
+                    "endpoint": "https://api.neuroforge.local/v1/workflows",
+                    "regions": [
+                      "lagos"
+                    ],
+                    "virtual_users": 100
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PerformanceTestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "test_id": "perf-123"
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "test_id": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Performance test started"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Run performance test",
+        "tags": [
+          "Performance"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/performance/test -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001' -d '{\"endpoint\": \"https://api.neuroforge.local/v1/workflows\", \"duration\": \"5m\", \"virtual_users\": 100, \"regions\": [\"lagos\"]}'"
+          }
+        ]
+      }
+    },
+    "/prd/generate": {
+      "post": {
+        "description": "Generate a Product Requirements Document from natural language",
+        "operationId": "generatePRD",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "domain": "saas",
+                    "prompt": "Generate a PRD for a secure AI-native software delivery platform with tenant-aware workflow orchestration."
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PRDRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "created_at": "2026-03-21T00:00:00Z",
+                      "json": {
+                        "domain": "saas"
+                      },
+                      "markdown": "# NeuroForge SDX PRD",
+                      "prd_id": "prd-123",
+                      "success_metrics": [
+                        {
+                          "measurement": "line coverage",
+                          "name": "coverage",
+                          "target": "\u003e=90%"
+                        }
+                      ],
+                      "technical_requirements": [
+                        "OpenAPI 3.1 contract must remain source of truth."
+                      ],
+                      "user_stories": [
+                        "As a product lead, I can submit a build prompt."
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PRDResponse"
+                }
+              }
+            },
+            "description": "PRD generated successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "summary": "Sample error",
+                    "value": {
+                      "code": "TENANT_REQUIRED",
+                      "details": [
+                        {
+                          "error": "header is required",
+                          "field": "X-Tenant-ID"
+                        }
+                      ],
+                      "message": "missing tenant scope"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Generate PRD",
+        "tags": [
+          "PRD"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/prd/generate -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001' -d '{\"prompt\": \"Generate a PRD for a secure AI-native software delivery platform with tenant-aware workflow orchestration.\", \"domain\": \"saas\"}'"
+          }
+        ]
+      }
+    },
+    "/prd/{prd_id}": {
+      "get": {
+        "description": "Retrieve a generated PRD by ID",
+        "operationId": "getPRD",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prd_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "created_at": "2026-03-21T00:00:00Z",
+                      "json": {
+                        "domain": "saas"
+                      },
+                      "markdown": "# NeuroForge SDX PRD",
+                      "prd_id": "prd-123"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PRDResponse"
+                }
+              }
+            },
+            "description": "PRD details"
+          },
+          "404": {
+            "description": "PRD not found"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Get PRD",
+        "tags": [
+          "PRD"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X GET https://api.aaise.io/v1/prd/{prd_id} -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a'"
+          }
+        ]
+      }
+    },
+    "/security/findings/{scan_id}": {
+      "get": {
+        "description": "Get results of security scan",
+        "operationId": "getSecurityFindings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scan_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "findings": [
+                        {
+                          "category": "Secrets Management",
+                          "description": "Vault-backed secret retrieval adapter is scaffolded but not wired to runtime credentials yet.",
+                          "finding_id": "finding-123",
+                          "severity": "medium"
+                        }
+                      ],
+                      "sbom": "https://artifacts.neuroforge.local/sbom/scan-123.spdx.json",
+                      "scan_id": "scan-123",
+                      "signature": "cosign://rekor/neuroforge-sdx/scan-123",
+                      "status": "completed",
+                      "summary": {
+                        "critical": 0,
+                        "high": 0,
+                        "info": 1,
+                        "low": 0,
+                        "medium": 1
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityScanResponse"
+                }
+              }
+            },
+            "description": "Security scan results"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Get security findings",
+        "tags": [
+          "Security"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X GET https://api.aaise.io/v1/security/findings/{scan_id} -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a'"
+          }
+        ]
+      }
+    },
+    "/security/scan": {
+      "post": {
+        "description": "Run SAST, SCA, DAST, and secrets scanning",
+        "operationId": "securityScan",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "scan_types": [
+                      "sast",
+                      "sca"
+                    ],
+                    "target": "github.com/stratogroup/neuroforge-sdx"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/SecurityScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "scan_id": "scan-123",
+                      "status": "running"
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "scan_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Scan started"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Run security scan",
+        "tags": [
+          "Security"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/security/scan -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001' -d '{\"target\": \"github.com/stratogroup/neuroforge-sdx\", \"scan_types\": [\"sast\", \"sca\"]}'"
+          }
+        ]
+      }
+    },
+    "/workflows": {
+      "get": {
+        "description": "Get all workflows for the authenticated user",
+        "operationId": "listWorkflows",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "queued",
+                "running",
+                "completed",
+                "failed"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "pagination": {
+                        "page": 1,
+                        "pages": 1,
+                        "size": 20,
+                        "total": 1
+                      },
+                      "workflows": [
+                        {
+                          "created_at": "2026-03-21T00:00:00Z",
+                          "current_stage": "init",
+                          "progress": 0.05,
+                          "status": "queued",
+                          "workflow_id": "wf-123"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "pagination": {
+                      "$ref": "#/components/schemas/Pagination"
+                    },
+                    "workflows": {
+                      "items": {
+                        "$ref": "#/components/schemas/WorkflowResponse"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "List of workflows"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "List workflows",
+        "tags": [
+          "Workflows"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X GET https://api.aaise.io/v1/workflows -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a'"
+          }
+        ]
+      },
+      "post": {
+        "description": "Start a complete PRD-to-deployment workflow from a natural language prompt",
+        "operationId": "createWorkflow",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "sample": {
+                  "summary": "Sample request",
+                  "value": {
+                    "domain": "api_service",
+                    "git_strategy": "trunk-based",
+                    "metadata": {
+                      "requested_by": "product-lead"
+                    },
+                    "prompt": "Build a production-grade autonomous workflow orchestration service with audit-ready controls and strict contract testing.",
+                    "regions": [
+                      "lagos",
+                      "london"
+                    ],
+                    "target_languages": [
+                      "go",
+                      "typescript"
+                    ]
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "_links": {
+                        "artifacts": "/v1/workflows/wf-123/artifacts",
+                        "cancel": "/v1/workflows/wf-123",
+                        "self": "/v1/workflows/wf-123"
+                      },
+                      "artifacts": {
+                        "manifest": "https://artifacts.neuroforge.local/workflows/wf-123/manifest.json"
+                      },
+                      "created_at": "2026-03-21T00:00:00Z",
+                      "current_stage": "init",
+                      "estimated_completion": "2026-03-21T00:45:00Z",
+                      "progress": 0.05,
+                      "started_at": "2026-03-21T00:00:00Z",
+                      "status": "queued",
+                      "workflow_id": "wf-123"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResponse"
+                }
+              }
+            },
+            "description": "Workflow created successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "summary": "Sample error",
+                    "value": {
+                      "code": "TENANT_REQUIRED",
+                      "details": [
+                        {
+                          "error": "header is required",
+                          "field": "X-Tenant-ID"
+                        }
+                      ],
+                      "message": "missing tenant scope"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "summary": "Sample error",
+                    "value": {
+                      "code": "TENANT_REQUIRED",
+                      "details": [
+                        {
+                          "error": "header is required",
+                          "field": "X-Tenant-ID"
+                        }
+                      ],
+                      "message": "missing tenant scope"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Create new workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X POST https://api.aaise.io/v1/workflows -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001' -d '{\"prompt\": \"Build a production-grade autonomous workflow orchestration service with audit-ready controls and strict contract testing.\", \"domain\": \"api_service\", \"git_strategy\": \"trunk-based\", \"target_languages\": [\"go\", \"typescript\"], \"regions\": [\"lagos\", \"london\"], \"metadata\": {\"requested_by\": \"product-lead\"}}'"
+          }
+        ]
+      }
+    },
+    "/workflows/{workflow_id}": {
+      "delete": {
+        "description": "Cancel a running workflow",
+        "operationId": "cancelWorkflow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workflow_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workflow cancelled"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "summary": "Sample error",
+                    "value": {
+                      "code": "TENANT_REQUIRED",
+                      "details": [
+                        {
+                          "error": "header is required",
+                          "field": "X-Tenant-ID"
+                        }
+                      ],
+                      "message": "missing tenant scope"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Workflow not found"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Cancel workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X DELETE https://api.aaise.io/v1/workflows/{workflow_id} -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a' -H 'Idempotency-Key: idem-001'"
+          }
+        ]
+      },
+      "get": {
+        "description": "Get detailed status of a specific workflow",
+        "operationId": "getWorkflow",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workflow_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "created_at": "2026-03-21T00:00:00Z",
+                      "current_stage": "init",
+                      "progress": 0.05,
+                      "status": "queued",
+                      "workflow_id": "wf-123"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResponse"
+                }
+              }
+            },
+            "description": "Workflow details"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "error": {
+                    "summary": "Sample error",
+                    "value": {
+                      "code": "TENANT_REQUIRED",
+                      "details": [
+                        {
+                          "error": "header is required",
+                          "field": "X-Tenant-ID"
+                        }
+                      ],
+                      "message": "missing tenant scope"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Workflow not found"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Get workflow status",
+        "tags": [
+          "Workflows"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X GET https://api.aaise.io/v1/workflows/{workflow_id} -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a'"
+          }
+        ]
+      }
+    },
+    "/workflows/{workflow_id}/artifacts": {
+      "get": {
+        "description": "Get all artifacts generated by the workflow",
+        "operationId": "getWorkflowArtifacts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workflow_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "success": {
+                    "summary": "Sample response",
+                    "value": {
+                      "artifacts": {
+                        "manifest": {
+                          "created_at": "2026-03-21T00:00:00Z",
+                          "size": 2048,
+                          "type": "application/json",
+                          "url": "https://artifacts.neuroforge.local/workflows/wf-123/manifest.json"
+                        }
+                      }
+                    }
+                  }
+                },
+                "schema": {
+                  "properties": {
+                    "artifacts": {
+                      "additionalProperties": {
+                        "properties": {
+                          "created_at": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "size": {
+                            "type": "integer"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "format": "uri",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Workflow artifacts"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Get workflow artifacts",
+        "tags": [
+          "Workflows"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "curl",
+            "source": "curl -X GET https://api.aaise.io/v1/workflows/{workflow_id}/artifacts -H 'Content-Type: application/json' -H 'Authorization: Bearer \u003ctoken\u003e' -H 'X-Tenant-ID: tenant-a'"
+          }
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Production server",
+      "url": "https://api.aaise.io/v1"
+    },
+    {
+      "description": "Staging server",
+      "url": "https://staging-api.aaise.io/v1"
+    },
+    {
+      "description": "Local development server",
+      "url": "http://localhost:8000/v1"
+    }
+  ],
+  "tags": [
+    {
+      "description": "User authentication and authorization",
+      "name": "Authentication"
+    },
+    {
+      "description": "Complete PRD-to-deployment workflows",
+      "name": "Workflows"
+    },
+    {
+      "description": "Product Requirements Document generation",
+      "name": "PRD"
+    },
+    {
+      "description": "UI/UX design and design tokens",
+      "name": "Design"
+    },
+    {
+      "description": "Code and test generation",
+      "name": "Code"
+    },
+    {
+      "description": "Security scanning and SBOM",
+      "name": "Security"
+    },
+    {
+      "description": "Performance testing and optimization",
+      "name": "Performance"
+    },
+    {
+      "description": "Service health and readiness checks",
+      "name": "Health"
+    }
+  ]
+}

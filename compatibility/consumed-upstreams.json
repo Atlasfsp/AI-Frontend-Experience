@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-03-23T04:59:12.486Z",
+  "sourceMode": "workspace",
+  "selectedUpstreams": [
+    {
+      "slug": "ai-software-factory",
+      "githubRepo": "abiolaogu/AI-Software-Factory",
+      "channel": "latest",
+      "releaseTag": null,
+      "sourceMode": "workspace"
+    },
+    {
+      "slug": "ai-platform-automation",
+      "githubRepo": "abiolaogu/AI-Platform-Automation",
+      "channel": "latest",
+      "releaseTag": null,
+      "sourceMode": "workspace"
+    },
+    {
+      "slug": "design-factory-figma",
+      "githubRepo": "abiolaogu/Design-Factory_Figma",
+      "channel": "latest",
+      "releaseTag": null,
+      "sourceMode": "workspace"
+    },
+    {
+      "slug": "design-factory-stitch",
+      "githubRepo": "abiolaogu/Design-Factory_Stitch",
+      "channel": "latest",
+      "releaseTag": null,
+      "sourceMode": "workspace"
+    }
+  ]
+}

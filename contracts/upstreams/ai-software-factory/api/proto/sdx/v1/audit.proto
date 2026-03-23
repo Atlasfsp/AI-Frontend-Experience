@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+service AuditService {
+  rpc QueryAuditLog(QueryAuditLogRequest) returns (QueryAuditLogResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/audit-log"
+    };
+  }
+  rpc VerifyIntegrity(VerifyIntegrityRequest) returns (VerifyIntegrityResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/audit-log/verify"
+      body: "*"
+    };
+  }
+  rpc ExportEvidence(ExportEvidenceRequest) returns (ExportEvidenceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/audit-log/export"
+      body: "*"
+    };
+  }
+  rpc GetAuditStats(GetAuditStatsRequest) returns (AuditStats) {
+    option (google.api.http) = {
+      get: "/api/v1/audit-log/stats"
+    };
+  }
+}
+
+enum ActorType {
+  ACTOR_TYPE_UNSPECIFIED = 0;
+  ACTOR_TYPE_AGENT = 1;
+  ACTOR_TYPE_HUMAN = 2;
+  ACTOR_TYPE_SYSTEM = 3;
+}
+
+message AuditEntry {
+  string entry_id = 1;           // ULID
+  string event_type = 2;
+  ActorType actor_type = 3;
+  string actor_id = 4;
+  string target_type = 5;        // Aggregate type
+  string target_id = 6;          // Aggregate ID
+  string action = 7;             // created, updated, signed, deployed, etc.
+  string tenant_id = 8;
+  string build_id = 9;
+  google.protobuf.Timestamp timestamp = 10;
+  ContentHash prev_hash = 11;    // SHA-256 of previous entry
+  map<string, string> details = 12;
+}
+
+message AuditStats {
+  uint64 total_entries = 1;
+  google.protobuf.Timestamp oldest_entry = 2;
+  google.protobuf.Timestamp newest_entry = 3;
+  bool chain_verified = 4;
+  google.protobuf.Timestamp last_verification = 5;
+}
+
+// ─── Requests ───
+
+message QueryAuditLogRequest {
+  repeated string event_types = 1;
+  ActorType actor_type_filter = 2;
+  string actor_id_filter = 3;
+  string target_type_filter = 4;
+  string target_id_filter = 5;
+  DateRange date_range = 6;
+  PaginationRequest pagination = 7;
+}
+
+message QueryAuditLogResponse {
+  repeated AuditEntry entries = 1;
+  PaginationResponse pagination = 2;
+}
+
+message VerifyIntegrityRequest {
+  string start_entry_id = 1;   // Optional; if omitted, start from beginning
+  string end_entry_id = 2;     // Optional; if omitted, verify to latest
+  DateRange date_range = 3;    // Alternative to entry IDs
+}
+
+message VerifyIntegrityResponse {
+  bool chain_valid = 1;
+  uint64 entries_verified = 2;
+  string first_broken_entry_id = 3; // Only if chain_valid == false
+  string break_description = 4;
+}
+
+message ExportEvidenceRequest {
+  string build_id = 1;
+  repeated ComplianceFramework frameworks = 2;
+  string format = 3;  // JSON, CSV, PDF
+}
+
+message ExportEvidenceResponse {
+  string download_url = 1;
+  uint32 expires_in_seconds = 2;
+  uint64 entry_count = 3;
+}
+
+message GetAuditStatsRequest {}

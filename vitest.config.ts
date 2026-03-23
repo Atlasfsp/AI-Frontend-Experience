@@ -11,6 +11,8 @@ export default defineConfig({
       '@bac/i18n': fileURLToPath(new URL('./packages/i18n/src/index.ts', import.meta.url)),
       '@bac/design-tokens': fileURLToPath(new URL('./packages/design-tokens/src/index.ts', import.meta.url)),
       '@bac/observability': fileURLToPath(new URL('./packages/observability/src/index.ts', import.meta.url)),
+      '@bac/observability/react': fileURLToPath(new URL('./packages/observability/src/react.ts', import.meta.url)),
+      '@bac/observability/nextjs-server': fileURLToPath(new URL('./packages/observability/src/nextjs-server.ts', import.meta.url)),
       '@bac/testing': fileURLToPath(new URL('./packages/testing/src/index.tsx', import.meta.url)),
       '@bac/ui': fileURLToPath(new URL('./packages/ui/src/index.ts', import.meta.url)),
     },

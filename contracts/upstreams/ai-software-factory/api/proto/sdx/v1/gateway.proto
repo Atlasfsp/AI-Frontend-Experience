@@ -1,0 +1,236 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "sdx/v1/common.proto";
+import "sdx/v1/workitem.proto";
+import "sdx/v1/build.proto";
+import "sdx/v1/artifact.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "NeuroForge SDX Gateway API";
+    version: "0.1.0";
+    description: "Unified REST/gRPC API for the NeuroForge AI Software Factory. Provides endpoints for work item submission, build orchestration, artifact management, quality gates, compliance certification, and deployment.";
+    contact: {
+      name: "StratoGroup Engineering";
+      url: "https://docs.sdx.stratogroup.io";
+      email: "engineering@stratogroup.io";
+    };
+    license: {
+      name: "Proprietary";
+      url: "https://stratogroup.io/license";
+    };
+  };
+  host: "api.sdx.stratogroup.io";
+  base_path: "/api/v1";
+  schemes: HTTPS;
+  consumes: "application/json";
+  produces: "application/json";
+  security_definitions: {
+    security: {
+      key: "BearerAuth";
+      value: {
+        type: TYPE_API_KEY;
+        in: IN_HEADER;
+        name: "Authorization";
+        description: "Bearer JWT token from Authentik OIDC. Format: 'Bearer {token}'";
+      };
+    };
+    security: {
+      key: "ApiKeyAuth";
+      value: {
+        type: TYPE_API_KEY;
+        in: IN_HEADER;
+        name: "X-API-Key";
+        description: "API key mapped to a tenant.";
+      };
+    };
+  };
+  security: {
+    security_requirement: {
+      key: "BearerAuth";
+      value: {};
+    };
+  };
+};
+
+// ─────────────────────────────────────────────
+// SDX Gateway Service — Public-facing unified API
+// Maps to REST endpoints via grpc-gateway annotations
+// ─────────────────────────────────────────────
+
+service SDXGatewayService {
+  // ── WorkItems ──
+  rpc SubmitWorkItem(SubmitWorkItemRequest) returns (SubmitWorkItemResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/work-items"
+      body: "*"
+    };
+  }
+  rpc GetWorkItem(GetWorkItemRequest) returns (WorkItem) {
+    option (google.api.http) = {
+      get: "/api/v1/work-items/{work_item_id}"
+    };
+  }
+  rpc ListWorkItems(ListWorkItemsRequest) returns (ListWorkItemsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/work-items"
+    };
+  }
+  rpc ResolveAmbiguity(ResolveAmbiguityRequest) returns (ResolveAmbiguityResponse) {
+    option (google.api.http) = {
+      patch: "/api/v1/work-items/{work_item_id}/ambiguities/{ambiguity_id}"
+      body: "*"
+    };
+  }
+  rpc ApproveManifest(ApproveManifestRequest) returns (ApproveManifestResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/work-items/{work_item_id}/approve"
+      body: "*"
+    };
+  }
+
+  // ── Builds ──
+  rpc GetBuild(GetBuildRequest) returns (Build) {
+    option (google.api.http) = {
+      get: "/api/v1/builds/{build_id}"
+    };
+  }
+  rpc ListBuilds(ListBuildsRequest) returns (ListBuildsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/builds"
+    };
+  }
+  rpc GetBuildGateResults(GetBuildGateResultsRequest) returns (GetBuildGateResultsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/builds/{build_id}/gates"
+    };
+  }
+  rpc CancelBuild(CancelBuildRequest) returns (CancelBuildResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/builds/{build_id}/cancel"
+      body: "*"
+    };
+  }
+
+  // ── Artifacts ──
+  rpc GetArtifact(GetArtifactRequest) returns (Artifact) {
+    option (google.api.http) = {
+      get: "/api/v1/artifacts/{artifact_id}"
+    };
+  }
+  rpc ListArtifacts(ListArtifactsRequest) returns (ListArtifactsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/artifacts"
+    };
+  }
+  rpc GetArtifactDownloadURL(GetArtifactDownloadURLRequest) returns (GetArtifactDownloadURLResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/artifacts/{artifact_id}/download"
+    };
+  }
+  rpc VerifyArtifact(VerifyArtifactRequest) returns (VerifyArtifactResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/artifacts/{artifact_id}/verify"
+    };
+  }
+
+  // ── Webhooks ──
+  rpc CreateWebhook(CreateWebhookRequest) returns (WebhookConfig) {
+    option (google.api.http) = {
+      post: "/api/v1/webhooks"
+      body: "*"
+    };
+  }
+  rpc ListWebhooks(ListWebhooksRequest) returns (ListWebhooksResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/webhooks"
+    };
+  }
+  rpc DeleteWebhook(DeleteWebhookRequest) returns (DeleteWebhookResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/webhooks/{webhook_id}"
+    };
+  }
+  rpc TestWebhook(TestWebhookRequest) returns (TestWebhookResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/webhooks/{webhook_id}/test"
+    };
+  }
+
+  // ── Health ──
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/health"
+    };
+  }
+}
+
+// ─────────────────────────────────────────────
+// Webhook Messages
+// ─────────────────────────────────────────────
+
+message WebhookConfig {
+  string id = 1;
+  string tenant_id = 2;
+  string target_url = 3;
+  repeated string events = 4;     // build.completed, build.failed, gate.failed, artifact.signed, compliance.certified
+  string secret = 5;              // HMAC-SHA256 secret (write-only; never returned in reads)
+  bool active = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp last_triggered_at = 8;
+  uint32 failure_count = 9;       // Consecutive failures
+}
+
+message CreateWebhookRequest {
+  string target_url = 1;
+  repeated string events = 2;
+  string secret = 3;
+}
+
+message ListWebhooksRequest {
+  PaginationRequest pagination = 1;
+}
+
+message ListWebhooksResponse {
+  repeated WebhookConfig webhooks = 1;
+  PaginationResponse pagination = 2;
+}
+
+message DeleteWebhookRequest {
+  string webhook_id = 1;
+}
+
+message DeleteWebhookResponse {
+  bool deleted = 1;
+}
+
+message TestWebhookRequest {
+  string webhook_id = 1;
+}
+
+message TestWebhookResponse {
+  bool success = 1;
+  uint32 status_code = 2;
+  uint64 latency_ms = 3;
+  string error = 4;
+}
+
+// ─────────────────────────────────────────────
+// Health Check
+// ─────────────────────────────────────────────
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;             // SERVING, NOT_SERVING
+  string version = 2;
+  map<string, string> components = 3; // component -> status
+  google.protobuf.Timestamp timestamp = 4;
+}

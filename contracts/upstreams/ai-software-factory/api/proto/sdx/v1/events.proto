@@ -1,0 +1,510 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+// ─────────────────────────────────────────────
+// Domain Event Envelope
+// All domain events are wrapped in this envelope for NATS/Redpanda transport.
+// ─────────────────────────────────────────────
+
+message DomainEvent {
+  string event_id = 1;                          // ULID — globally unique
+  string event_type = 2;                        // e.g., "sdx.build.stage.completed"
+  string aggregate_id = 3;                      // ID of the affected aggregate
+  string aggregate_type = 4;                    // e.g., "Build", "WorkItem", "Artifact"
+  string tenant_id = 5;                         // ULID — always present
+  string build_id = 6;                          // ULID — optional (not all events are build-scoped)
+  google.protobuf.Timestamp timestamp = 7;      // Event time (UTC)
+  google.protobuf.Any payload = 8;              // Serialised domain-specific event
+  map<string, string> metadata = 9;             // Required: trace_id, span_id, agent_id, source_service, schema_version
+}
+
+// ─────────────────────────────────────────────
+// Webhook Event Payload (delivered to external consumers)
+// ─────────────────────────────────────────────
+
+message WebhookPayload {
+  string event_id = 1;
+  string event_type = 2;       // build.completed, build.failed, gate.failed, artifact.signed, compliance.certified
+  string tenant_id = 3;
+  string build_id = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  google.protobuf.Any data = 6;
+}
+
+// ─────────────────────────────────────────────
+// Specific Event Payloads
+// ─────────────────────────────────────────────
+
+message BuildCompletedPayload {
+  string build_id = 1;
+  string work_item_id = 2;
+  repeated string artifact_ids = 3;
+  map<string, bool> compliance_badges = 4;  // framework -> pass
+  uint64 total_duration_ms = 5;
+  double codebleu_score = 6;
+  double coverage_pct = 7;
+}
+
+message BuildFailedPayload {
+  string build_id = 1;
+  string work_item_id = 2;
+  uint32 failed_at_stage = 3;
+  string reason = 4;
+  bool escalation_triggered = 5;
+}
+
+message GateFailedPayload {
+  string build_id = 1;
+  string gate_id = 2;
+  string metric_name = 3;
+  double value = 4;
+  double threshold = 5;
+  string remediation_action = 6;
+}
+
+message ArtifactSignedPayload {
+  string artifact_id = 1;
+  string build_id = 2;
+  string artifact_type = 3;
+  string content_hash = 4;
+  string provenance_uri = 5;
+}
+
+message ComplianceCertifiedPayload {
+  string build_id = 1;
+  repeated string frameworks_passed = 2;
+  string evidence_package_uri = 3;
+}
+
+message StageCompletedPayload {
+  string build_id = 1;
+  uint32 stage_number = 2;
+  string stage_name = 3;
+  string output_ref = 4;
+  uint64 duration_ms = 5;
+  string agent_id = 6;
+}
+
+message StageFailedPayload {
+  string build_id = 1;
+  uint32 stage_number = 2;
+  string stage_name = 3;
+  string error_message = 4;
+  string recovery_action = 5;
+}
+
+message AgentUnhealthyPayload {
+  string agent_id = 1;
+  string agent_type = 2;
+  string reason = 3;
+  uint32 consecutive_failures = 4;
+}
+
+message ModelFallbackPayload {
+  string agent_id = 1;
+  string primary_model = 2;
+  string fallback_model = 3;
+  string reason = 4;
+}
+
+message QuotaExhaustedPayload {
+  string tenant_id = 1;
+  string meter_type = 2;
+  uint64 current_value = 3;
+  uint64 limit = 4;
+}
+
+// ─────────────────────────────────────────────
+// WorkItem Event Payloads
+// ─────────────────────────────────────────────
+
+message WorkItemCreatedPayload {
+  string work_item_id = 1;
+  string tenant_id = 2;
+  string source_type = 3;
+  string source_hash = 4;
+}
+
+message WorkItemParsedPayload {
+  string work_item_id = 1;
+  uint32 requirement_count = 2;
+  uint32 ambiguity_count = 3;
+}
+
+message AmbiguityDetectedPayload {
+  string work_item_id = 1;
+  string ambiguity_id = 2;
+  string question = 3;
+}
+
+message AmbiguityResolvedPayload {
+  string work_item_id = 1;
+  string ambiguity_id = 2;
+  string resolution = 3;
+  string resolved_by = 4;
+}
+
+message ManifestApprovedPayload {
+  string work_item_id = 1;
+  repeated string languages = 2;
+  repeated string compliance_frameworks = 3;
+  string target_environment = 4;
+}
+
+message WorkItemFailedPayload {
+  string work_item_id = 1;
+  string reason = 2;
+}
+
+// ─────────────────────────────────────────────
+// Build Lifecycle Event Payloads
+// ─────────────────────────────────────────────
+
+message BuildInitiatedPayload {
+  string build_id = 1;
+  string work_item_id = 2;
+  string tenant_id = 3;
+}
+
+message StageStartedPayload {
+  string build_id = 1;
+  uint32 stage_number = 2;
+  string stage_name = 3;
+  string agent_id = 4;
+}
+
+message BuildCheckpointedPayload {
+  string build_id = 1;
+  string checkpoint_hash = 2;
+  uint32 stage_number = 3;
+  google.protobuf.Timestamp checkpointed_at = 4;
+}
+
+message BuildRecoveryStartedPayload {
+  string build_id = 1;
+  string checkpoint_hash = 2;
+  uint32 last_valid_stage = 3;
+  uint32 recovery_attempt = 4;
+}
+
+message BuildRecoverySucceededPayload {
+  string build_id = 1;
+  uint32 resumed_at_stage = 2;
+}
+
+message EscalationTriggeredPayload {
+  string build_id = 1;
+  string reason = 2;
+  string context_url = 3;
+  string pagerduty_incident_id = 4;
+}
+
+// ─────────────────────────────────────────────
+// Quality Gate Event Payloads
+// ─────────────────────────────────────────────
+
+message GateEvaluatedPayload {
+  string build_id = 1;
+  string gate_id = 2;
+  string metric_name = 3;
+  double value = 4;
+  double threshold = 5;
+  bool passed = 6;
+}
+
+message GatePassedPayload {
+  string build_id = 1;
+  string gate_id = 2;
+  string metric_name = 3;
+  double value = 4;
+}
+
+message RemediationStartedPayload {
+  string build_id = 1;
+  string gate_id = 2;
+  uint32 attempt = 3;
+  string agent_id = 4;
+  string action = 5;
+}
+
+message RemediationSucceededPayload {
+  string build_id = 1;
+  string gate_id = 2;
+  uint32 attempt = 3;
+  double new_value = 4;
+}
+
+message RemediationExhaustedPayload {
+  string build_id = 1;
+  string gate_id = 2;
+  uint32 attempts = 3;
+  double last_value = 4;
+}
+
+// ─────────────────────────────────────────────
+// Artifact Event Payloads
+// ─────────────────────────────────────────────
+
+message ArtifactCreatedPayload {
+  string artifact_id = 1;
+  string build_id = 2;
+  string artifact_type = 3;
+  string content_hash = 4;
+  uint64 size_bytes = 5;
+}
+
+message ArtifactPublishedPayload {
+  string artifact_id = 1;
+  string registry_uri = 2;
+}
+
+message ArtifactDeployedPayload {
+  string artifact_id = 1;
+  string deployment_id = 2;
+  string environment = 3;
+  string region = 4;
+}
+
+message ArtifactRevokedPayload {
+  string artifact_id = 1;
+  string reason = 2;
+  string revoked_by = 3;
+}
+
+// ─────────────────────────────────────────────
+// Tenant Event Payloads
+// ─────────────────────────────────────────────
+
+message TenantCreatedPayload {
+  string tenant_id = 1;
+  string name = 2;
+  string plan = 3;
+  string nexo_region = 4;
+}
+
+message TenantPlanChangedPayload {
+  string tenant_id = 1;
+  string old_plan = 2;
+  string new_plan = 3;
+}
+
+message TenantSuspendedPayload {
+  string tenant_id = 1;
+  string reason = 2;
+}
+
+message TenantReactivatedPayload {
+  string tenant_id = 1;
+}
+
+message QuotaResetPayload {
+  string tenant_id = 1;
+  string meter_type = 2;
+  google.protobuf.Timestamp period_start = 3;
+}
+
+message WorkspaceCreatedPayload {
+  string tenant_id = 1;
+  string workspace_id = 2;
+  string name = 3;
+}
+
+message WorkspaceMemberAddedPayload {
+  string tenant_id = 1;
+  string workspace_id = 2;
+  string user_id = 3;
+  string role = 4;
+}
+
+// ─────────────────────────────────────────────
+// Agent Event Payloads
+// ─────────────────────────────────────────────
+
+message AgentRegisteredPayload {
+  string agent_id = 1;
+  string agent_type = 2;
+  string spiffe_id = 3;
+  string pod_name = 4;
+  string nexo_region = 5;
+}
+
+message AgentAssignedPayload {
+  string agent_id = 1;
+  string build_id = 2;
+  uint32 stage_number = 3;
+}
+
+message AgentReleasedPayload {
+  string agent_id = 1;
+  string build_id = 2;
+}
+
+message AgentRecoveredPayload {
+  string agent_id = 1;
+}
+
+message AgentTerminatedPayload {
+  string agent_id = 1;
+  string reason = 2;
+}
+
+// ─────────────────────────────────────────────
+// Security Event Payloads
+// ─────────────────────────────────────────────
+
+message SecurityScanCompletedPayload {
+  string build_id = 1;
+  string scan_type = 2;   // SAST, DAST, SCA, SECRETS, IAC
+  uint32 findings_count = 3;
+  uint32 critical_count = 4;
+}
+
+message VulnerabilityFoundPayload {
+  string build_id = 1;
+  string cve_id = 2;
+  string severity = 3;
+  string package_name = 4;
+  string version = 5;
+}
+
+message SBOMGeneratedPayload {
+  string build_id = 1;
+  string artifact_id = 2;
+  string sbom_format = 3;
+  uint32 component_count = 4;
+}
+
+message SecurityClearedPayload {
+  string build_id = 1;
+  repeated string scan_types_passed = 2;
+}
+
+// ─────────────────────────────────────────────
+// Compliance Event Payloads
+// ─────────────────────────────────────────────
+
+message ComplianceMappingCompletedPayload {
+  string build_id = 1;
+  string framework = 2;
+  uint32 controls_mapped = 3;
+  uint32 controls_total = 4;
+}
+
+message ComplianceEvidenceGeneratedPayload {
+  string build_id = 1;
+  string framework = 2;
+  string evidence_package_ref = 3;
+}
+
+message ComplianceGapDetectedPayload {
+  string build_id = 1;
+  string framework = 2;
+  string control_id = 3;
+  string gap_description = 4;
+}
+
+// ─────────────────────────────────────────────
+// Deployment Event Payloads
+// ─────────────────────────────────────────────
+
+message DeploymentStartedPayload {
+  string deployment_id = 1;
+  string build_id = 2;
+  string target_env = 3;
+  string target_region = 4;
+}
+
+message SmokeTestPassedPayload {
+  string deployment_id = 1;
+  uint32 test_count = 2;
+  uint64 duration_ms = 3;
+}
+
+message SmokeTestFailedPayload {
+  string deployment_id = 1;
+  repeated string failed_tests = 2;
+  string error = 3;
+}
+
+message SLOValidatedPayload {
+  string deployment_id = 1;
+  repeated string slo_results = 2;
+}
+
+message DeploymentCompletedPayload {
+  string deployment_id = 1;
+  string build_id = 2;
+  google.protobuf.Timestamp deployed_at = 3;
+}
+
+message RollbackTriggeredPayload {
+  string deployment_id = 1;
+  string reason = 2;
+  string rollback_to_deployment_id = 3;
+}
+
+message RollbackCompletedPayload {
+  string deployment_id = 1;
+  string rolled_back_to = 2;
+}
+
+// ─────────────────────────────────────────────
+// LLM Gateway Event Payloads
+// ─────────────────────────────────────────────
+
+message LLMRequestCompletedPayload {
+  string request_id = 1;
+  string model = 2;
+  uint64 input_tokens = 3;
+  uint64 output_tokens = 4;
+  uint64 latency_ms = 5;
+  uint64 cost_microdollars = 6;
+}
+
+message CircuitOpenedPayload {
+  string model = 1;
+  string reason = 2;
+  uint32 cooldown_seconds = 3;
+}
+
+message CircuitClosedPayload {
+  string model = 1;
+}
+
+// ─────────────────────────────────────────────
+// Webhook Delivery Event Payloads (internal)
+// ─────────────────────────────────────────────
+
+message WebhookDispatchedPayload {
+  string webhook_id = 1;
+  string tenant_id = 2;
+  string event_type = 3;
+  string target_url = 4;
+  uint32 attempt = 5;
+}
+
+message WebhookDeliveredPayload {
+  string webhook_id = 1;
+  uint32 status_code = 2;
+  uint64 duration_ms = 3;
+}
+
+message WebhookDeliveryFailedPayload {
+  string webhook_id = 1;
+  uint32 status_code = 2;
+  string error = 3;
+  bool will_retry = 4;
+}
+
+message WebhookDeadLetterPayload {
+  string webhook_id = 1;
+  string tenant_id = 2;
+  string event_type = 3;
+  uint32 total_attempts = 4;
+}

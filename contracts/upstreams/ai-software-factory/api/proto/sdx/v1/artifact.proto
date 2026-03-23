@@ -1,0 +1,207 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+// ─────────────────────────────────────────────
+// Artifact Service
+// ─────────────────────────────────────────────
+
+service ArtifactService {
+  // Get artifact metadata and download URL.
+  rpc GetArtifact(GetArtifactRequest) returns (Artifact) {
+    option (google.api.http) = {
+      get: "/api/v1/artifacts/{artifact_id}"
+    };
+  }
+
+  // List artifacts for a build or tenant.
+  rpc ListArtifacts(ListArtifactsRequest) returns (ListArtifactsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/artifacts"
+    };
+  }
+
+  // Get a pre-signed download URL for an artifact.
+  rpc GetArtifactDownloadURL(GetArtifactDownloadURLRequest) returns (GetArtifactDownloadURLResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/artifacts/{artifact_id}/download"
+    };
+  }
+
+  // Sign an artifact (internal; called by sdx-workflow-engine).
+  rpc SignArtifact(SignArtifactRequest) returns (SignArtifactResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/artifacts/{artifact_id}/sign"
+      body: "*"
+    };
+  }
+
+  // Publish a signed artifact to the registry.
+  rpc PublishArtifact(PublishArtifactRequest) returns (PublishArtifactResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/artifacts/{artifact_id}/publish"
+      body: "*"
+    };
+  }
+
+  // Verify artifact integrity and provenance.
+  rpc VerifyArtifact(VerifyArtifactRequest) returns (VerifyArtifactResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/artifacts/{artifact_id}/verify"
+    };
+  }
+
+  // Revoke an artifact (security finding or policy violation).
+  rpc RevokeArtifact(RevokeArtifactRequest) returns (RevokeArtifactResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/artifacts/{artifact_id}/revoke"
+      body: "*"
+    };
+  }
+
+  // Attach provenance attestation to an artifact.
+  rpc AttachProvenance(AttachProvenanceRequest) returns (AttachProvenanceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/artifacts/{artifact_id}/provenance"
+      body: "*"
+    };
+  }
+
+  // Generate SLSA provenance for an artifact.
+  rpc GenerateProvenance(GenerateProvenanceRequest) returns (GenerateProvenanceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/artifacts/{artifact_id}/provenance/generate"
+      body: "*"
+    };
+  }
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum ArtifactStatus {
+  ARTIFACT_STATUS_UNSPECIFIED = 0;
+  ARTIFACT_STATUS_CREATED = 1;
+  ARTIFACT_STATUS_SIGNED = 2;
+  ARTIFACT_STATUS_PUBLISHED = 3;
+  ARTIFACT_STATUS_DEPLOYED = 4;
+  ARTIFACT_STATUS_REVOKED = 5;
+}
+
+// ─────────────────────────────────────────────
+// Messages
+// ─────────────────────────────────────────────
+
+message Artifact {
+  string id = 1;
+  string build_id = 2;
+  string tenant_id = 3;
+  ArtifactType type = 4;
+  ArtifactStatus status = 5;
+  ContentHash content_hash = 6;
+  S3URI storage_uri = 7;
+  SignatureRef signature_ref = 8;
+  ProvenanceRef provenance_ref = 9;
+  SBOMRef sbom_ref = 10;
+  uint64 size_bytes = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp signed_at = 13;
+  google.protobuf.Timestamp published_at = 14;
+}
+
+// ─────────────────────────────────────────────
+// Request / Response Messages
+// ─────────────────────────────────────────────
+
+message GetArtifactRequest {
+  string artifact_id = 1;
+}
+
+message ListArtifactsRequest {
+  string build_id = 1;                    // Optional; filter by build
+  ArtifactType type_filter = 2;           // Optional
+  ArtifactStatus status_filter = 3;       // Optional
+  DateRange date_range = 4;               // Optional
+  PaginationRequest pagination = 5;
+}
+
+message ListArtifactsResponse {
+  repeated Artifact artifacts = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetArtifactDownloadURLRequest {
+  string artifact_id = 1;
+}
+
+message GetArtifactDownloadURLResponse {
+  string download_url = 1;         // Pre-signed S3 URL
+  uint32 expires_in_seconds = 2;   // TTL (default 3600)
+  ContentHash content_hash = 3;    // For client-side verification
+}
+
+message SignArtifactRequest {
+  string artifact_id = 1;
+}
+
+message SignArtifactResponse {
+  SignatureRef signature_ref = 1;
+  ProvenanceRef provenance_ref = 2;
+}
+
+message PublishArtifactRequest {
+  string artifact_id = 1;
+  string registry_uri = 2; // Target registry (e.g., OCI registry for container images)
+}
+
+message PublishArtifactResponse {
+  string published_uri = 1;
+  google.protobuf.Timestamp published_at = 2;
+}
+
+message VerifyArtifactRequest {
+  string artifact_id = 1;
+}
+
+message VerifyArtifactResponse {
+  bool content_hash_valid = 1;
+  bool signature_valid = 2;
+  bool provenance_valid = 3;
+  bool sbom_present = 4;
+  repeated string verification_errors = 5;
+}
+
+message RevokeArtifactRequest {
+  string artifact_id = 1;
+  string reason = 2;
+}
+
+message RevokeArtifactResponse {
+  ArtifactStatus new_status = 1;
+  google.protobuf.Timestamp revoked_at = 2;
+}
+
+message AttachProvenanceRequest {
+  string artifact_id = 1;
+  ProvenanceRef provenance = 2;
+}
+
+message AttachProvenanceResponse {
+  bool attached = 1;
+}
+
+message GenerateProvenanceRequest {
+  string artifact_id = 1;
+  string build_id = 2;
+}
+
+message GenerateProvenanceResponse {
+  ProvenanceRef provenance = 1;
+}

@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "1.0.0",
+  "upstreams": [
+    {
+      "slug": "ai-software-factory",
+      "githubRepo": "abiolaogu/AI-Software-Factory",
+      "workspacePath": "../AI-Software-Factory/neuroforge-sdx",
+      "selector": {
+        "channel": "latest"
+      },
+      "releaseManifestAsset": "integration-release-manifest.json",
+      "localReleaseManifestPath": "contracts/upstreams/ai-software-factory/integration-release-manifest.json",
+      "expectedAssets": [
+        {
+          "kind": "openapi",
+          "template": "ai-software-factory-openapi-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "api/openapi",
+          "targetRoot": "contracts/upstreams/ai-software-factory"
+        },
+        {
+          "kind": "proto",
+          "template": "ai-software-factory-proto-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "api/proto",
+          "targetRoot": "contracts/upstreams/ai-software-factory"
+        },
+        {
+          "kind": "compatibility",
+          "template": "ai-software-factory-compatibility-{releaseVersion}.json",
+          "packageType": "file",
+          "sourcePath": "compatibility/manifest.json",
+          "targetFile": "contracts/upstreams/ai-software-factory/compatibility/manifest.json"
+        }
+      ]
+    },
+    {
+      "slug": "ai-platform-automation",
+      "githubRepo": "abiolaogu/AI-Platform-Automation",
+      "workspacePath": "../AI Platform Automation",
+      "selector": {
+        "channel": "latest"
+      },
+      "releaseManifestAsset": "integration-release-manifest.json",
+      "localReleaseManifestPath": "contracts/upstreams/ai-platform-automation/integration-release-manifest.json",
+      "expectedAssets": [
+        {
+          "kind": "openapi",
+          "template": "ai-platform-automation-openapi-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "api/openapi",
+          "targetRoot": "contracts/upstreams/ai-platform-automation"
+        },
+        {
+          "kind": "proto",
+          "template": "ai-platform-automation-proto-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "api/proto",
+          "targetRoot": "contracts/upstreams/ai-platform-automation"
+        },
+        {
+          "kind": "compatibility",
+          "template": "ai-platform-automation-compatibility-{releaseVersion}.json",
+          "packageType": "file",
+          "sourcePath": "compatibility/manifest.json",
+          "targetFile": "contracts/upstreams/ai-platform-automation/compatibility/manifest.json"
+        }
+      ]
+    },
+    {
+      "slug": "design-factory-figma",
+      "githubRepo": "abiolaogu/Design-Factory_Figma",
+      "workspacePath": "../Design-Factory_Figma",
+      "selector": {
+        "channel": "latest"
+      },
+      "releaseManifestAsset": "integration-release-manifest.json",
+      "localReleaseManifestPath": "contracts/upstreams/design-factory-figma/integration-release-manifest.json",
+      "expectedAssets": [
+        {
+          "kind": "route-maps",
+          "template": "design-factory-figma-route-maps-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "handoff/route-maps",
+          "targetRoot": "contracts/upstreams/design-factory-figma"
+        },
+        {
+          "kind": "component-specs",
+          "template": "design-factory-figma-component-specs-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "handoff/component-specs",
+          "targetRoot": "contracts/upstreams/design-factory-figma"
+        },
+        {
+          "kind": "design-tokens",
+          "template": "design-factory-figma-design-tokens-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "design-system/tokens",
+          "targetRoot": "contracts/upstreams/design-factory-figma"
+        },
+        {
+          "kind": "compatibility",
+          "template": "design-factory-figma-compatibility-{releaseVersion}.json",
+          "packageType": "file",
+          "sourcePath": "compatibility/manifest.json",
+          "targetFile": "contracts/upstreams/design-factory-figma/compatibility/manifest.json"
+        }
+      ]
+    },
+    {
+      "slug": "design-factory-stitch",
+      "githubRepo": "abiolaogu/Design-Factory_Stitch",
+      "workspacePath": "../Design Factory_Stitch",
+      "selector": {
+        "channel": "latest"
+      },
+      "releaseManifestAsset": "integration-release-manifest.json",
+      "localReleaseManifestPath": "contracts/upstreams/design-factory-stitch/integration-release-manifest.json",
+      "expectedAssets": [
+        {
+          "kind": "concept-inventory",
+          "template": "design-factory-stitch-concept-inventory-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "exports/concept-inventory",
+          "targetRoot": "contracts/upstreams/design-factory-stitch"
+        },
+        {
+          "kind": "exploratory-prompts",
+          "template": "design-factory-stitch-exploratory-prompts-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "handoffs/exploratory-prompts",
+          "targetRoot": "contracts/upstreams/design-factory-stitch"
+        },
+        {
+          "kind": "compatibility",
+          "template": "design-factory-stitch-compatibility-{releaseVersion}.json",
+          "packageType": "file",
+          "sourcePath": "compatibility/manifest.json",
+          "targetFile": "contracts/upstreams/design-factory-stitch/compatibility/manifest.json"
+        }
+      ]
+    }
+  ]
+}

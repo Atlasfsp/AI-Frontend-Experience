@@ -1,0 +1,130 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+service ComplianceService {
+  rpc MapControls(MapControlsRequest) returns (MapControlsResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/compliance/map"
+      body: "*"
+    };
+  }
+  rpc GenerateEvidence(GenerateEvidenceRequest) returns (GenerateEvidenceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/compliance/evidence"
+      body: "*"
+    };
+  }
+  rpc GetComplianceBadge(GetComplianceBadgeRequest) returns (ComplianceBadge) {
+    option (google.api.http) = {
+      get: "/api/v1/compliance/badges/{build_id}"
+    };
+  }
+  rpc GetComplianceReport(GetComplianceReportRequest) returns (ComplianceReport) {
+    option (google.api.http) = {
+      get: "/api/v1/compliance/reports/{build_id}"
+    };
+  }
+  rpc ListComplianceReports(ListComplianceReportsRequest) returns (ListComplianceReportsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/compliance/reports"
+    };
+  }
+  rpc GetControlCatalog(GetControlCatalogRequest) returns (GetControlCatalogResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/compliance/controls"
+    };
+  }
+}
+
+message ComplianceReport {
+  string id = 1;
+  string build_id = 2;
+  string tenant_id = 3;
+  repeated FrameworkResult framework_results = 4;
+  ComplianceBadge badge = 5;
+  string evidence_package_uri = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message FrameworkResult {
+  ComplianceFramework framework = 1;
+  uint32 controls_mapped = 2;
+  uint32 controls_total = 3;
+  double coverage_pct = 4;
+  bool passed = 5;
+  repeated ControlGap gaps = 6;
+}
+
+message ControlGap {
+  string control_id = 1;
+  string control_name = 2;
+  string gap_description = 3;
+  string remediation_suggestion = 4;
+}
+
+message ComplianceBadge {
+  string build_id = 1;
+  map<string, bool> framework_status = 2; // framework_name -> pass/fail
+  google.protobuf.Timestamp issued_at = 3;
+}
+
+message ControlDefinition {
+  string control_id = 1;
+  ComplianceFramework framework = 2;
+  string name = 3;
+  string description = 4;
+  string category = 5;
+  repeated string evidence_types = 6;
+}
+
+// ─── Requests ───
+
+message MapControlsRequest {
+  string build_id = 1;
+  repeated ComplianceFramework frameworks = 2;
+}
+
+message MapControlsResponse {
+  repeated FrameworkResult results = 1;
+}
+
+message GenerateEvidenceRequest {
+  string build_id = 1;
+  repeated ComplianceFramework frameworks = 2;
+}
+
+message GenerateEvidenceResponse {
+  string evidence_package_uri = 1;
+  repeated FrameworkResult results = 2;
+  ComplianceBadge badge = 3;
+}
+
+message GetComplianceBadgeRequest { string build_id = 1; }
+
+message GetComplianceReportRequest { string build_id = 1; }
+
+message ListComplianceReportsRequest {
+  ComplianceFramework framework_filter = 1;
+  DateRange date_range = 2;
+  PaginationRequest pagination = 3;
+}
+
+message ListComplianceReportsResponse {
+  repeated ComplianceReport reports = 1;
+  PaginationResponse pagination = 2;
+}
+
+message GetControlCatalogRequest {
+  ComplianceFramework framework = 1;
+}
+
+message GetControlCatalogResponse {
+  repeated ControlDefinition controls = 1;
+}

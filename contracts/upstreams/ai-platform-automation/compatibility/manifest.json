@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "repo": "ai-platform-automation",
+  "repoVersion": "0.1.0",
+  "contracts": [
+    {
+      "artifactId": "platform-automation-openapi",
+      "version": "1.0.0"
+    },
+    {
+      "artifactId": "platform-automation-proto",
+      "version": "1.0.0"
+    }
+  ],
+  "compatibleConsumers": [
+    {
+      "repo": "ai-frontend-experience",
+      "supportedRange": "^0.1.0",
+      "requires": [
+        "platform-automation-openapi@^1.0.0",
+        "platform-automation-proto@^1.0.0"
+      ]
+    },
+    {
+      "repo": "ai-companion-mobile",
+      "supportedRange": "^0.1.0",
+      "requires": [
+        "platform-automation-openapi@^1.0.0",
+        "platform-automation-proto@^1.0.0"
+      ]
+    }
+  ]
+}

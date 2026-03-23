@@ -30,17 +30,13 @@ vi.mock('@bac/config', () => ({
 }));
 
 // Mock http module requestJson to just use standard fetch since vitest has global fetch
-vi.mock('../http', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../http')>();
-  return {
-    ...actual,
-    requestJson: async (url: string, init?: RequestInit) => {
-      const res = await fetch(url, init);
-      if (!res.ok) throw new Error('API Error');
-      return res.json();
-    },
-  };
-});
+vi.mock('../http', () => ({
+  requestJson: async (url: string, init?: RequestInit) => {
+    const res = await fetch(url, init);
+    if (!res.ok) throw new Error('API Error');
+    return res.json();
+  },
+}));
 
 describe('platform/client', () => {
   it('uses mock data when context.useMock is true', async () => {

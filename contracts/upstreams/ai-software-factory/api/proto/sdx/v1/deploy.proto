@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package sdx.v1;
+
+option go_package = "github.com/stratogroup/neuroforge-sdx/gen/go/sdx/v1;sdxv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "sdx/v1/common.proto";
+
+service DeploymentService {
+  rpc Deploy(DeployRequest) returns (DeployResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/deployments"
+      body: "*"
+    };
+  }
+  rpc GetDeployment(GetDeploymentRequest) returns (Deployment) {
+    option (google.api.http) = {
+      get: "/api/v1/deployments/{deployment_id}"
+    };
+  }
+  rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/deployments"
+    };
+  }
+  rpc RollbackDeployment(RollbackDeploymentRequest) returns (Deployment) {
+    option (google.api.http) = {
+      post: "/api/v1/deployments/{deployment_id}/rollback"
+      body: "*"
+    };
+  }
+  rpc GetDeploymentLogs(GetDeploymentLogsRequest) returns (GetDeploymentLogsResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/deployments/{deployment_id}/logs"
+    };
+  }
+}
+
+enum DeploymentStatus {
+  DEPLOYMENT_STATUS_UNSPECIFIED = 0;
+  DEPLOYMENT_STATUS_PENDING = 1;
+  DEPLOYMENT_STATUS_APPLYING = 2;
+  DEPLOYMENT_STATUS_SMOKE_TESTING = 3;
+  DEPLOYMENT_STATUS_SLO_VALIDATING = 4;
+  DEPLOYMENT_STATUS_DEPLOYED = 5;
+  DEPLOYMENT_STATUS_ROLLED_BACK = 6;
+  DEPLOYMENT_STATUS_FAILED = 7;
+}
+
+enum TargetEnvironment {
+  TARGET_ENVIRONMENT_UNSPECIFIED = 0;
+  TARGET_ENVIRONMENT_DEV = 1;
+  TARGET_ENVIRONMENT_STAGING = 2;
+  TARGET_ENVIRONMENT_PROD = 3;
+}
+
+message Deployment {
+  string id = 1;
+  string build_id = 2;
+  string tenant_id = 3;
+  repeated string artifact_ids = 4;
+  TargetEnvironment target_env = 5;
+  NexoRegion target_region = 6;
+  DeploymentStatus status = 7;
+  repeated SmokeTestResult smoke_test_results = 8;
+  SLOValidation slo_validation = 9;
+  string rollback_ref = 10;         // Previous deployment ID if rolled back
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp deployed_at = 12;
+}
+
+message SmokeTestResult {
+  string test_name = 1;
+  bool passed = 2;
+  string error = 3;
+  uint64 duration_ms = 4;
+}
+
+message SLOValidation {
+  bool passed = 1;
+  double p99_latency_ms = 2;
+  double error_rate_pct = 3;
+  double availability_pct = 4;
+  uint32 validation_duration_min = 5;
+  repeated SLOViolation violations = 6;
+}
+
+message SLOViolation {
+  string slo_name = 1;
+  double expected = 2;
+  double actual = 3;
+  google.protobuf.Timestamp detected_at = 4;
+}
+
+// ─── Requests ───
+
+message DeployRequest {
+  string build_id = 1;
+  repeated string artifact_ids = 2;
+  TargetEnvironment target_env = 3;
+  NexoRegion target_region = 4;
+}
+
+message DeployResponse {
+  string deployment_id = 1;
+  DeploymentStatus status = 2;
+}
+
+message GetDeploymentRequest { string deployment_id = 1; }
+
+message ListDeploymentsRequest {
+  string build_id = 1;
+  TargetEnvironment env_filter = 2;
+  DeploymentStatus status_filter = 3;
+  DateRange date_range = 4;
+  PaginationRequest pagination = 5;
+}
+
+message ListDeploymentsResponse {
+  repeated Deployment deployments = 1;
+  PaginationResponse pagination = 2;
+}
+
+message RollbackDeploymentRequest {
+  string deployment_id = 1;
+  string reason = 2;
+  string rollback_to_deployment_id = 3; // Optional; defaults to previous
+}
+
+message GetDeploymentLogsRequest {
+  string deployment_id = 1;
+  uint32 lines = 2;  // Max 500
+}
+
+message GetDeploymentLogsResponse {
+  repeated string log_lines = 1;
+}
