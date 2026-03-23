@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "software-factory-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@bac/software-factory-web", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "platform-automation-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@bac/platform-automation-web", "dev"],
+      "port": 3001
+    },
+    {
+      "name": "docs-portal",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@bac/docs-portal", "dev"],
+      "port": 3002
+    },
+    {
+      "name": "companion-mobile",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@bac-mobile/operator-mobile", "dev"],
+      "port": 8081
+    }
+  ]
+}
