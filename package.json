@@ -35,7 +35,9 @@
     "integration:check": "pnpm contracts:generate && pnpm contracts:validate && pnpm design:validate && pnpm governance:validate && pnpm docs:validate && pnpm release:validate && pnpm integration:smoke",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "audit:security": "node scripts/security-audit.mjs"
+    "audit:security": "node scripts/security-audit.mjs",
+    "contracts:upgrade": "node scripts/contract-upgrade-pr.mjs",
+    "release:train": "node scripts/release-train.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
