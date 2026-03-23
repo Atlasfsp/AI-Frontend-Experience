@@ -1,8 +1,12 @@
-# BAC Ecosystem — Final Architecture Review
+> **⚠️ SUPERSEDED** — This document has been superseded by `FINAL_ECOSYSTEM_REVIEW.md` (v2.0.0, 2026-03-23).
+> Use FINAL_ECOSYSTEM_REVIEW.md for all current architecture decisions, must-fix items, and governance model.
+
+# BAC Ecosystem — Final Architecture Review (ARCHIVED)
 
 **Date:** 2026-03-23
 **Reviewer:** Principal Architect, StratoGroup
 **Scope:** 6-repository ecosystem final compliance audit
+**Status:** SUPERSEDED by FINAL_ECOSYSTEM_REVIEW.md
 **Status:** APPROVED WITH CONDITIONS
 
 ---
