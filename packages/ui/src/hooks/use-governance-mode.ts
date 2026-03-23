@@ -7,12 +7,12 @@ import { useSyncExternalStore } from 'react';
  *
  * - HOTL  (Human-On-The-Loop): AI acts, human is notified and can override.
  * - HITL  (Human-In-The-Loop): AI proposes, human must confirm before execution.
- * - FULL_AUTONOMY: AI acts without human confirmation (lowest safety).
+ * - FULL_AUTONOMY: AI acts without human confirmation inside approved guardrails.
  */
 export type GovernanceMode = 'HOTL' | 'HITL' | 'FULL_AUTONOMY';
 
 const STORAGE_KEY = 'bac-governance-mode';
-const DEFAULT_MODE: GovernanceMode = 'HITL';
+const DEFAULT_MODE: GovernanceMode = 'HOTL';
 
 let listeners: Array<() => void> = [];
 

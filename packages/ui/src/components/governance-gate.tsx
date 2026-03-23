@@ -21,8 +21,8 @@ export interface GovernanceGateProps {
  * a confirmation step that respects the current governance mode.
  *
  * - FULL_AUTONOMY: executes immediately.
- * - HOTL: executes immediately but shows a toast/notification.
- * - HITL: shows a confirmation dialog before executing.
+ * - HOTL: auto-executes only low-risk actions; higher-risk actions require confirmation.
+ * - HITL: always shows a confirmation dialog before executing.
  */
 export function GovernanceGate({
   mode,
@@ -45,7 +45,7 @@ export function GovernanceGate({
   }, [onConfirm]);
 
   const handleExecute = useCallback(() => {
-    if (mode === 'FULL_AUTONOMY' || (mode === 'HOTL' && riskLevel !== 'critical')) {
+    if (mode === 'FULL_AUTONOMY' || (mode === 'HOTL' && riskLevel === 'low')) {
       void executeAction();
     } else {
       setShowConfirm(true);
