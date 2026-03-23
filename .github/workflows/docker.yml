@@ -1,0 +1,43 @@
+name: Docker
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - software-factory-web
+          - platform-automation-web
+          - docs-portal
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image — ${{ matrix.app }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          build-args: |
+            APP_NAME=${{ matrix.app }}
+          tags: |
+            bac/${{ matrix.app }}:${{ github.sha }}
+            bac/${{ matrix.app }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ── Registry push (placeholder) ──────────────────────────────────
+      - name: Push to container registry (placeholder)
+        run: |
+          echo "TODO: Authenticate and push to your container registry."
+          echo "  docker push <registry>/bac/${{ matrix.app }}:${{ github.sha }}"
+          echo "  docker push <registry>/bac/${{ matrix.app }}:latest"

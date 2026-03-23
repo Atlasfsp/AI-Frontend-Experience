@@ -16,6 +16,43 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
+
+      # ── Docker image builds ──────────────────────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image — software-factory-web
+        run: |
+          docker build \
+            --build-arg APP_NAME=software-factory-web \
+            -t bac/software-factory-web:${{ github.sha }} \
+            -t bac/software-factory-web:latest \
+            .
+
+      - name: Build Docker image — platform-automation-web
+        run: |
+          docker build \
+            --build-arg APP_NAME=platform-automation-web \
+            -t bac/platform-automation-web:${{ github.sha }} \
+            -t bac/platform-automation-web:latest \
+            .
+
+      - name: Build Docker image — docs-portal
+        run: |
+          docker build \
+            --build-arg APP_NAME=docs-portal \
+            -t bac/docs-portal:${{ github.sha }} \
+            -t bac/docs-portal:latest \
+            .
+
+      # ── Container registry push (placeholder) ───────────────────────────
+      - name: Push images to registry (placeholder)
+        run: |
+          echo "TODO: Configure container registry credentials and push images."
+          echo "  docker push <registry>/bac/software-factory-web:${{ github.sha }}"
+          echo "  docker push <registry>/bac/platform-automation-web:${{ github.sha }}"
+          echo "  docker push <registry>/bac/docs-portal:${{ github.sha }}"
+
       - run: echo "Publish @bac packages from this workflow once the GitHub Packages token and semantic-release wiring are in place."

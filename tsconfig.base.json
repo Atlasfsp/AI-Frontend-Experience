@@ -25,6 +25,7 @@
       "@bac/auth": ["packages/auth/src/index.ts"],
       "@bac/config": ["packages/config/src/index.ts"],
       "@bac/observability": ["packages/observability/src/index.ts"],
+      "@bac/domain-contracts": ["packages/domain-contracts/src/index.ts"],
       "@bac/testing": ["packages/testing/src/index.tsx"]
     }
   }

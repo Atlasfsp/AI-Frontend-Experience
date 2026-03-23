@@ -1,19 +1,22 @@
 import { z } from 'zod';
 
+import {
+  type BacRole,
+  BacSessionBaseSchema,
+  isSessionExpired,
+  roleHierarchy,
+} from '@bac/domain-contracts';
+
+export { isSessionExpired, roleHierarchy };
+export type { BacRole };
+
 export const sessionCookieName = 'bac_session';
 
-export const roleHierarchy = ['VIEWER', 'MEMBER', 'ADMIN', 'PLATFORM_ADMIN', 'OPERATOR'] as const;
-export type BacRole = (typeof roleHierarchy)[number];
-
-export const BacSessionSchema = z.object({
+/**
+ * Web-specific session schema extending the shared base with auth tokens.
+ */
+export const BacSessionSchema = BacSessionBaseSchema.extend({
   accessToken: z.string().min(1).optional(),
-  subject: z.string().min(1),
-  email: z.string().email(),
-  name: z.string().min(1),
-  tenantId: z.string().min(1),
-  workspaceId: z.string().min(1),
-  roles: z.array(z.enum(roleHierarchy)).min(1),
-  expiresAt: z.string().min(1),
   authMode: z.enum(['mock', 'oidc']),
   idToken: z.string().optional(),
   issuer: z.string().optional(),
@@ -90,12 +93,4 @@ export function hasRole(session: BacSession | null, requiredRoles: BacRole[]): b
 
   const highestRoleIndex = Math.max(...session.roles.map((role) => roleHierarchy.indexOf(role)));
   return requiredRoles.some((role) => highestRoleIndex >= roleHierarchy.indexOf(role));
-}
-
-export function isSessionExpired(session: Pick<BacSession, 'expiresAt'> | null) {
-  if (!session) {
-    return true;
-  }
-
-  return new Date(session.expiresAt).getTime() <= Date.now();
 }

@@ -1,0 +1,90 @@
+// Roles
+export type { BacRole } from './roles';
+export {
+  BAC_ROLES,
+  MOBILE_ROLES,
+  WEB_ROLES,
+  isMobilePersonaRole,
+  isPrivilegedRole,
+  roleHierarchy,
+} from './roles';
+
+// Permissions
+export type { BacPermission } from './permissions';
+export {
+  BAC_PERMISSIONS,
+  ROLE_PERMISSIONS,
+  getPermissionsForRole,
+  getPermissionsForRoles,
+  hasPermission,
+} from './permissions';
+
+// Session base
+export type { BacSessionBase } from './session-base';
+export { BacSessionBaseSchema, isSessionExpired } from './session-base';
+
+// Domain types
+export {
+  type AgentStatus,
+  type AgentSummary,
+  AgentStatusSchema,
+  AgentSummarySchema,
+  type AlertCategory,
+  type AlertItem,
+  type AlertSeverity,
+  type AlertSource,
+  type AlertStatus,
+  AlertCategorySchema,
+  AlertItemSchema,
+  AlertSeveritySchema,
+  AlertSourceSchema,
+  AlertStatusSchema,
+  type ApprovalItem,
+  type ApprovalKind,
+  type ApprovalRisk,
+  type ApprovalStatus,
+  ApprovalItemSchema,
+  ApprovalKindSchema,
+  ApprovalRiskSchema,
+  ApprovalStatusSchema,
+  type BuildStatus,
+  type BuildSummary,
+  BuildStatusSchema,
+  BuildSummarySchema,
+  type ClusterStatus,
+  type ClusterSummary,
+  ClusterStatusSchema,
+  ClusterSummarySchema,
+  type DashboardBriefing,
+  type DashboardMetric,
+  type DashboardShortcut,
+  type DashboardSummary,
+  type StatusTone,
+  DashboardBriefingSchema,
+  DashboardMetricSchema,
+  DashboardShortcutSchema,
+  DashboardSummarySchema,
+  StatusToneSchema,
+  type IncidentItem,
+  type IncidentSeverity,
+  type IncidentStatus,
+  type TimelineEvent,
+  IncidentItemSchema,
+  IncidentSeveritySchema,
+  IncidentStatusSchema,
+  TimelineEventSchema,
+  type PlatformOverview,
+  PlatformOverviewSchema,
+  type PromiseStatus,
+  type PromiseSummary,
+  PromiseStatusSchema,
+  PromiseSummarySchema,
+  type SoftwareFactoryOverview,
+  SoftwareFactoryOverviewSchema,
+  type WorkItemSummary,
+  WorkItemSummarySchema,
+  type WorkspaceStatus,
+  type WorkspaceSummary,
+  WorkspaceStatusSchema,
+  WorkspaceSummarySchema,
+} from './domain/index';

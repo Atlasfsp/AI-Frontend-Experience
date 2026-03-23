@@ -1,98 +1,24 @@
-import type { BacRole, BacSession } from './session';
+/**
+ * Re-exports unified permissions from @bac/domain-contracts for backward compatibility.
+ *
+ * The auth package maintains the session-aware `hasPermission(session, permission)` signature
+ * that existing consumers depend on, delegating to the canonical role-based implementation.
+ */
 
-export type BacPermission =
-  | 'application:deploy'
-  | 'application:rollback'
-  | 'application:view'
-  | 'audit_log:view'
-  | 'data_access:manage'
-  | 'data_access:mutate'
-  | 'data_access:query'
-  | 'data_access:subscribe'
-  | 'data_access:view'
-  | 'database_cluster:manage'
-  | 'database_cluster:view'
-  | 'promise:claim'
-  | 'promise:manage'
-  | 'promise:view'
-  | 'secret:read'
-  | 'workspace:deploy'
-  | 'workspace:manage'
-  | 'workspace:view';
+import {
+  type BacPermission,
+  type BacRole,
+  getPermissionsForRoles,
+  hasPermission as hasPermissionByRoles,
+  ROLE_PERMISSIONS,
+} from '@bac/domain-contracts';
 
-const permissionMatrix: Record<BacRole, BacPermission[]> = {
-  VIEWER: ['application:view', 'data_access:view', 'promise:view', 'workspace:view'],
-  MEMBER: [
-    'application:view',
-    'data_access:query',
-    'data_access:subscribe',
-    'data_access:view',
-    'promise:view',
-    'workspace:view',
-  ],
-  ADMIN: [
-    'application:deploy',
-    'application:view',
-    'data_access:manage',
-    'data_access:mutate',
-    'data_access:query',
-    'data_access:subscribe',
-    'data_access:view',
-    'database_cluster:view',
-    'promise:claim',
-    'promise:manage',
-    'promise:view',
-    'secret:read',
-    'workspace:deploy',
-    'workspace:manage',
-    'workspace:view',
-  ],
-  PLATFORM_ADMIN: [
-    'application:deploy',
-    'application:rollback',
-    'application:view',
-    'audit_log:view',
-    'data_access:manage',
-    'data_access:mutate',
-    'data_access:query',
-    'data_access:subscribe',
-    'data_access:view',
-    'database_cluster:manage',
-    'database_cluster:view',
-    'promise:claim',
-    'promise:manage',
-    'promise:view',
-    'secret:read',
-    'workspace:deploy',
-    'workspace:manage',
-    'workspace:view',
-  ],
-  OPERATOR: [
-    'application:deploy',
-    'application:rollback',
-    'application:view',
-    'audit_log:view',
-    'data_access:manage',
-    'data_access:mutate',
-    'data_access:query',
-    'data_access:subscribe',
-    'data_access:view',
-    'database_cluster:manage',
-    'database_cluster:view',
-    'promise:claim',
-    'promise:manage',
-    'promise:view',
-    'secret:read',
-    'workspace:deploy',
-    'workspace:manage',
-    'workspace:view',
-  ],
-};
+import type { BacSession } from './session';
 
-export function getPermissionsForRoles(roles: BacRole[]): BacPermission[] {
-  return [...new Set(roles.flatMap((role) => permissionMatrix[role]))];
-}
+export type { BacPermission };
+export { getPermissionsForRoles, ROLE_PERMISSIONS };
 
+/** Session-aware permission check. Extracts roles from the session and delegates to the canonical matrix. */
 export function hasPermission(
   session: Pick<BacSession, 'roles'> | null,
   permission: BacPermission,
@@ -101,5 +27,5 @@ export function hasPermission(
     return false;
   }
 
-  return getPermissionsForRoles(session.roles).includes(permission);
+  return hasPermissionByRoles(session.roles, permission);
 }

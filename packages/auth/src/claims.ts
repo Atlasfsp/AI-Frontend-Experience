@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
-import { type BacSession, roleHierarchy } from './session';
+import { BAC_ROLES } from '@bac/domain-contracts';
 
-const JwtRoleSchema = z.enum(roleHierarchy);
+import type { BacSession } from './session';
+
+const JwtRoleSchema = z.enum(BAC_ROLES);
 
 export const BacJwtClaimsSchema = z.object({
   aud: z.union([z.string(), z.array(z.string())]).optional(),
@@ -57,7 +59,7 @@ export function claimsToSession(
     issuer: claims.iss,
     name: claims.name ?? claims.preferred_username ?? 'BAC Operator',
     refreshToken: overrides.refreshToken,
-    roles: claims.roles?.length ? claims.roles : ['VIEWER'],
+    roles: claims.roles?.length ? claims.roles : (['VIEWER'] as const),
     scope: overrides.scope ?? ['openid', 'profile', 'email'],
     subject: claims.sub,
     tenantId: claims.tenant_id ?? 'tenant-echo',

@@ -1,62 +1,20 @@
-export interface BuildSummary {
-  id: string;
-  name: string;
-  stage: string;
-  status: 'danger' | 'neutral' | 'success' | 'warning';
-  updatedAt: string;
-}
+/**
+ * Re-exports canonical domain types from @bac/domain-contracts for backward compatibility.
+ * New code should import directly from @bac/domain-contracts.
+ */
 
-export interface WorkItemSummary {
-  id: string;
-  owner: string;
-  priority: string;
-  status: string;
-  title: string;
-  updatedAt: string;
-}
+export type {
+  AgentSummary,
+  BuildSummary,
+  ClusterSummary,
+  PlatformOverview,
+  PromiseSummary,
+  SoftwareFactoryOverview,
+  WorkItemSummary,
+  WorkspaceSummary,
+} from '@bac/domain-contracts';
 
-export interface SoftwareFactoryOverview {
-  activeBuilds: number;
-  gatePassRate: string;
-  openReviews: number;
-  recentBuild: BuildSummary;
-}
-
-export interface AgentSummary {
-  id: string;
-  model: string;
-  service: string;
-  status: 'healthy' | 'idle' | 'working';
-}
-
-export interface ClusterSummary {
-  id: string;
-  region: string;
-  status: 'healthy' | 'warning';
-  workloadCount: number;
-}
-
-export interface WorkspaceSummary {
-  id: string;
-  promiseCount: number;
-  status: 'healthy' | 'warning';
-  tenant: string;
-}
-
-export interface PromiseSummary {
-  id: string;
-  owner: string;
-  status: 'available' | 'preview';
-  title: string;
-}
-
-export interface PlatformOverview {
-  activeAlerts: number;
-  clusterHealth: string;
-  fleetSync: string;
-  managedWorkspaces: number;
-}
-
+/** Swagger document type is specific to the api-clients package. */
 export interface SwaggerDocument {
   info: {
     title: string;

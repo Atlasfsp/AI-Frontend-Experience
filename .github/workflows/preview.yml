@@ -1,0 +1,49 @@
+name: Preview
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      # ── Preview deployment (placeholder) ───────────────────────────────
+      - name: Deploy preview
+        id: deploy
+        run: |
+          echo "TODO: Wire Vercel or Cloudflare Pages preview deploy here."
+          echo "  npx vercel deploy --prebuilt --token=\$VERCEL_TOKEN"
+          echo "  or: npx wrangler pages deploy out/ --project-name=bac-preview"
+          echo "preview_url=https://preview-pr-${{ github.event.pull_request.number }}.example.dev" >> "$GITHUB_OUTPUT"
+
+      # ── Comment PR with preview URL ────────────────────────────────────
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.preview_url }}';
+            const body = `### Preview deployment\n\n| App | URL |\n|-----|-----|\n| software-factory-web | ${url} |\n\n> This is a placeholder. Configure your preview provider to generate real URLs.`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
