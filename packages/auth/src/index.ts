@@ -22,3 +22,5 @@ export {
 } from './session';
 export { AuthProvider, useBacAccess, useBacPermission, useBacSession } from './react';
 export { PermissionGuard, RoleGuard } from './guards';
+export type { OidcRefreshConfig, TokenResponse } from './refresh';
+export { createRefreshResponse, refreshTokens } from './refresh';

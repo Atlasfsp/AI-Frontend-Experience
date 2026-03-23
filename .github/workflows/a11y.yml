@@ -1,0 +1,119 @@
+name: Accessibility Audit
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: a11y-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Accessibility Audit
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "store=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm modules
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.store }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_BAC_ENV: test
+          NEXT_PUBLIC_BAC_ENABLE_MOCK_API: 'true'
+
+      - name: Install pa11y
+        run: npx --yes pa11y-ci@3 --version
+
+      - name: Start software-factory-web
+        run: |
+          cd apps/software-factory-web
+          npx next start -p 3000 &
+          sleep 5
+
+      - name: Run accessibility audit
+        id: audit
+        continue-on-error: true
+        run: |
+          echo "## Accessibility Audit Report" > a11y-report.md
+          echo "" >> a11y-report.md
+
+          PAGES=(
+            "http://localhost:3000/login"
+          )
+
+          VIOLATIONS=0
+
+          for page in "${PAGES[@]}"; do
+            echo "### Auditing: ${page}" >> a11y-report.md
+            echo "" >> a11y-report.md
+
+            result=$(npx pa11y --reporter json "$page" 2>/dev/null || echo "[]")
+            count=$(echo "$result" | jq 'length' 2>/dev/null || echo "0")
+
+            if [ "$count" -gt "0" ]; then
+              VIOLATIONS=$((VIOLATIONS + count))
+              echo "**${count} violation(s) found**" >> a11y-report.md
+              echo "" >> a11y-report.md
+              echo '```' >> a11y-report.md
+              echo "$result" | jq -r '.[] | "[\(.type)] \(.message) — \(.selector)"' 2>/dev/null >> a11y-report.md
+              echo '```' >> a11y-report.md
+            else
+              echo "No violations found." >> a11y-report.md
+            fi
+
+            echo "" >> a11y-report.md
+          done
+
+          echo "---" >> a11y-report.md
+          echo "" >> a11y-report.md
+          echo "**Total violations: ${VIOLATIONS}**" >> a11y-report.md
+          echo "" >> a11y-report.md
+          echo "_Generated at $(date -u '+%Y-%m-%d %H:%M:%S UTC') for commit \`${{ github.event.pull_request.head.sha }}\`_" >> a11y-report.md
+
+          if [ "$VIOLATIONS" -gt "0" ]; then
+            echo "has_violations=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_violations=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Comment PR with a11y report
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: a11y-audit
+          path: a11y-report.md
+
+      - name: Fail if violations exist
+        if: steps.audit.outputs.has_violations == 'true'
+        run: |
+          echo "::warning::Accessibility violations were found. See the PR comment for details."
+          exit 1

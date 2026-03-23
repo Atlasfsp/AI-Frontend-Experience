@@ -1,0 +1,85 @@
+name: Bundle Analysis
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: bundle-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze Bundle Size
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "store=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm modules
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.store }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build with bundle analysis
+        run: ANALYZE=true pnpm build
+        env:
+          NEXT_PUBLIC_BAC_ENV: production
+          NEXT_PUBLIC_BAC_ENABLE_MOCK_API: 'false'
+
+      - name: Measure bundle sizes
+        id: sizes
+        run: |
+          echo "## Bundle Size Report" > bundle-report.md
+          echo "" >> bundle-report.md
+          echo "| App | First Load JS | Shared Chunks |" >> bundle-report.md
+          echo "|-----|--------------|---------------|" >> bundle-report.md
+
+          for app_dir in apps/*/; do
+            app_name=$(basename "$app_dir")
+            next_dir="${app_dir}.next"
+
+            if [ -d "$next_dir" ]; then
+              # Parse the build manifest for page sizes
+              if [ -f "${next_dir}/build-manifest.json" ]; then
+                total_size=$(find "${next_dir}/static" -name "*.js" -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}')
+                total_kb=$(echo "scale=1; ${total_size:-0} / 1024" | bc 2>/dev/null || echo "N/A")
+                shared_size=$(find "${next_dir}/static/chunks" -maxdepth 1 -name "*.js" -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}')
+                shared_kb=$(echo "scale=1; ${shared_size:-0} / 1024" | bc 2>/dev/null || echo "N/A")
+                echo "| ${app_name} | ${total_kb} KB | ${shared_kb} KB |" >> bundle-report.md
+              fi
+            fi
+          done
+
+          echo "" >> bundle-report.md
+          echo "_Generated at $(date -u '+%Y-%m-%d %H:%M:%S UTC') for commit \`${{ github.event.pull_request.head.sha }}\`_" >> bundle-report.md
+
+      - name: Comment PR with bundle report
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: bundle-analysis
+          path: bundle-report.md

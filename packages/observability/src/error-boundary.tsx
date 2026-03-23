@@ -3,6 +3,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 import { createLogger } from './logger';
+import { captureException } from './sentry';
 
 const logger = createLogger({ app: 'observability-error-boundary' });
 
@@ -16,6 +17,10 @@ export class BacErrorBoundary extends Component<
     logger.error('ui.error_boundary_triggered', {
       componentStack: info.componentStack,
       errorMessage: error.message,
+    });
+
+    captureException(error, {
+      componentStack: info.componentStack,
     });
   }
 

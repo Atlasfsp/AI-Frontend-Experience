@@ -26,6 +26,7 @@
       "@bac/config": ["packages/config/src/index.ts"],
       "@bac/observability": ["packages/observability/src/index.ts"],
       "@bac/domain-contracts": ["packages/domain-contracts/src/index.ts"],
+      "@bac/i18n": ["packages/i18n/src/index.ts"],
       "@bac/testing": ["packages/testing/src/index.tsx"]
     }
   }
