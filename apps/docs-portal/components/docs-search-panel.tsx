@@ -16,20 +16,26 @@ export function DocsSearchPanel({
 }) {
   const [query, setQuery] = useState(initialQuery);
 
-  const filteredEntries = useMemo(() => {
-    const search = query.trim().toLowerCase();
+  const searchableEntries = useMemo(() => {
+    return entries.map(entry => ({
+      entry,
+      searchContent: [entry.title, entry.summary, entry.kind, entry.owner, ...entry.keywords, ...entry.audience]
+        .join(' ')
+        .toLowerCase()
+    }));
+  }, [entries]);
 
-    if (!search) {
+  const filteredEntries = useMemo(() => {
+    const searchTerms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+
+    if (!searchTerms.length) {
       return entries;
     }
 
-    return entries.filter((entry) =>
-      [entry.title, entry.summary, entry.kind, entry.owner, ...entry.keywords, ...entry.audience]
-        .join(' ')
-        .toLowerCase()
-        .includes(search),
-    );
-  }, [entries, query]);
+    return searchableEntries
+      .filter(({ searchContent }) => searchTerms.every(term => searchContent.includes(term)))
+      .map(({ entry }) => entry);
+  }, [searchableEntries, query, entries]);
 
   return (
     <div className="space-y-6">
