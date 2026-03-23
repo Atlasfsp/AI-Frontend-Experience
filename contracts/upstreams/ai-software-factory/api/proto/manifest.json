@@ -16,8 +16,7 @@
       ],
       "releaseTag": "contracts/software-factory-proto/v1.0.0",
       "consumers": [
-        "ai-frontend-experience",
-        "ai-companion-mobile"
+        "ai-frontend-experience"
       ]
     },
     {
@@ -26,10 +25,9 @@
       "format": "connect-es",
       "path": "gen/typescript/sdx",
       "sourcePath": "api/proto",
-      "releaseTag": "contracts/software-factory-connect-es/v1.0.0",
+      "releaseTag": "contracts/software-factory-connect-typescript/v1.0.0",
       "consumers": [
-        "ai-frontend-experience",
-        "ai-companion-mobile"
+        "ai-frontend-experience"
       ]
     }
   ]

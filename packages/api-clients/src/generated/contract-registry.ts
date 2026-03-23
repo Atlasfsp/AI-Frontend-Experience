@@ -54,7 +54,7 @@ export const generatedContractBindings: readonly GeneratedContractBinding[] = [
     releaseTag: null,
     endpointCount: softwareFactoryPaths.length,
     endpoints: softwareFactoryPaths,
-    generatedAt: '2026-03-23T05:41:03.427Z',
+    generatedAt: '2026-03-23T07:45:53.199Z',
   },
   {
     producerRepo: 'ai-platform-automation',
@@ -63,7 +63,7 @@ export const generatedContractBindings: readonly GeneratedContractBinding[] = [
     releaseTag: null,
     endpointCount: platformAutomationPaths.length,
     endpoints: platformAutomationPaths,
-    generatedAt: '2026-03-23T05:41:03.427Z',
+    generatedAt: '2026-03-23T07:45:53.199Z',
   },
 ] as const;
 

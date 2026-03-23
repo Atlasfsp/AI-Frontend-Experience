@@ -93,14 +93,18 @@ export function useSubscription<T>(
 
     const client = getSharedClient();
     const id = idRef.current;
-
-    const unsubscribe = client.subscribe(id, {
+    const subscriptionOptions: Parameters<typeof client.subscribe>[1] = {
       query,
-      variables: variables ?? undefined,
       onData: handleData,
       onError: handleError,
       onComplete: handleComplete,
-    });
+    };
+
+    if (variables) {
+      subscriptionOptions.variables = variables;
+    }
+
+    const unsubscribe = client.subscribe(id, subscriptionOptions);
 
     return () => {
       unsubscribe();

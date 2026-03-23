@@ -38,6 +38,7 @@ Every consumer repo maintains `compatibility/manifest.json` with this exact sche
 |--------------|-------------|----------------|--------|
 | AI-Software-Factory | software-factory-openapi | ^1.0.0 | Active |
 | AI-Software-Factory | software-factory-proto | ^1.0.0 | Active |
+| AI-Software-Factory | software-factory-connect-typescript | ^1.0.0 | Active |
 | AI-Platform-Automation | platform-automation-openapi | ^1.0.0 | Active |
 | AI-Platform-Automation | platform-automation-proto | ^1.0.0 | Active |
 | Design-Factory_Figma | figma-design-tokens | ^1.0.0 | Active |
@@ -68,8 +69,8 @@ Every consumer repo maintains `compatibility/manifest.json` with this exact sche
 |----------|-----------------|-----------|
 | Minor/patch upstream release | `integration.yml` detects newer version within `supportedRange` | Auto-creates PR with updated contracts |
 | Major upstream release | `integration.yml` detects version outside `supportedRange` | Creates GitHub Issue — requires manual migration |
-| Design token schema break | `validate-design-drift.mjs` fails Zod parse | Fails PR |
-| Route map coverage drop | Route coverage check < 95% | Warns in PR comment |
+| Design token schema break | `validate-design-drift.mjs` fails token-shape validation | Fails PR |
+| Route/component/state coverage drop | Coverage check < 95% | Fails PR |
 | Generated client type mismatch | `validate-contract-drift.mjs` detects diff | Fails PR |
 | API endpoint removed | Generated client method has no matching spec path | Fails typecheck |
 
@@ -120,7 +121,8 @@ Both experience repos include `scripts/integration/report-compatibility.mjs` whi
       "repo": "ai-software-factory",
       "artifact": "software-factory-openapi",
       "pinnedVersion": "1.0.0",
-      "latestAvailable": "1.2.0",
+      "actualVersion": "1.0.0",
+      "selectedReleaseTag": "ai-software-factory/v1.0.0",
       "compatible": true,
       "driftDetected": false
     }

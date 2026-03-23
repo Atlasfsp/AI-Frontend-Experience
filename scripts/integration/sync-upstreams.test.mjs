@@ -33,7 +33,7 @@ test('syncConfiguredUpstreams downloads and validates GitHub release assets', as
   writeJson(releaseRoot, 'design-system/tokens/consumer.json', { color: { base: '#ffffff' } });
   writeJson(releaseRoot, 'design-system/tokens/manifest.json', {
     schemaVersion: '1.0.0',
-    artifacts: [{ artifactId: 'figma-design-tokens-enterprise', version: '1.0.0', path: 'design-system/tokens/enterprise.json' }],
+    artifacts: [{ artifactId: 'figma-design-tokens', version: '1.0.0', path: 'design-system/tokens', entrypoints: ['design-system/tokens/enterprise.json', 'design-system/tokens/consumer.json'] }],
   });
   const assetDir = path.join(releaseRoot, 'assets');
   fs.mkdirSync(assetDir, { recursive: true });

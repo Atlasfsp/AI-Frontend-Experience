@@ -10,6 +10,10 @@
     {
       "artifactId": "platform-automation-proto",
       "version": "1.0.0"
+    },
+    {
+      "artifactId": "platform-automation-schemas",
+      "version": "1.0.0"
     }
   ],
   "compatibleConsumers": [
@@ -25,8 +29,7 @@
       "repo": "ai-companion-mobile",
       "supportedRange": "^0.1.0",
       "requires": [
-        "platform-automation-openapi@^1.0.0",
-        "platform-automation-proto@^1.0.0"
+        "platform-automation-openapi@^1.0.0"
       ]
     }
   ]

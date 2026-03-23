@@ -13,8 +13,16 @@
 
 ## Flow
 
-1. Run `pnpm sync:contracts` locally when sibling producer repos are available.
-   `BAC_UPSTREAM_SOURCE_MODE=github-release` is the CI and release default, while `workspace` remains the local convenience mode.
-2. Run `pnpm contracts:generate`.
-3. Commit regenerated bindings when the snapshots changed.
-4. CI validates that generated outputs, consumed upstream release tags, design state maps, and compatibility manifests remain in sync.
+1. Run `pnpm contracts:generate`.
+   This is the authoritative regeneration entrypoint and always performs upstream sync first.
+2. `BAC_UPSTREAM_SOURCE_MODE=github-release` is the CI and release default.
+   `workspace` remains the local convenience mode when sibling producer repos are present.
+3. The web consumer snapshots:
+   - `software-factory-openapi`
+   - `software-factory-proto`
+   - `software-factory-connect-typescript`
+   - `platform-automation-openapi`
+   - `platform-automation-proto`
+4. Run `pnpm compatibility:refresh` when intentionally adopting newer compatible upstream releases so pinned compatibility metadata stays explicit.
+5. Commit regenerated bindings and refreshed compatibility metadata when the snapshots changed.
+6. CI validates generated outputs, consumed upstream release tags, design state maps, Stitch screen-map coverage, and compatibility manifests.

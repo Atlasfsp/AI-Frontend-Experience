@@ -4,6 +4,29 @@ AI-Frontend-Experience is the BAC web experience monorepo. It delivers the brows
 
 This repository is designed for long-term product growth, not demo-only scaffolding. The baseline is strict TypeScript, Next.js App Router, shared UI and auth packages, BFF proxy routes, role-aware navigation, mock-first integration seams, and CI gates that treat lint, type safety, tests, and builds as release criteria.
 
+## Role In The 3-Layer Ecosystem
+
+`AI-Frontend-Experience` is part of the experience layer in the StratoGroup AI ecosystem.
+
+Official repository description:
+
+> Unified web frontend experience layer for AI Software Factory and AI Platform Automation, including shared UI, design tokens, docs portal, and Swagger/API explorer.
+
+This repo consumes authoritative backend contracts from `AI-Software-Factory` and `AI-Platform-Automation`, plus final design handoff artifacts from `Design-Factory_Figma`. It also consumes exploratory Stitch screen maps for design-traceability coverage, but it does not redefine backend or design ownership.
+
+## Authoritative Ecosystem Baseline
+
+This repo aligns to the workspace-level baseline artifacts and does not redefine them:
+
+- `ECOSYSTEM_REPO_CATALOG.md`
+- `ECOSYSTEM_LAYER_MODEL.md`
+- `ECOSYSTEM_FOLDER_TREE.md`
+- `CONTRACT_OWNERSHIP.md`
+- `COMPATIBILITY_MATRIX.md`
+- `CROSS_REPO_RELEASE_FLOW.md`
+- `LOCAL_INTEGRATION_GUIDE.md`
+- `Claude-Master-Architecture-Package`
+
 ## What this repository owns
 
 The repository is the presentation layer for:

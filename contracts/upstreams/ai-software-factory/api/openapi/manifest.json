@@ -14,16 +14,6 @@
         "ai-frontend-experience",
         "ai-companion-mobile"
       ]
-    },
-    {
-      "artifactId": "software-factory-swagger",
-      "version": "1.0.0",
-      "format": "swagger-json",
-      "path": "api/openapi/sdx-gateway-v1.swagger.json",
-      "releaseTag": "contracts/software-factory-swagger/v1.0.0",
-      "consumers": [
-        "ai-frontend-experience"
-      ]
     }
   ]
 }

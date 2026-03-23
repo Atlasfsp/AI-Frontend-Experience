@@ -3,26 +3,32 @@
   "repo": "design-factory-stitch",
   "repoVersion": "0.1.0",
   "handoffArtifacts": [
-    { "artifactId": "stitch-concept-inventory-web", "version": "1.0.0" },
-    { "artifactId": "stitch-concept-inventory-mobile", "version": "1.0.0" },
-    { "artifactId": "stitch-exploratory-prompts-web", "version": "1.0.0" },
-    { "artifactId": "stitch-exploratory-prompts-mobile", "version": "1.0.0" }
+    { "artifactId": "stitch-concept-inventory", "version": "1.0.0" },
+    { "artifactId": "stitch-screen-maps", "version": "1.0.0" },
+    { "artifactId": "stitch-exploratory-prompts", "version": "1.0.0" }
   ],
   "compatibleConsumers": [
+    {
+      "repo": "design-factory-figma",
+      "supportedRange": "^0.1.0",
+      "requires": [
+        "stitch-concept-inventory@^1.0.0",
+        "stitch-screen-maps@^1.0.0",
+        "stitch-exploratory-prompts@^1.0.0"
+      ]
+    },
     {
       "repo": "ai-frontend-experience",
       "supportedRange": "^0.1.0",
       "requires": [
-        "stitch-concept-inventory-web@^1.0.0",
-        "stitch-exploratory-prompts-web@^1.0.0"
+        "stitch-screen-maps@^1.0.0"
       ]
     },
     {
       "repo": "ai-companion-mobile",
       "supportedRange": "^0.1.0",
       "requires": [
-        "stitch-concept-inventory-mobile@^1.0.0",
-        "stitch-exploratory-prompts-mobile@^1.0.0"
+        "stitch-concept-inventory@^1.0.0"
       ]
     }
   ]

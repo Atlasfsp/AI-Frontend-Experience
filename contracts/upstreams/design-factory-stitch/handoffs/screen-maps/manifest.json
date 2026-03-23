@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "ownerRepo": "design-factory-stitch",
+  "artifactSet": "stitch-screen-maps",
+  "artifacts": [
+    {
+      "artifactId": "stitch-screen-maps",
+      "version": "1.0.0",
+      "path": "handoffs/screen-maps",
+      "entrypoints": [
+        "handoffs/screen-maps/ai-frontend-experience.json",
+        "handoffs/screen-maps/design-factory-figma.json"
+      ],
+      "releaseTag": "handoff/stitch-screen-maps/v1.0.0",
+      "consumers": [
+        "design-factory-figma",
+        "ai-frontend-experience"
+      ]
+    }
+  ]
+}

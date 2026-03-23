@@ -22,12 +22,11 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Sync upstream contracts from GitHub Releases
+      - name: Generate clients from released upstream contracts
         env:
           BAC_UPSTREAM_SOURCE_MODE: github-release
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm sync:contracts
-      - run: pnpm contracts:generate
+        run: pnpm contracts:generate
       - run: git diff --exit-code packages/api-clients/src/generated/contract-registry.ts packages/api-clients/contracts/generated-client.manifest.json
       - run: pnpm check
       - run: pnpm contracts:validate
@@ -35,8 +34,10 @@ jobs:
       - run: pnpm docs:validate
       - run: pnpm release:validate
       - run: pnpm integration:smoke
-      - run: pnpm compatibility:report > compatibility-report.json
+      - run: mkdir -p reports && pnpm compatibility:report > reports/compatibility-report.json
       - uses: actions/upload-artifact@v4
         with:
           name: ai-frontend-experience-compatibility-report
-          path: compatibility-report.json
+          path: |
+            reports/compatibility-report.json
+            reports/design-drift-report.json

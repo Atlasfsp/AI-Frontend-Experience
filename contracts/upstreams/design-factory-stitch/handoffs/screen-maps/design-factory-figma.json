@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "stitch-screen-maps",
+  "version": "1.0.0",
+  "target": "design-factory-figma",
+  "screenMaps": [
+    {
+      "screenId": "software-factory-dashboard",
+      "routeId": "software-factory.dashboard",
+      "routePath": "/software-factory/dashboard",
+      "handoffIntent": "Refine the operator command-center shell into production-intent Figma frames."
+    },
+    {
+      "screenId": "platform-dashboard",
+      "routeId": "platform.dashboard",
+      "routePath": "/platform/dashboard",
+      "handoffIntent": "Converge the global control-plane dashboard and supporting split-view layouts."
+    },
+    {
+      "screenId": "mobile-home",
+      "routeId": "mobile.home",
+      "routePath": "/(tabs)",
+      "handoffIntent": "Refine the role-aware companion briefing view for final mobile handoff."
+    }
+  ]
+}

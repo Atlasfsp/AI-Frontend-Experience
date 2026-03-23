@@ -10,6 +10,14 @@
     {
       "artifactId": "software-factory-proto",
       "version": "1.0.0"
+    },
+    {
+      "artifactId": "software-factory-connect-typescript",
+      "version": "1.0.0"
+    },
+    {
+      "artifactId": "software-factory-schemas",
+      "version": "1.0.0"
     }
   ],
   "compatibleConsumers": [
@@ -18,15 +26,15 @@
       "supportedRange": "^0.1.0",
       "requires": [
         "software-factory-openapi@^1.0.0",
-        "software-factory-proto@^1.0.0"
+        "software-factory-proto@^1.0.0",
+        "software-factory-connect-typescript@^1.0.0"
       ]
     },
     {
       "repo": "ai-companion-mobile",
       "supportedRange": "^0.1.0",
       "requires": [
-        "software-factory-openapi@^1.0.0",
-        "software-factory-proto@^1.0.0"
+        "software-factory-openapi@^1.0.0"
       ]
     }
   ]

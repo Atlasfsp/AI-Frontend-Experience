@@ -100,7 +100,7 @@ function writeConsumedUpstreams(rootDir, consumedUpstreams, sourceMode) {
   );
 }
 
-function applyWebPostSync(rootDir, sourceMode) {
+function applyWebPostSync(rootDir) {
   copyFile(
     path.join(rootDir, 'contracts/upstreams/design-factory-figma/design-system/tokens/enterprise.json'),
     path.join(rootDir, 'packages/design-tokens/src/tokens/enterprise.json'),
@@ -110,11 +110,9 @@ function applyWebPostSync(rootDir, sourceMode) {
     path.join(rootDir, 'packages/design-tokens/src/tokens/consumer.json'),
   );
 
-  if (sourceMode === 'workspace') {
-    const generatedSource = path.resolve(rootDir, '..', 'AI-Software-Factory', 'neuroforge-sdx', 'gen/typescript/sdx');
-    if (fs.existsSync(generatedSource)) {
-      copyDirectory(generatedSource, path.join(rootDir, 'packages/api-clients/src/generated/sdx'));
-    }
+  const generatedSource = path.join(rootDir, 'contracts/upstreams/ai-software-factory/gen/typescript/sdx');
+  if (fs.existsSync(generatedSource)) {
+    copyDirectory(generatedSource, path.join(rootDir, 'packages/api-clients/src/generated/sdx'));
   }
 }
 

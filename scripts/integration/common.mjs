@@ -15,6 +15,10 @@ export function isSemver(value) {
   return /^\d+\.\d+\.\d+$/.test(value);
 }
 
+export function isIsoDate(value) {
+  return typeof value === 'string' && !Number.isNaN(Date.parse(value));
+}
+
 export function parseSemver(value) {
   const match = value.match(/^(\d+)\.(\d+)\.(\d+)$/);
   if (!match) {
@@ -51,6 +55,10 @@ export function writeText(root, relativePath, contents) {
   const fullPath = path.join(root, relativePath);
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
   fs.writeFileSync(fullPath, contents);
+}
+
+export function writeJson(root, relativePath, value) {
+  writeText(root, relativePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 export function copyFile(source, target) {

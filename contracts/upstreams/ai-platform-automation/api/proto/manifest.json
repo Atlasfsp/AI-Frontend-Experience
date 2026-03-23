@@ -13,8 +13,7 @@
       ],
       "releaseTag": "contracts/platform-automation-proto/v1.0.0",
       "consumers": [
-        "ai-frontend-experience",
-        "ai-companion-mobile"
+        "ai-frontend-experience"
       ]
     }
   ]

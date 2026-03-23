@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0.0",
+  "artifactId": "stitch-screen-maps",
+  "version": "1.0.0",
+  "target": "ai-frontend-experience",
+  "screenMaps": [
+    {
+      "screenId": "software-factory-dashboard",
+      "routeId": "software-factory.dashboard",
+      "routePath": "/software-factory/dashboard",
+      "conceptRefs": ["software-factory.operator-command-center"]
+    },
+    {
+      "screenId": "software-factory-swagger-explorer",
+      "routeId": "software-factory.swagger",
+      "routePath": "/software-factory/swagger",
+      "conceptRefs": ["software-factory.contract-explorer"]
+    },
+    {
+      "screenId": "platform-dashboard",
+      "routeId": "platform.dashboard",
+      "routePath": "/platform/dashboard",
+      "conceptRefs": ["platform.control-plane-briefing"]
+    },
+    {
+      "screenId": "platform-graphql-explorer",
+      "routeId": "platform.graphql-explorer",
+      "routePath": "/platform/graphql-explorer",
+      "conceptRefs": ["platform.operator-query-console"]
+    },
+    {
+      "screenId": "docs-home",
+      "routeId": "docs.home",
+      "routePath": "/",
+      "conceptRefs": ["docs.ecosystem-entry"]
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+name: Upstream Monitor
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor-upstreams:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Refresh upstream contracts and compatibility pins
+        id: refresh
+        continue-on-error: true
+        env:
+          BAC_UPSTREAM_SOURCE_MODE: github-release
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p reports
+          pnpm contracts:generate
+          pnpm compatibility:refresh
+          pnpm contracts:validate
+          pnpm design:validate
+          pnpm compatibility:report > reports/compatibility-report.json
+      - name: Detect changed files
+        id: diff
+        if: steps.refresh.outcome == 'success'
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create compatibility refresh PR
+        if: steps.refresh.outcome == 'success' && steps.diff.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: codex/frontend-upstream-refresh
+          title: "chore: refresh upstream contracts and compatibility pins"
+          commit-message: "chore: refresh upstream contracts and compatibility pins"
+          body: |
+            Refreshes released upstream contract and design handoff artifacts, regenerates frontend client bindings, and updates pinned compatibility metadata.
+          add-paths: |
+            compatibility/manifest.json
+            compatibility/consumed-upstreams.json
+            contracts/upstreams/**
+            packages/api-clients/contracts/generated-client.manifest.json
+            packages/api-clients/src/generated/**
+            packages/design-tokens/src/tokens/**
+      - name: Create issue for incompatible upstream release
+        if: steps.refresh.outcome != 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Incompatible upstream contract or design release detected';
+            const body = [
+              'The scheduled upstream refresh failed because at least one released upstream artifact is outside the currently supported compatibility range.',
+              '',
+              `Workflow run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              '',
+              'Review the failed job logs, update the supported ranges if the new release is intended, or coordinate a migration in the owning producer repository.'
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body
+            });

@@ -26,6 +26,13 @@
           "targetRoot": "contracts/upstreams/ai-software-factory"
         },
         {
+          "kind": "connect-typescript",
+          "template": "ai-software-factory-connect-typescript-{releaseVersion}.tgz",
+          "packageType": "directory",
+          "sourcePath": "gen/typescript/sdx",
+          "targetRoot": "contracts/upstreams/ai-software-factory"
+        },
+        {
           "kind": "compatibility",
           "template": "ai-software-factory-compatibility-{releaseVersion}.json",
           "packageType": "file",
@@ -125,17 +132,10 @@
       "localReleaseManifestPath": "contracts/upstreams/design-factory-stitch/integration-release-manifest.json",
       "expectedAssets": [
         {
-          "kind": "concept-inventory",
-          "template": "design-factory-stitch-concept-inventory-{releaseVersion}.tgz",
+          "kind": "screen-maps",
+          "template": "design-factory-stitch-screen-maps-{releaseVersion}.tgz",
           "packageType": "directory",
-          "sourcePath": "exports/concept-inventory",
-          "targetRoot": "contracts/upstreams/design-factory-stitch"
-        },
-        {
-          "kind": "exploratory-prompts",
-          "template": "design-factory-stitch-exploratory-prompts-{releaseVersion}.tgz",
-          "packageType": "directory",
-          "sourcePath": "handoffs/exploratory-prompts",
+          "sourcePath": "handoffs/screen-maps",
           "targetRoot": "contracts/upstreams/design-factory-stitch"
         },
         {

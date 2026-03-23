@@ -4,20 +4,16 @@
   "artifactSet": "figma-state-maps",
   "artifacts": [
     {
-      "artifactId": "figma-web-state-map",
+      "artifactId": "figma-state-maps",
       "version": "1.0.0",
-      "path": "handoff/state-maps/frontend-web.json",
-      "releaseTag": "handoff/figma-web-state-map/v1.0.0",
+      "path": "handoff/state-maps",
+      "entrypoints": [
+        "handoff/state-maps/frontend-web.json",
+        "handoff/state-maps/operator-mobile.json"
+      ],
+      "releaseTag": "handoff/figma-state-maps/v1.0.0",
       "consumers": [
-        "ai-frontend-experience"
-      ]
-    },
-    {
-      "artifactId": "figma-mobile-state-map",
-      "version": "1.0.0",
-      "path": "handoff/state-maps/operator-mobile.json",
-      "releaseTag": "handoff/figma-mobile-state-map/v1.0.0",
-      "consumers": [
+        "ai-frontend-experience",
         "ai-companion-mobile"
       ]
     }
