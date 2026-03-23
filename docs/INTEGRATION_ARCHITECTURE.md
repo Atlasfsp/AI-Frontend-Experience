@@ -2,6 +2,8 @@
 
 Canonical source of truth: the workspace-level `Claude-Master-Architecture-Package`, anchored by `docs/MASTER_ECOSYSTEM_ARCHITECTURE.md` and its machine-readable manifests.
 
+Authoritative baseline location: `/Users/AbiolaOgunsakin1/Workflows/AI Platform Automation/docs/ecosystem/`
+
 Authoritative baseline references:
 
 - `ECOSYSTEM_REPO_CATALOG.md`

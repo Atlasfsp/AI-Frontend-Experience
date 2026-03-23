@@ -34,6 +34,7 @@ const baselineRefs = [
   'GOVERNANCE_MODE.md',
   'Claude-Master-Architecture-Package',
 ];
+const authoritativeBaselineRef = 'AI Platform Automation/docs/ecosystem';
 const integrationArchitecture = fs.readFileSync(path.join(root, 'docs/INTEGRATION_ARCHITECTURE.md'), 'utf8');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 for (const ref of baselineRefs) {
@@ -43,6 +44,12 @@ for (const ref of baselineRefs) {
   if (!readme.includes(ref)) {
     throw new Error(`README must reference ${ref}`);
   }
+}
+if (!integrationArchitecture.includes(authoritativeBaselineRef)) {
+  throw new Error(`Integration architecture doc must reference ${authoritativeBaselineRef}`);
+}
+if (!readme.includes(authoritativeBaselineRef)) {
+  throw new Error(`README must reference ${authoritativeBaselineRef}`);
 }
 
 if (!fs.existsSync(path.join(root, 'governance/manifest.json'))) {

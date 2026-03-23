@@ -2,8 +2,8 @@
 
 ## Repo purpose
 - This repo is the unified web frontend experience layer for AI Software Factory and AI Platform Automation, including shared UI, design tokens consumption, docs portal, and Swagger/API explorer experiences.
-- Preserve the 3-layer model from `../ECOSYSTEM_LAYER_MODEL.md`. This repo is in the experience layer and consumes backend contracts and final design handoff artifacts.
-- Treat `../CONTRACT_OWNERSHIP.md`, `../COMPATIBILITY_MATRIX.md`, `../CROSS_REPO_RELEASE_FLOW.md`, and `../Claude-Master-Architecture-Package/docs/MASTER_ECOSYSTEM_ARCHITECTURE.md` as authoritative before changing cross-repo behavior.
+- Preserve the 3-layer model from `../AI Platform Automation/docs/ecosystem/ECOSYSTEM_LAYER_MODEL.md`. This repo is in the experience layer and consumes backend contracts and final design handoff artifacts.
+- Treat `../AI Platform Automation/docs/ecosystem/CONTRACT_OWNERSHIP.md`, `../AI Platform Automation/docs/ecosystem/COMPATIBILITY_MATRIX.md`, `../AI Platform Automation/docs/ecosystem/CROSS_REPO_RELEASE_FLOW.md`, `../AI Platform Automation/docs/ecosystem/GOVERNANCE_MODE.md`, and `/Users/AbiolaOgunsakin1/Workflows/Claude-Master-Architecture-Package/docs/MASTER_ECOSYSTEM_ARCHITECTURE.md` as authoritative before changing cross-repo behavior.
 
 ## Commands to run
 - `pnpm dev`
