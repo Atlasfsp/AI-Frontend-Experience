@@ -12,7 +12,10 @@ export interface TenantFlagOverride {
 const overrides: Map<string, TenantFlagOverride> = new Map();
 
 export function setTenantOverrides(tenantId: string, flags: Record<string, boolean | string>, expiresAt?: string): void {
-  overrides.set(tenantId, { tenantId, flags, expiresAt });
+  const override: TenantFlagOverride = expiresAt
+    ? { tenantId, flags, expiresAt }
+    : { tenantId, flags };
+  overrides.set(tenantId, override);
 }
 
 export function getTenantOverride(tenantId: string, flagName: string): boolean | string | undefined {
