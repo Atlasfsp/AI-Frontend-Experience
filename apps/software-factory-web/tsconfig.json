@@ -21,6 +21,9 @@
       "@bac/config": [
         "../../packages/config/src/index.ts"
       ],
+      "@bac/config/cdn": [
+        "../../packages/config/src/cdn.ts"
+      ],
       "@bac/observability": [
         "../../packages/observability/src/index.ts"
       ],
