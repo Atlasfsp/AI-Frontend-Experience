@@ -132,14 +132,20 @@ interface FlagRow {
 /* ------------------------------------------------------------------ */
 
 export default function FeatureFlagsAdminPage() {
-  const environment = useMemo(resolveEnvironment, []);
+  const environment = resolveEnvironment();
   const isDev = environment === 'development' || environment === 'staging';
 
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
   // Load overrides from localStorage on mount.
   useEffect(() => {
-    setOverrides(loadOverrides());
+    let active = true;
+    queueMicrotask(() => {
+      if (active) setOverrides(loadOverrides());
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Resolve current flag values using the same logic as @bac/config.
