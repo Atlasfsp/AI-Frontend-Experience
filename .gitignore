@@ -11,4 +11,3 @@ reports
 .env
 .env.local
 .env.production
-pnpm-lock.yaml

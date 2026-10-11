@@ -6,6 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 
+import { snapshotGeneratedAt } from './common.mjs';
 import { syncConfiguredUpstreams } from './sync-upstreams.mjs';
 
 function writeJson(rootDir, relativePath, value) {
@@ -23,6 +24,16 @@ function createTarball(rootDir, outputFile, sourcePath) {
     throw new Error(result.stderr);
   }
 }
+
+test('snapshotGeneratedAt makes client generation deterministic', () => {
+  const timestamp = '2026-03-23T07:45:52.535Z';
+
+  assert.equal(snapshotGeneratedAt({ generatedAt: timestamp }), timestamp);
+  assert.throws(
+    () => snapshotGeneratedAt({}),
+    /consumed-upstreams snapshot must include a valid generatedAt timestamp/,
+  );
+});
 
 test('syncConfiguredUpstreams downloads and validates GitHub release assets', async () => {
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'frontend-sync-'));
