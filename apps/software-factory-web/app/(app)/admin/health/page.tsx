@@ -125,11 +125,16 @@ export default function AdminHealthPage() {
   /* ---- Bootstrap -------------------------------------------------- */
 
   useEffect(() => {
-    fetchHealth();
-    fetchContracts();
+    const bootstrap = setTimeout(() => {
+      void fetchHealth();
+      void fetchContracts();
+    }, 0);
 
     const interval = setInterval(fetchHealth, 30_000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(bootstrap);
+      clearInterval(interval);
+    };
   }, [fetchHealth, fetchContracts]);
 
   /* ---- Feature flags ---------------------------------------------- */
