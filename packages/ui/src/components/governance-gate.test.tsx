@@ -1,14 +1,16 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, type Mock } from 'vitest';
 
 import { GovernanceGate } from './governance-gate';
 
+type ConfirmAction = () => void | Promise<void>;
+
 function renderGate({
   mode = 'HOTL',
-  onConfirm = vi.fn(),
+  onConfirm = vi.fn<ConfirmAction>(),
 }: {
   mode?: 'HOTL' | 'HITL' | 'FULL_AUTONOMY';
-  onConfirm?: ReturnType<typeof vi.fn>;
+  onConfirm?: Mock<ConfirmAction>;
 } = {}) {
   render(
     <GovernanceGate
