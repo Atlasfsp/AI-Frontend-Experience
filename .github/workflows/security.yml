@@ -20,6 +20,8 @@ jobs:
           node-version: 20
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+      - name: Test security remediations
+        run: pnpm test:security-audit
       - name: Run security audit
         run: node scripts/security-audit.mjs
       - uses: actions/upload-artifact@v4
