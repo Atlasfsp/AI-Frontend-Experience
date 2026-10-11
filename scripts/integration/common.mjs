@@ -19,6 +19,15 @@ export function isIsoDate(value) {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value));
 }
 
+export function snapshotGeneratedAt(manifest) {
+  const generatedAt = manifest?.generatedAt;
+  ensure(
+    isIsoDate(generatedAt),
+    'The consumed-upstreams snapshot must include a valid generatedAt timestamp.',
+  );
+  return generatedAt;
+}
+
 export function parseSemver(value) {
   const match = value.match(/^(\d+)\.(\d+)\.(\d+)$/);
   if (!match) {

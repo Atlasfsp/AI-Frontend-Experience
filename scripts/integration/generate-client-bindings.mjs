@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { readJson, writeText } from './common.mjs';
+import { readJson, snapshotGeneratedAt, writeText } from './common.mjs';
 
 const root = path.resolve(import.meta.dirname, '..', '..');
 const consumedUpstreams = readJson(root, 'compatibility/consumed-upstreams.json');
@@ -9,7 +9,7 @@ const softwareFactoryManifest = readJson(root, 'contracts/upstreams/ai-software-
 const softwareFactoryOpenApi = readJson(root, 'contracts/upstreams/ai-software-factory/api/openapi/openapi.json');
 const platformManifest = readJson(root, 'contracts/upstreams/ai-platform-automation/api/openapi/manifest.json');
 const platformOpenApi = readJson(root, 'contracts/upstreams/ai-platform-automation/api/openapi/platform-automation-v1.openapi.json');
-const generatedAt = new Date().toISOString();
+const generatedAt = snapshotGeneratedAt(consumedUpstreams);
 
 const softwareFactoryContract = softwareFactoryManifest.artifacts.find(
   (artifact) => artifact.artifactId === 'software-factory-openapi',

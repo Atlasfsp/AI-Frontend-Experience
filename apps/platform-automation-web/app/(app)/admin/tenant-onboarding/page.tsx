@@ -22,6 +22,7 @@ export default function TenantOnboardingPage() {
   });
 
   const currentIndex = STEPS.findIndex(s => s.key === currentStep);
+  const currentStepDefinition = STEPS[currentIndex] ?? STEPS[0]!;
 
   // Render stepper + form fields for current step
   // Each step has specific form fields
@@ -50,20 +51,20 @@ export default function TenantOnboardingPage() {
 
       {/* Step content */}
       <div className="rounded-xl border border-white/10 bg-[#0d1f3c] p-6">
-        <h2 className="mb-1 text-lg font-semibold text-white">{STEPS[currentIndex].title}</h2>
-        <p className="mb-6 text-sm text-slate-400">{STEPS[currentIndex].description}</p>
+        <h2 className="mb-1 text-lg font-semibold text-white">{currentStepDefinition.title}</h2>
+        <p className="mb-6 text-sm text-slate-400">{currentStepDefinition.description}</p>
 
         {currentStep === 'org-details' && (
           <div className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-300">Organization Name</label>
-              <input type="text" value={formData.orgName} onChange={e => setFormData(d => ({ ...d, orgName: e.target.value }))}
+              <label htmlFor="org-name" className="mb-1 block text-xs font-medium text-slate-300">Organization Name</label>
+              <input id="org-name" type="text" value={formData.orgName} onChange={e => setFormData(d => ({ ...d, orgName: e.target.value }))}
                 className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500"
                 placeholder="Acme Corp" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-300">Region</label>
-              <select value={formData.region} onChange={e => setFormData(d => ({ ...d, region: e.target.value }))}
+              <label htmlFor="org-region" className="mb-1 block text-xs font-medium text-slate-300">Region</label>
+              <select id="org-region" value={formData.region} onChange={e => setFormData(d => ({ ...d, region: e.target.value }))}
                 className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
                 <option value="ng">Nigeria</option>
                 <option value="za">South Africa</option>
@@ -71,8 +72,8 @@ export default function TenantOnboardingPage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-300">Tier</label>
-              <select value={formData.tier} onChange={e => setFormData(d => ({ ...d, tier: e.target.value }))}
+              <label htmlFor="org-tier" className="mb-1 block text-xs font-medium text-slate-300">Tier</label>
+              <select id="org-tier" value={formData.tier} onChange={e => setFormData(d => ({ ...d, tier: e.target.value }))}
                 className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
                 <option value="standard">Standard</option>
                 <option value="professional">Professional</option>
@@ -85,24 +86,24 @@ export default function TenantOnboardingPage() {
         {currentStep === 'workspace-config' && (
           <div className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-300">Workspace Name</label>
-              <input type="text" value={formData.workspaceName} onChange={e => setFormData(d => ({ ...d, workspaceName: e.target.value }))}
+              <label htmlFor="workspace-name" className="mb-1 block text-xs font-medium text-slate-300">Workspace Name</label>
+              <input id="workspace-name" type="text" value={formData.workspaceName} onChange={e => setFormData(d => ({ ...d, workspaceName: e.target.value }))}
                 className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" placeholder="production" />
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-300">CPU Quota</label>
-                <input type="text" value={formData.quotaCpu} onChange={e => setFormData(d => ({ ...d, quotaCpu: e.target.value }))}
+                <label htmlFor="quota-cpu" className="mb-1 block text-xs font-medium text-slate-300">CPU Quota</label>
+                <input id="quota-cpu" type="text" value={formData.quotaCpu} onChange={e => setFormData(d => ({ ...d, quotaCpu: e.target.value }))}
                   className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-300">Memory Quota</label>
-                <input type="text" value={formData.quotaMemory} onChange={e => setFormData(d => ({ ...d, quotaMemory: e.target.value }))}
+                <label htmlFor="quota-memory" className="mb-1 block text-xs font-medium text-slate-300">Memory Quota</label>
+                <input id="quota-memory" type="text" value={formData.quotaMemory} onChange={e => setFormData(d => ({ ...d, quotaMemory: e.target.value }))}
                   className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-300">Storage Quota</label>
-                <input type="text" value={formData.quotaStorage} onChange={e => setFormData(d => ({ ...d, quotaStorage: e.target.value }))}
+                <label htmlFor="quota-storage" className="mb-1 block text-xs font-medium text-slate-300">Storage Quota</label>
+                <input id="quota-storage" type="text" value={formData.quotaStorage} onChange={e => setFormData(d => ({ ...d, quotaStorage: e.target.value }))}
                   className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
               </div>
             </div>
@@ -116,13 +117,13 @@ export default function TenantOnboardingPage() {
               <div key={i} className="flex gap-3">
                 <input type="email" value={user.email} onChange={e => {
                   const users = [...formData.users];
-                  users[i] = { ...users[i], email: e.target.value };
+                  users[i] = { ...user, email: e.target.value };
                   setFormData(d => ({ ...d, users }));
                 }}
                   className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" placeholder="user@example.com" />
                 <select value={user.role} onChange={e => {
                   const users = [...formData.users];
-                  users[i] = { ...users[i], role: e.target.value };
+                  users[i] = { ...user, role: e.target.value };
                   setFormData(d => ({ ...d, users }));
                 }}
                   className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
@@ -163,7 +164,10 @@ export default function TenantOnboardingPage() {
 
         {/* Navigation */}
         <div className="mt-8 flex justify-between">
-          <button onClick={() => setCurrentStep(STEPS[currentIndex - 1]?.key)} disabled={currentIndex === 0}
+          <button onClick={() => {
+            const previous = STEPS[currentIndex - 1];
+            if (previous) setCurrentStep(previous.key);
+          }} disabled={currentIndex === 0}
             className="rounded-lg border border-white/10 px-4 py-2 text-sm text-slate-300 hover:bg-white/5 disabled:opacity-30">
             Back
           </button>
@@ -172,7 +176,10 @@ export default function TenantOnboardingPage() {
               Provision Workspace
             </button>
           ) : (
-            <button onClick={() => setCurrentStep(STEPS[currentIndex + 1]?.key)}
+            <button onClick={() => {
+              const next = STEPS[currentIndex + 1];
+              if (next) setCurrentStep(next.key);
+            }}
               className="rounded-lg bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20">
               Next
             </button>
