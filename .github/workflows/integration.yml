@@ -20,11 +20,10 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Generate clients from released upstream contracts
-        env:
-          BAC_UPSTREAM_SOURCE_MODE: github-release
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm contracts:generate
+      - name: Generate clients from reviewed repository snapshots
+        run: pnpm contracts:codegen
+      - name: Verify GitHub-release synchronization behavior
+        run: pnpm test:integration-scripts
       - run: git diff --exit-code packages/api-clients/src/generated/contract-registry.ts packages/api-clients/contracts/generated-client.manifest.json
       - run: pnpm check
       - run: pnpm contracts:validate

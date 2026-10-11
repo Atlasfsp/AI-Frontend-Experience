@@ -6,6 +6,11 @@
   "engines": {
     "node": ">=20.10.0"
   },
+  "pnpm": {
+    "overrides": {
+      "postcss": "8.5.29"
+    }
+  },
   "scripts": {
     "dev": "turbo run dev --parallel --filter=@bac/software-factory-web --filter=@bac/platform-automation-web --filter=@bac/docs-portal",
     "dev:software-factory": "pnpm --filter @bac/software-factory-web dev",
