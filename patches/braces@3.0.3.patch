@@ -1,0 +1,35 @@
+diff --git a/lib/constants.js b/lib/constants.js
+index 2bb3b8840382c56700869b3a9e1f958fcce01efd..de35512facaf21f1e27de97dc66bd37d87c2d0f9 100644
+--- a/lib/constants.js
++++ b/lib/constants.js
+@@ -2,6 +2,7 @@
+ 
+ module.exports = {
+   MAX_LENGTH: 10000,
++  MAX_DEPTH: 100,
+ 
+   // Digits
+   CHAR_0: '0', /* 0 */
+diff --git a/lib/parse.js b/lib/parse.js
+index 3a6988e629f52aee6609dc5ec290a5e9ff47cecb..60b9d756262710e079ba041251ee53750df3d90a 100644
+--- a/lib/parse.js
++++ b/lib/parse.js
+@@ -8,6 +8,7 @@ const stringify = require('./stringify');
+ 
+ const {
+   MAX_LENGTH,
++  MAX_DEPTH,
+   CHAR_BACKSLASH, /* \ */
+   CHAR_BACKTICK, /* ` */
+   CHAR_COMMA, /* , */
+@@ -195,6 +196,10 @@ const parse = (input, options = {}) => {
+      */
+ 
+     if (value === CHAR_LEFT_CURLY_BRACE) {
++      if (depth >= MAX_DEPTH) {
++        throw new SyntaxError(`Brace nesting depth exceeds maximum (${MAX_DEPTH})`);
++      }
++
+       depth++;
+ 
+       const dollar = prev.value && prev.value.slice(-1) === '$' || block.dollar === true;
