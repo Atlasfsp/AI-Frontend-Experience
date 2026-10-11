@@ -56,7 +56,7 @@ export function DocsSearchPanel({
         {query ? ` for “${query}”` : ' across the docs portal'}
       </p>
       {filteredEntries.length ? (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2" data-testid="search-results">
           {filteredEntries.map((entry) => (
             <Link
               key={entry.id}

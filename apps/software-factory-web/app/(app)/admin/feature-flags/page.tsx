@@ -12,7 +12,7 @@ import { Badge, Card, DataTable, type Column } from '@bac/ui';
 
 interface FlagMeta {
   id: string;
-  name: keyof FeatureFlags;
+  name: Exclude<keyof FeatureFlags, 'governanceMode'>;
   envVar: string;
   description: string;
   defaultValue: boolean;

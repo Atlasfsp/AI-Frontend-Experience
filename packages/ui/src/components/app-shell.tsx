@@ -13,6 +13,7 @@ import { CommandPalette } from './command-palette';
 import type { CommandAction } from './command-palette';
 import { WorkspaceSwitcher } from './workspace-switcher';
 import type { WorkspaceOption } from './workspace-switcher';
+import { useGovernanceMode } from '../hooks/use-governance-mode';
 
 export interface NavigationItem {
   description: string;
@@ -49,6 +50,7 @@ export function AppShell({
   workspaceOptions?: WorkspaceOption[];
 }) {
   const pathname = usePathname();
+  const governanceMode = useGovernanceMode();
   const [mobileOpen, setMobileOpen] = useState(false);
   const filteredNavigation = useMemo(
     () =>
@@ -129,6 +131,9 @@ export function AppShell({
             <div className="flex flex-wrap gap-2">
               <Badge variant="success">{session.tenantId}</Badge>
               <Badge variant="neutral">{session.workspaceId}</Badge>
+              <span aria-label={`Governance mode: ${governanceMode}`}>
+                <Badge variant="warning">{governanceMode}</Badge>
+              </span>
               {session.roles.map((role) => (
                 <Badge key={role} variant="neutral">
                   {role}

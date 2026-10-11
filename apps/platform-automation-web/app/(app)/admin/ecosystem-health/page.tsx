@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface RepoHealth {
   name: string;
@@ -21,8 +21,8 @@ const REPOS: RepoHealth[] = [
 ];
 
 export default function EcosystemHealthPage() {
-  const [repos, setRepos] = useState(REPOS);
-  const [lastRefresh, setLastRefresh] = useState(new Date().toISOString());
+  const [repos] = useState(REPOS);
+  const [lastRefresh] = useState(new Date().toISOString());
 
   const layerColors = { design: 'text-purple-400', backend: 'text-amber-400', experience: 'text-cyan-400' };
   const statusColors = { healthy: 'bg-emerald-400', degraded: 'bg-amber-400', down: 'bg-red-400', unknown: 'bg-slate-400' };

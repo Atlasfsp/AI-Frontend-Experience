@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-import { getCacheHeaders, loadCdnConfig } from '@bac/config';
+import { getCacheHeaders, loadCdnConfig } from '@bac/config/cdn';
 
 const cdn = loadCdnConfig();
 
@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
     '@bac/observability',
     '@bac/ui',
   ],
-  assetPrefix: cdn.assetPrefix || undefined,
+  ...(cdn.assetPrefix ? { assetPrefix: cdn.assetPrefix } : {}),
   images: {
     remotePatterns: cdn.imageDomains.map((hostname) => ({
       protocol: 'https' as const,

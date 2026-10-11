@@ -69,6 +69,7 @@ describe('AppShell', () => {
     expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0);
     expect(screen.queryByText('PRD Intake')).toBeNull();
     expect(screen.getAllByText('workspace-alpha').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Governance mode: HOTL')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: /open command palette/i }));
 
