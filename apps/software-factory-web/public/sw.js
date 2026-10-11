@@ -3,6 +3,8 @@
  * Provides offline fallback and asset caching.
  */
 
+/* global self, caches, fetch, Response */
+
 const CACHE_NAME = 'bac-sw-v1';
 const OFFLINE_URL = '/offline';
 

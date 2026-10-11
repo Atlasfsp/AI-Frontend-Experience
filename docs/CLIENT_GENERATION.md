@@ -15,7 +15,8 @@
 
 1. Run `pnpm contracts:generate`.
    This is the authoritative regeneration entrypoint and always performs upstream sync first.
-2. `BAC_UPSTREAM_SOURCE_MODE=github-release` is the CI and release default.
+2. Pull-request CI regenerates from the reviewed, versioned snapshots under `contracts/upstreams/` and fails if generated clients drift.
+   The scheduled upstream monitor remains the `github-release` ingestion path and opens a refresh PR after producer releases exist.
    `workspace` remains the local convenience mode when sibling producer repos are present.
 3. The web consumer snapshots:
    - `software-factory-openapi`
