@@ -32,7 +32,7 @@ const REMEDIATED_ADVISORIES = new Map([
       githubAdvisoryId: 'GHSA-g84c-rxfj-3j2c',
       patchPath: WEBPACK_DEV_MIDDLEWARE_PATCH_PATH,
       patchSha256: '513e48b222d0ee306fcfd6e2ba6b8b6e4ba7fdd3fb300b289156e946d48cea5c',
-      rationale: 'The local pnpm patch verifies the final resolved path stays inside the webpack output directory.',
+      rationale: 'The local pnpm patch protects Storybook\'s transitive webpack-dev-middleware 6.1.3 until Storybook adopts the fixed upstream major.',
     },
   ],
 ]);
