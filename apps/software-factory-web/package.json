@@ -18,7 +18,7 @@
     "@bac/observability": "workspace:*",
     "@bac/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.1.3",
-    "next": "^15.2.4",
+    "next": "^16.4.2",
     "react": "^19.3.1",
     "react-dom": "^19.1.0",
     "tailwindcss": "^4.1.3",
