@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "lint": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --config ../../vitest.config.ts --passWithNoTests",
     "typecheck": "tsc --noEmit -p tsconfig.json"
@@ -17,6 +17,6 @@
     "@bac/domain-contracts": "workspace:*",
     "@bac/observability": "workspace:*",
     "@tanstack/react-query": "^5.69.0",
-    "react": "^19.3.1"
+    "react": "19.3.1"
   }
 }

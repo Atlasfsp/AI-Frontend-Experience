@@ -33,10 +33,14 @@ describe('FluxCore ADR-006 frontend provider candidate view model', () => {
 
   it('does not imply every design provider supports source generation', () => {
     const candidates = getFrontendProviderCandidates();
-    const byId = Object.fromEntries(candidates.map((p) => [p.id, p]));
-    expect(byId['vercel-v0'].intendedCapabilities).toContain('code-generation');
-    expect(byId.designer2.intendedCapabilities).toContain('code-generation');
-    expect(byId['google-stitch'].intendedCapabilities).not.toContain('code-generation');
-    expect(byId.figma.intendedCapabilities).not.toContain('code-generation');
+    const provider = (id: string) => {
+      const candidate = candidates.find((entry) => entry.id === id);
+      if (!candidate) throw new Error(`Missing provider: ${id}`);
+      return candidate;
+    };
+    expect(provider('vercel-v0').intendedCapabilities).toContain('code-generation');
+    expect(provider('designer2').intendedCapabilities).toContain('code-generation');
+    expect(provider('google-stitch').intendedCapabilities).not.toContain('code-generation');
+    expect(provider('figma').intendedCapabilities).not.toContain('code-generation');
   });
 });
