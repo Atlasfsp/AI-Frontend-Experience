@@ -44,7 +44,7 @@ export function DualPlaneCommandCenter({ agents, builds, workItems, source }: Pr
         <div className="text-sm font-semibold text-amber-100">{source.headline}</div>
         <p className="mt-1 text-sm text-amber-200/80">{source.caution}</p>
         <p className="mt-2 text-xs text-slate-300">
-          Independent evidence contract: FACTORY-004. Live CI signatures, release permissions and preview registry are not connected.
+          Independent evidence contract: FACTORY-006. Live CI signatures, release permissions and preview registry are not connected.
         </p>
       </div>
       <div className="grid gap-6 xl:grid-cols-2">
