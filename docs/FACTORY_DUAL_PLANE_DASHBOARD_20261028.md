@@ -1,4 +1,4 @@
-# AI Factory dual-plane command dashboard — FACTORY-004 companion
+# AI Factory dual-plane command dashboard — FACTORY-006 companion
 
 **Date 28 October 2026. Status: frontend source committed to review branch only; NO live delivery evidence or production release is claimed.**
 
@@ -15,7 +15,7 @@ A standalone source-classifier `features/telemetry-provenance.ts` makes demonstr
 
 ## Future trusted service contracts
 
-The backing service must supply `tenant_id`, `workspace_id`, `repository`, `commit_sha`, `collected_at`, `source_system`, `verification_state`, `evidence_ref` with every operational aggregate; independently validated FACTORY-004 signed CI receipts, real job attempt IDs, package OCI digests, preview URL with TTL and RBAC, verified OpenHands agent session/audit reference, model usage/cost per accepted task, and deployment marker/OTel health. The browser must never receive model API keys, CI runner signing keys or raw OpenShell credentials.
+The backing service must supply `tenant_id`, `workspace_id`, `repository`, `commit_sha`, `collected_at`, `source_system`, `verification_state`, `evidence_ref` with every operational aggregate; independently validated FACTORY-006 signed CI receipts, real job attempt IDs, package OCI digests, preview URL with TTL and RBAC, verified OpenHands agent session/audit reference, model usage/cost per accepted task, and deployment marker/OTel health. The browser must never receive model API keys, CI runner signing keys or raw OpenShell credentials.
 
 For production:
 - read through authenticated BFF; enforce tenant/workspace RBAC and deny direct browser-to-Jenkins or browser-to-Agent-Server bypass.
