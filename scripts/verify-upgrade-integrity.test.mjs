@@ -38,7 +38,7 @@ function fixture() {
     writeFileSync(path.join(dir, "package.json"), JSON.stringify(pkg));
     entries.push("  " + name + ":", "    " + group + ":");
     for (const [key, value] of Object.entries(deps)) {
-      entries.push("      '" + key + "':", "        specifier: " + value, "        version: fixture");
+      entries.push("      '" + key + "':", "        specifier: " + value, "        version: " + value.replace(/^\^/, ""));
     }
     entries.push("");
   }
@@ -90,6 +90,13 @@ test("rejects missing governance and quality scripts", () =>
     const manifest = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
     delete manifest.scripts["test:security-audit"];
     writeFileSync(path.join(root, "package.json"), JSON.stringify(manifest));
+    assert.throws(() => verify(root), /INTEGRITY DENIED/);
+  })
+);
+
+test("rejects stale resolution even when the requested range agrees", () =>
+  useFixture(root => {
+    change(root, "pnpm-lock.yaml", s => s.replace("version: 6.0.3", "version: 5.9.3"));
     assert.throws(() => verify(root), /INTEGRITY DENIED/);
   })
 );
