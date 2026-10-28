@@ -30,7 +30,7 @@ export default async function DashboardPage() {
   ]);
   const allAvailable = [overviewResult, buildsResult, workItemsResult, agentsResult]
     .every((result) => result.status === 'fulfilled');
-  const source = classifyFactoryDataSource(config.enableMockApi, allAvailable);
+  const source = classifyFactoryDataSource(config.enableMockApi, allAvailable, config.environment);
   const overview = overviewResult.status === 'fulfilled' ? overviewResult.value : null;
   const builds = buildsResult.status === 'fulfilled' ? buildsResult.value : [];
   const workItems = workItemsResult.status === 'fulfilled' ? workItemsResult.value : [];
