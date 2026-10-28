@@ -19,6 +19,13 @@ export const navigation: NavigationSection[] = [
         permission: 'workspace:view',
       },
       {
+        href: '/software-factory/workloads',
+        label: 'Workloads',
+        description: 'Factory jobs, builds, preview environments and service workloads; source-labelled.',
+        keywords: ['workload', 'execution', 'capacity', 'service', 'runtime', 'preview'],
+        permission: 'workspace:view',
+      },
+      {
         href: '/software-factory/prd-intake',
         label: 'PRD Intake',
         description: 'Structured requirement intake and definition-of-ready view.',
