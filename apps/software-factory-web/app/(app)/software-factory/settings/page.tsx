@@ -31,6 +31,15 @@ export default function SettingsPage() {
             ),
           },
           {
+            hint: 'Review v0, Designer2, Stitch, Figma and proposed future MCP tool connections without enabling external processing.',
+            label: 'Frontend provider catalog',
+            value: (
+              <Link className="text-cyan-100 underline decoration-cyan-300/40 underline-offset-4" href="/software-factory/settings/frontend-providers">
+                Review provider connection posture
+              </Link>
+            ),
+          },
+          {
             hint: 'Prepared for future integration with shared identity and policy services.',
             label: 'Long-term posture',
             value: 'Extensible settings surface',

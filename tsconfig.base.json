@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
+    "types": ["node"],
+    "rootDir": ".",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
@@ -16,20 +18,19 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
     "paths": {
-      "@bac/ui": ["packages/ui/src/index.ts"],
-      "@bac/design-tokens": ["packages/design-tokens/src/index.ts"],
-      "@bac/tokens": ["packages/design-tokens/src/index.ts"],
-      "@bac/api-clients": ["packages/api-clients/src/index.ts"],
-      "@bac/auth": ["packages/auth/src/index.ts"],
-      "@bac/config": ["packages/config/src/index.ts"],
-      "@bac/observability": ["packages/observability/src/index.ts"],
-      "@bac/observability/react": ["packages/observability/src/react.ts"],
-      "@bac/observability/nextjs-server": ["packages/observability/src/nextjs-server.ts"],
-      "@bac/domain-contracts": ["packages/domain-contracts/src/index.ts"],
-      "@bac/i18n": ["packages/i18n/src/index.ts"],
-      "@bac/testing": ["packages/testing/src/index.tsx"]
+      "@bac/ui": ["./packages/ui/src/index.ts"],
+      "@bac/design-tokens": ["./packages/design-tokens/src/index.ts"],
+      "@bac/tokens": ["./packages/design-tokens/src/index.ts"],
+      "@bac/api-clients": ["./packages/api-clients/src/index.ts"],
+      "@bac/auth": ["./packages/auth/src/index.ts"],
+      "@bac/config": ["./packages/config/src/index.ts"],
+      "@bac/observability": ["./packages/observability/src/index.ts"],
+      "@bac/observability/react": ["./packages/observability/src/react.ts"],
+      "@bac/observability/nextjs-server": ["./packages/observability/src/nextjs-server.ts"],
+      "@bac/domain-contracts": ["./packages/domain-contracts/src/index.ts"],
+      "@bac/i18n": ["./packages/i18n/src/index.ts"],
+      "@bac/testing": ["./packages/testing/src/index.tsx"]
     }
   }
 }

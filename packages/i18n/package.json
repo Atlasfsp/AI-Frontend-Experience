@@ -6,12 +6,12 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json",
     "lint": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --config ../../vitest.config.ts --passWithNoTests",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "react": "^19.3.1"
+    "react": "19.3.1"
   }
 }
