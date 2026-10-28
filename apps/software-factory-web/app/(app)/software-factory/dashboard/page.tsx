@@ -72,19 +72,19 @@ export default async function DashboardPage() {
             description: source.caution,
             label: 'Reported active builds',
             status: 'neutral',
-            value: source.mode === 'DEMO' ? 'Demo' : (overview ? String(overview.activeBuilds) : 'Unavailable'),
+            value: source.mode === 'DEMO' ? 'Demo' : (source.mode === 'UNAVAILABLE' ? 'Unavailable' : (overview ? String(overview.activeBuilds) : 'Unavailable')),
           },
           {
             description: 'API reports only; never signed delivery admission.',
             label: 'Reported gate pass rate',
             status: 'neutral',
-            value: source.mode === 'DEMO' ? 'Demo' : (overview ? overview.gatePassRate : 'Unavailable'),
+            value: source.mode === 'DEMO' ? 'Demo' : (source.mode === 'UNAVAILABLE' ? 'Unavailable' : (overview ? overview.gatePassRate : 'Unavailable')),
           },
           {
             description: 'Pending review counts are not permission to deploy.',
             label: 'Reported open reviews',
             status: 'neutral',
-            value: source.mode === 'DEMO' ? 'Demo' : (overview ? String(overview.openReviews) : 'Unavailable'),
+            value: source.mode === 'DEMO' ? 'Demo' : (source.mode === 'UNAVAILABLE' ? 'Unavailable' : (overview ? String(overview.openReviews) : 'Unavailable')),
           },
           {
             description: 'CI provenance unavailable until trusted signing/verification is connected.',
