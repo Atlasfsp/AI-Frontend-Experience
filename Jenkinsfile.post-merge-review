@@ -35,6 +35,7 @@ pipeline {
           node --version > postmerge-evidence/node-version.txt
           pnpm --version > postmerge-evidence/pnpm-version.txt
           node scripts/verify-upgrade-integrity.mjs > postmerge-evidence/source-integrity.log
+          node --test scripts/verify-upgrade-integrity.test.mjs > postmerge-evidence/source-integrity-tests.log 2>&1
         '''
       }
     }
