@@ -1,40 +1,47 @@
 import Link from 'next/link';
 
-import { getSoftwareFactoryOverview, listBuilds, listWorkItems } from '@bac/api-clients';
+import { getSoftwareFactoryOverview, listAgents, listBuilds, listWorkItems } from '@bac/api-clients';
+import { loadWebConfig } from '@bac/config';
 import {
-  Card,
   DataTable,
   Drawer,
-  MiniBarChart,
   PageHeader,
   StatGrid,
-  Timeline,
 } from '@bac/ui';
 
 import {
-  buildTrendChart,
   sdkIntegrationSnippet,
   softwareFactoryQuickActions,
-  softwareFactoryTimeline,
 } from '@/features/data';
+import { DualPlaneCommandCenter } from '@/features/dual-plane-command-center';
 import { createFactoryRequestContext } from '@/features/request-context';
+import { classifyFactoryDataSource } from '@/features/telemetry-provenance';
 import { getServerSession } from '@/lib/session';
 
 export default async function DashboardPage() {
   const session = await getServerSession();
   const context = createFactoryRequestContext(session);
-  const [overview, builds, workItems] = await Promise.all([
+  const config = loadWebConfig();
+  const [overviewResult, buildsResult, workItemsResult, agentsResult] = await Promise.allSettled([
     getSoftwareFactoryOverview(context),
     listBuilds(context),
     listWorkItems(context),
+    listAgents(context),
   ]);
+  const allAvailable = [overviewResult, buildsResult, workItemsResult, agentsResult]
+    .every((result) => result.status === 'fulfilled');
+  const source = classifyFactoryDataSource(config.enableMockApi, allAvailable, config.environment);
+  const overview = overviewResult.status === 'fulfilled' ? overviewResult.value : null;
+  const builds = buildsResult.status === 'fulfilled' ? buildsResult.value : [];
+  const workItems = workItemsResult.status === 'fulfilled' ? workItemsResult.value : [];
+  const agents = agentsResult.status === 'fulfilled' ? agentsResult.value : [];
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="Software Factory Dashboard"
         title="AI Software Factory command center"
-        description="Premium enterprise workspace for requirement intake, build quality, API contracts, and release controls across the AI Software Factory."
+        description="Source-labelled factory operations and application delivery, with independent evidence gates and no fabricated production health."
         actions={
           <>
             {softwareFactoryQuickActions.slice(0, 2).map((action) => (
@@ -58,46 +65,35 @@ export default async function DashboardPage() {
           </>
         }
       />
+      <DualPlaneCommandCenter agents={agents} builds={builds} workItems={workItems} source={source} />
       <StatGrid
         items={[
           {
-            description: 'Builds currently traversing the execution mesh.',
-            label: 'Active builds',
-            status: 'warning',
-            value: String(overview.activeBuilds),
-          },
-          {
-            description: 'Rolling pass rate across tests, policy, and provenance gates.',
-            label: 'Gate pass rate',
-            status: 'success',
-            value: overview.gatePassRate,
-          },
-          {
-            description: 'Work waiting on human review or approval.',
-            label: 'Open reviews',
+            description: source.caution,
+            label: 'Reported active builds',
             status: 'neutral',
-            value: String(overview.openReviews),
+            value: source.mode === 'DEMO' ? 'Demo' : (source.mode === 'UNAVAILABLE' ? 'Unavailable' : (overview ? String(overview.activeBuilds) : 'Unavailable')),
           },
           {
-            description: overview.recentBuild.name,
-            label: 'Latest build stage',
-            status: overview.recentBuild.status,
-            value: overview.recentBuild.stage,
+            description: 'API reports only; never signed delivery admission.',
+            label: 'Reported gate pass rate',
+            status: 'neutral',
+            value: source.mode === 'DEMO' ? 'Demo' : (source.mode === 'UNAVAILABLE' ? 'Unavailable' : (overview ? overview.gatePassRate : 'Unavailable')),
+          },
+          {
+            description: 'Pending review counts are not permission to deploy.',
+            label: 'Reported open reviews',
+            status: 'neutral',
+            value: source.mode === 'DEMO' ? 'Demo' : (source.mode === 'UNAVAILABLE' ? 'Unavailable' : (overview ? String(overview.openReviews) : 'Unavailable')),
+          },
+          {
+            description: 'CI provenance unavailable until trusted signing/verification is connected.',
+            label: 'Independently verified CI',
+            status: 'neutral',
+            value: 'Not connected',
           },
         ]}
       />
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card className="space-y-5">
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-white">Build and test posture</h2>
-            <p className="text-sm text-slate-300">
-              Delivery health is modeled around passing gates, queued work, and explicit operator review points.
-            </p>
-          </div>
-          <MiniBarChart items={buildTrendChart} />
-        </Card>
-        <Timeline items={softwareFactoryTimeline} title="Recent activity timeline" />
-      </div>
       <DataTable
         columns={[
           {
@@ -117,7 +113,7 @@ export default async function DashboardPage() {
         ]}
         description="Critical queue items moving from PRD readiness into architecture and build execution."
         rows={workItems}
-        title="Execution queue"
+        title={source.mode === 'DEMO' ? 'Execution queue — demo records' : 'Execution queue — API reported, unverified'}
       />
       <DataTable
         columns={[
@@ -138,7 +134,7 @@ export default async function DashboardPage() {
         ]}
         description="Top builds in flight with direct drill-ins into artifacts, gates, and release posture."
         rows={builds}
-        title="Live build queue"
+        title={source.mode === 'DEMO' ? 'Build queue — demo records' : 'Build queue — API reported, unverified'}
       />
     </div>
   );
