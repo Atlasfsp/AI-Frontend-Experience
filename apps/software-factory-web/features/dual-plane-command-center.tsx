@@ -36,7 +36,10 @@ function ReadinessTile({
  */
 export function DualPlaneCommandCenter({ agents, builds, workItems, source }: Props) {
   const isDemo = source.mode === 'DEMO';
-  const label = isDemo ? 'Sample records' : 'API-reported records — unverified';
+  const label = isDemo ? 'Sample records' : source.mode === 'UNAVAILABLE' ? 'Upstream unavailable' : 'API-reported records — unverified';
+  const agentCount = source.mode === 'UNAVAILABLE' ? 'Unavailable' : String(agents.length);
+  const backlogCount = source.mode === 'UNAVAILABLE' ? 'Unavailable' : String(workItems.length);
+  const buildCount = source.mode === 'UNAVAILABLE' ? 'Unavailable' : String(builds.length);
 
   return (
     <section aria-label="Dual-plane AI Factory command center" className="space-y-5">
@@ -57,9 +60,9 @@ export function DualPlaneCommandCenter({ agents, builds, workItems, source }: Pr
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <ReadinessTile name="Agent registry" value={String(agents.length)}
+            <ReadinessTile name="Agent registry" value={agentCount}
               caveat={label + '; not independently attested OpenShell sessions'} />
-            <ReadinessTile name="Task backlog" value={String(workItems.length)}
+            <ReadinessTile name="Task backlog" value={backlogCount}
               caveat={label + '; not a GitHub Issues synchronization receipt'} />
             <ReadinessTile name="Model spend / tokens" value="Not connected"
               caveat="Requires approved FluxCore usage and cost-per-accepted-task telemetry" />
@@ -81,7 +84,7 @@ export function DualPlaneCommandCenter({ agents, builds, workItems, source }: Pr
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <ReadinessTile name="Build records" value={String(builds.length)}
+            <ReadinessTile name="Build records" value={buildCount}
               caveat={label + '; not verified Jenkins/Tekton results'} />
             <ReadinessTile name="Signed CI pass / release" value="Not connected"
               caveat="Require full commit SHA, trusted runner, immutable log/artifact and signed admission" />
