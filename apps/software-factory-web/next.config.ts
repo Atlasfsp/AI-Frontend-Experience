@@ -6,9 +6,6 @@ const cdn = loadCdnConfig();
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   reactStrictMode: true,
   transpilePackages: [
     '@bac/api-clients',
