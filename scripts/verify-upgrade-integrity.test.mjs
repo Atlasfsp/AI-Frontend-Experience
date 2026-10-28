@@ -87,8 +87,6 @@ test("rejects a downgraded pnpm toolchain specification", () =>
 
 test("rejects missing governance and quality scripts", () =>
   useFixture(root => {
-    change(root, "package.json", s => s.replace('"test:security-audit":"echo fixture",', ""));
-    // The script is the last item and may be untrailed in JSON.
     const manifest = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
     delete manifest.scripts["test:security-audit"];
     writeFileSync(path.join(root, "package.json"), JSON.stringify(manifest));
