@@ -11,7 +11,16 @@ export interface FactorySourceLabel {
 export function classifyFactoryDataSource(
   enableMockApi: boolean,
   apiAvailable = true,
+  environment: string = 'development',
 ): FactorySourceLabel {
+  if (environment === 'production' && enableMockApi) {
+    return {
+      mode: 'UNAVAILABLE',
+      headline: 'Production dashboard blocked: mock API mode enabled',
+      caution: 'No production metric can be accepted from the development fixture source.',
+      verifiedReleaseEvidence: false,
+    };
+  }
   if (!apiAvailable) {
     return {
       mode: 'UNAVAILABLE',
