@@ -16,6 +16,12 @@ describe('AI Factory dual-plane source integrity', () => {
     expect(result.verifiedReleaseEvidence).toBe(false);
   });
 
+  it('prohibits mock API health in production', () => {
+    const result = classifyFactoryDataSource(true, true, 'production');
+    expect(result.mode).toBe('UNAVAILABLE');
+    expect(result.verifiedReleaseEvidence).toBe(false);
+  });
+
   it('fails closed when upstream is unavailable even if mocks are enabled', () => {
     const result = classifyFactoryDataSource(true, false);
     expect(result.mode).toBe('UNAVAILABLE');
