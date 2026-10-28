@@ -48,13 +48,19 @@ function lockedSpecifier(lock, importer, group, name) {
   if (pos < 0) fail("missing lock entry " + importer + "/" + name);
   const match = rows[pos + 1]?.match(/^        specifier:\s*(.+)\s*$/);
   if (!match) fail("missing locked specifier " + importer + "/" + name);
-  return match[1].trim().replace(/^['"]|['"]$/g, "");
+  const resolved = rows[pos + 2]?.match(/^        version:\s*(.+)\s*$/)?.[1];
+  if (!resolved) fail("missing locked resolved version " + importer + "/" + name);
+  return { specifier: match[1].trim().replace(/^['"]|['"]$/g, ""), resolved: resolved.trim() };
 }
 function requirePin(root, lock, importer, group, name, expected) {
   const current = manifest(root, importer)[group]?.[name];
   if (current !== expected) fail(importer + "/" + name + " manifest " + current + " != " + expected);
   const locked = lockedSpecifier(lock, importer, group, name);
-  if (locked !== expected) fail(importer + "/" + name + " lock " + locked + " != " + expected);
+  if (locked.specifier !== expected)
+    fail(importer + "/" + name + " lock " + locked.specifier + " != " + expected);
+  const version = expected.replace(/^[^0-9]*/, "");
+  if (locked.resolved !== version && !locked.resolved.startsWith(version + "("))
+    fail(importer + "/" + name + " resolved " + locked.resolved + " != " + version);
 }
 export function verify(root = ROOT) {
   const base = manifest(root, ".");
