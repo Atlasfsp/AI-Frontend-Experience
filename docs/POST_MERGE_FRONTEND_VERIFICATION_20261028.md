@@ -17,14 +17,14 @@ The original PRs had **failing GitHub Actions jobs** and the source was merged o
 
 ## Read-only verification performed
 
-Authenticated GitHub source retrieval compared the merged `main` `package.json`, `pnpm-lock.yaml` and affected workspace manifests. **9/9 selected manifest and lockfile specifier pairs agreed:** root Turbo, TypeScript, typescript-eslint and webpack-dev-middleware, Next 16 in three web apps and `packages/ui`, and TypeScript 6 in `packages/governed-browser`. Root `packageManager` remains `pnpm@9.15.9` and lockfile format `9.0`.
+Authenticated GitHub source retrieval compared the merged `main` `package.json`, `pnpm-lock.yaml` and affected workspace manifests. **9/9 selected manifest, lockfile specifier AND resolved-version triples agreed:** root Turbo, TypeScript, typescript-eslint and webpack-dev-middleware, Next 16 in three web apps and `packages/ui`, and TypeScript 6 in `packages/governed-browser`. Root `packageManager` remains `pnpm@9.15.9` and lockfile format `9.0`.
 
 **This check did NOT run `pnpm install`, lint, TypeScript build/typecheck, unit tests, E2E tests, pnpm security audit or application staging.** It validates only selected declarative source pins and cannot prove transitive dependency compatibility, provider safety, browser behavior or runtime quality.
 
 ## New source-only safeguards
 
 - `scripts/verify-upgrade-integrity.mjs`: standard-library-only, fail-closed source guard for root toolchain and nine merged dependency/workspace specifiers. No package installations, outbound requests, deployment or external credentials.
-- `scripts/verify-upgrade-integrity.test.mjs`: five proposed Node built-in negative tests for consistent fixture, mismatched lockfile, stale Next workspace, incorrect pnpm pin, and missing quality scripts. These tests have been **authored, NOT executed** in this environment.
+- `scripts/verify-upgrade-integrity.test.mjs`: six proposed Node built-in negative tests for consistent fixture, mismatched lockfile requested version, stale resolved package version, stale Next workspace, incorrect pnpm pin, and missing quality scripts. These tests have been **authored, NOT executed** in this environment.
 - `Jenkinsfile.post-merge-review`: a **new, separate, manually configured** Jenkins job definition. Requires trusted `trusted-frontend-review` runner with installed Node 22, pnpm 9.15.9 and warm offline package store; checks immutable SHA before any work; then verifies signed-off manifest pins, negative tests, frozen offline install, lint, typecheck, unit and security tests, integration-script tests, Next/TypeScript production build, optionally E2E, and records logs. There is **no release/deploy stage and no binding of GitHub/provider/secrets**.
 - No edits to existing GitHub Actions workflows, production application components, npm package versions, `pnpm-lock.yaml`, protected `main`, or live provider accounts.
 
@@ -57,6 +57,8 @@ CI=true pnpm test:e2e
 ```
 
 The resulting test logs must be associated with the **exact reviewed commit**. The offline cache requirement may cause missing-package failures. Do not silently fall back to unreviewed network downloads, use production secrets or disable verification steps. Static source-integrity PASS is only one gate.
+
+**Newly audited resolution values:** root Turbo 2.11.10, TypeScript 6.0.3, typescript-eslint 8.72.0, webpack-dev-middleware 8.5.0; all four Next workspaces 16.4.2; governed-browser TypeScript 6.0.3. The pnpm lock retains peer-context suffixes, which the guard permits after the exact resolved version prefix. No execution of the six Node negative tests is claimed.
 
 ## Explicit release blockers
 
