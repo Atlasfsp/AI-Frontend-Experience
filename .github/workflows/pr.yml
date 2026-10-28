@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+      - run: node --test scripts/next16-config-compatibility.test.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
