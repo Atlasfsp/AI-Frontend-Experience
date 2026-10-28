@@ -58,11 +58,22 @@ CI=true pnpm test:e2e
 
 The resulting test logs must be associated with the **exact reviewed commit**. The offline cache requirement may cause missing-package failures. Do not silently fall back to unreviewed network downloads, use production secrets or disable verification steps. Static source-integrity PASS is only one gate.
 
-**Newly audited resolution values:** root Turbo 2.11.10, TypeScript 6.0.3, typescript-eslint 8.72.0, webpack-dev-middleware 8.5.0; all four Next workspaces 16.4.2; governed-browser TypeScript 6.0.3. The pnpm lock retains peer-context suffixes, which the guard permits after the exact resolved version prefix. No execution of the six Node negative tests is claimed.
+**Newly audited resolution values:** root Turbo 2.11.10, TypeScript 6.0.3, typescript-eslint 8.72.0, webpack-dev-middleware 8.5.0; all four Next workspaces 16.4.2; governed-browser TypeScript 6.0.3. The pnpm lock retains peer-context suffixes, which the guard permits after the exact resolved version prefix. The six isolated Node regression tests have now been executed successfully with exact blob-hash matches; full repository acceptance is still pending.
+
+## Exact-blob isolated Node execution — 28 October 2026
+
+The committed source and tests were read from PR #42 branch at head `5adf3c532fd79fb900e89d458d3a711b5eee7b51` and reconstructed into a temporary isolated local directory. Before the test run was reported, `git hash-object` independently confirmed both local files **exactly matched their GitHub Git blob SHA-1 identifiers**:
+
+- `scripts/verify-upgrade-integrity.mjs`: `4d20476d2c66ced692f85cbc60eae817a9dcaaa7`.
+- `scripts/verify-upgrade-integrity.test.mjs`: `9b10877444d46e344e5e32ab5ccc96006083aed8`.
+
+Executed with **Node.js v22.16.0**, `node --check` on both files and `node --test scripts/verify-upgrade-integrity.test.mjs` in the isolated directory. **Six of six authored fixture regression tests passed** (0 failed, 0 skipped; execution ~107ms). The cases cover positive consistency, invalid requested lock specifier, partially downgraded Next workspace manifest, wrong pnpm manager, missing security-test script and stale resolved package version.
+
+**Important scope restriction:** This validates the exact two current committed script blobs as tested in an isolated directory, *not* a full checked-out `main` repository, `pnpm-lock.yaml` parser against the complete actual lockfile, `pnpm install`, app build, lint, TypeScript typecheck, real browser E2E or independent CI. The nine real `main` pin triples were checked separately by read-only authenticated source inspection. The test runner was a ChatGPT local container, **not an independent trusted Jenkins/Mac signoff**, and no production secrets or provider accounts were touched.
 
 ## Explicit release blockers
 
-- [ ] Independent exact-HEAD execution of the newly authored integrity tests.
+- [x] Local isolated Node execution of six test cases with source/test Git blob hash verification.\n- [ ] Independent exact-HEAD whole-repository execution on trusted Jenkins/Mac.
 - [ ] Offline frozen lockfile install, lint, typecheck, unit tests, security regressions and production build.
 - [ ] Real Playwright E2E on three local Next apps, with trace/screenshot artifacts on failure.
 - [ ] Vulnerability scan and supply-chain verification; browser performance, accessibility and bundle regressions.
