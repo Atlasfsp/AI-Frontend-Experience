@@ -12,6 +12,7 @@ const routePermissions: Array<{ permission: BacPermission; prefix: string }> = [
   { prefix: '/software-factory/compliance', permission: 'application:view' },
   { prefix: '/software-factory/artifacts', permission: 'application:view' },
   { prefix: '/software-factory/builds', permission: 'application:view' },
+  { prefix: '/software-factory/workloads', permission: 'workspace:view' },
   { prefix: '/software-factory/work-items', permission: 'workspace:view' },
   { prefix: '/software-factory/workspaces', permission: 'workspace:view' },
   { prefix: '/software-factory/architecture', permission: 'application:view' },
