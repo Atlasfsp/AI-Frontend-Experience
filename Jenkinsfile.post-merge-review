@@ -1,0 +1,90 @@
+// REVIEW-ONLY: manually configured Jenkins job. No release, deploy, credentials,
+// paid GitHub Actions or provider calls. Requires an approved trusted agent with
+// Node 22, pnpm 9.15.9, offline pnpm store and Playwright browsers.
+pipeline {
+  agent { label 'trusted-frontend-review' }
+  options {
+    disableConcurrentBuilds()
+    timeout(time: 75, unit: 'MINUTES')
+    skipDefaultCheckout(false)
+  }
+  parameters {
+    string(name: 'EXPECTED_MAIN_SHA', defaultValue: '',
+           description: 'Full reviewed main commit SHA; never a synthetic PR merge ref')
+    booleanParam(name: 'RUN_E2E', defaultValue: true,
+                 description: 'Run Playwright against local app servers')
+  }
+  environment {
+    CI = 'true'
+    NEXT_TELEMETRY_DISABLED = '1'
+    NPM_CONFIG_OFFLINE = 'true'
+  }
+  stages {
+    stage('Immutable checkout and tools') {
+      steps {
+        sh '''
+          set -eu
+          test -n "$EXPECTED_MAIN_SHA"
+          echo "$EXPECTED_MAIN_SHA" | grep -Eq '^[0-9a-f]{40}$'
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all -- package.json pnpm-lock.yaml pnpm-workspace.yaml apps packages scripts)"
+          node -e 'if (+process.versions.node.split(".")[0] !== 22) process.exit(2)'
+          test "$(pnpm --version)" = '9.15.9'
+          mkdir -p postmerge-evidence
+          printf '%s\n' "$EXPECTED_MAIN_SHA" > postmerge-evidence/commit.txt
+          node --version > postmerge-evidence/node-version.txt
+          pnpm --version > postmerge-evidence/pnpm-version.txt
+          node scripts/verify-upgrade-integrity.mjs > postmerge-evidence/source-integrity.log
+          node --test scripts/verify-upgrade-integrity.test.mjs > postmerge-evidence/source-integrity-tests.log 2>&1
+        '''
+      }
+    }
+    stage('Offline frozen dependency install') {
+      steps {
+        sh 'pnpm install --offline --frozen-lockfile > postmerge-evidence/install.log 2>&1'
+      }
+    }
+    stage('Lint and static type contracts') {
+      steps {
+        sh 'pnpm lint > postmerge-evidence/lint.log 2>&1'
+        sh 'pnpm typecheck > postmerge-evidence/typecheck.log 2>&1'
+      }
+    }
+    stage('Unit and security tests') {
+      steps {
+        sh 'pnpm test > postmerge-evidence/tests.log 2>&1'
+        sh 'pnpm test:integration-scripts > postmerge-evidence/integration-scripts.log 2>&1'
+        sh 'pnpm test:security-audit > postmerge-evidence/security-tests.log 2>&1'
+      }
+    }
+    stage('Build Next.js 16 and TypeScript 6 apps') {
+      steps {
+        sh 'pnpm build > postmerge-evidence/build.log 2>&1'
+      }
+    }
+    stage('Playwright E2E against local app servers') {
+      when { expression { params.RUN_E2E } }
+      steps {
+        sh 'pnpm test:e2e > postmerge-evidence/e2e.log 2>&1'
+      }
+    }
+    stage('Final source integrity') {
+      steps {
+        sh '''
+          set -eu
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          git diff --exit-code -- package.json pnpm-lock.yaml pnpm-workspace.yaml apps packages scripts
+          git diff --cached --exit-code -- package.json pnpm-lock.yaml pnpm-workspace.yaml apps packages scripts
+          if [ "$RUN_E2E" != 'true' ]; then
+            echo 'E2E NOT RUN: no all-gates pass claim' > postmerge-evidence/e2e-skipped.txt
+          fi
+        '''
+      }
+    }
+  }
+  post {
+    always {
+      archiveArtifacts artifacts: 'postmerge-evidence/**', allowEmptyArchive: true
+    }
+  }
+}
