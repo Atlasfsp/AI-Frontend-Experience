@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.atlasfsp.com/fluxcore/workload-record.v1.schema.json",
+  "title": "FACTORY-006 / FluxCore governed workload record (read model proposal)",
+  "description": "Frontend read-model proposal only. No live BFF, runtime authorization or release promotion is implied.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "workloadId",
+    "tenantId",
+    "workspaceId",
+    "kind",
+    "name",
+    "repository",
+    "commitSha",
+    "environment",
+    "state",
+    "ownerId",
+    "observedAt",
+    "evidenceState",
+    "evidenceRef",
+    "costMicrosUSD",
+    "approvalState",
+    "parentWorkloadId"
+  ],
+  "properties": {
+    "workloadId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tenantId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "workspaceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "enum": [
+        "engineering_job",
+        "ci_build",
+        "preview",
+        "runtime_service",
+        "data_infra"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "commitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "environment": {
+      "enum": [
+        "sandbox",
+        "preview",
+        "staging",
+        "production"
+      ]
+    },
+    "state": {
+      "enum": [
+        "queued",
+        "planning",
+        "running",
+        "blocked",
+        "awaiting_review",
+        "verified",
+        "failed",
+        "staged",
+        "active",
+        "rolled_back",
+        "completed",
+        "retired"
+      ]
+    },
+    "ownerId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "evidenceState": {
+      "enum": [
+        "DEMO",
+        "API_REPORTED_UNVERIFIED",
+        "TRUSTED_CI_VERIFIED",
+        "STALE",
+        "UNAVAILABLE"
+      ]
+    },
+    "evidenceRef": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "costMicrosUSD": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "approvalState": {
+      "enum": [
+        "not_requested",
+        "pending",
+        "approved",
+        "denied"
+      ]
+    },
+    "parentWorkloadId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "x-readonly-proposal": true,
+  "x-release-authority": false,
+  "x-external-trusted-provenance-required": true
+}
