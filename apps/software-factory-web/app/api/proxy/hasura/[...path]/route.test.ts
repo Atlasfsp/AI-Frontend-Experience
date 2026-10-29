@@ -72,4 +72,28 @@ describe('Hasura BFF project authorization', () => {
     expect(blocked.status).toBe(404);
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
+
+  it('rejects alternate GraphQL encodings that cannot be inspected before forwarding', async () => {
+    fetcher.mockResolvedValue(new Response('{}', { status: 200 }));
+    const rawGraphQL = new NextRequest('http://localhost/api/proxy/hasura/v1/graphql', {
+      method: 'POST',
+      headers: { cookie: 'bac_session=signed-session', 'content-type': 'application/graphql' },
+      body: 'query { fluxcore_project_read_model { id } }',
+    });
+    const multipartGraphQL = new NextRequest('http://localhost/api/proxy/hasura/v1/graphql', {
+      method: 'POST',
+      headers: { cookie: 'bac_session=signed-session', 'content-type': 'multipart/form-data; boundary=graphql-boundary' },
+      body: '--graphql-boundary\r\ncontent-disposition: form-data; name="operations"\r\n\r\n{"query":"query { fluxcore_project_read_model { id } }"}\r\n--graphql-boundary--\r\n',
+    });
+    const persistedOnly = new NextRequest('http://localhost/api/proxy/hasura/v1/graphql', {
+      method: 'POST',
+      headers: { cookie: 'bac_session=signed-session', 'content-type': 'application/json' },
+      body: JSON.stringify({ extensions: { persistedQuery: { sha256Hash: 'opaque' } } }),
+    });
+
+    expect((await POST(rawGraphQL, context())).status).toBe(415);
+    expect((await POST(multipartGraphQL, context())).status).toBe(415);
+    expect((await POST(persistedOnly, context())).status).toBe(400);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
 });

@@ -31,14 +31,27 @@ async function proxy(request: NextRequest, path: string[]) {
     return NextResponse.json({ error: 'not_found' }, { status: 404 });
   }
 
-  const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.text();
-  let graphQLQuery = request.nextUrl.searchParams.get('query');
-  if (body) {
+  let body: string | undefined;
+  let graphQLQuery: string | null = null;
+  if (request.method === 'GET') {
+    graphQLQuery = request.nextUrl.searchParams.get('query');
+    if (!graphQLQuery) {
+      return NextResponse.json({ error: 'graphql_query_required' }, { status: 400 });
+    }
+  } else {
+    const contentType = request.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase();
+    if (contentType !== 'application/json' && !contentType?.endsWith('+json')) {
+      return NextResponse.json({ error: 'unsupported_graphql_content_type' }, { status: 415 });
+    }
+    body = await request.text();
     try {
-      const parsed = JSON.parse(body) as { query?: unknown };
-      if (typeof parsed.query === 'string') graphQLQuery = parsed.query;
+      const parsed = JSON.parse(body) as { query?: unknown } | null;
+      if (typeof parsed?.query !== 'string') {
+        return NextResponse.json({ error: 'graphql_query_required' }, { status: 400 });
+      }
+      graphQLQuery = parsed.query;
     } catch {
-      // Hasura will reject malformed request bodies; do not infer an unprotected query.
+      return NextResponse.json({ error: 'invalid_graphql_json' }, { status: 400 });
     }
   }
   if (queryReadsEngineeringProjects(graphQLQuery)) {
