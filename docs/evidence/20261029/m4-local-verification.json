@@ -1,0 +1,49 @@
+{
+  "milestone": "M4 SpiceDB-gated Hasura project reads",
+  "repository": "Atlasfsp/AI-Frontend-Experience",
+  "branch": "codex/m2-create-engineer-project-binding",
+  "source_commit": "1f960433b11fba009a2d87be58d1d1cd0e8b383b",
+  "tested_source_commit": "1f960433b11fba009a2d87be58d1d1cd0e8b383b",
+  "local_only": true,
+  "github_runner_used": false,
+  "checks": [
+    {
+      "command": "pnpm test",
+      "exit_status": 0,
+      "result": "PASS: 13 tasks; 31 Software Factory app tests",
+      "evidence": "m4-pnpm-test.log",
+      "sha256": "a98223ae2af7fe8febc9bbf87843c71c464c079b2f52a361cb8e8992703a7b7a"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit_status": 0,
+      "result": "PASS: 13 tasks",
+      "evidence": "m4-pnpm-typecheck.log",
+      "sha256": "f0e023241ca315ebff77f290e47121b2687ad77cc0c060752b920d6391e5580d"
+    },
+    {
+      "command": "pnpm build",
+      "exit_status": 0,
+      "result": "PASS: 13 tasks; 32 package entry points; 37 Software Factory routes",
+      "evidence": "m4-pnpm-build.log",
+      "sha256": "5fabf638372793a88e5a4c965fe8b8173844855654ad5d11193a99b9ecbbae6c"
+    },
+    {
+      "command": "pnpm exec eslint <changed files>",
+      "exit_status": 0,
+      "result": "PASS exit 0; existing Next Pages-directory warning",
+      "evidence": "m4-eslint.log",
+      "sha256": "9947b81e4d53ac05f0ad708c33140a66ba90d4f9d2f1e84e1a88645d3bfc80f3"
+    }
+  ],
+  "implementation": [
+    "Engineer server page checks the FluxCore project_read authorization endpoint before the Hasura project query.",
+    "The Hasura BFF permits only v1/graphql and checks project_read before forwarding operations that read fluxcore_project_read_model.",
+    "Authorization denial and service failure stop the project data query."
+  ],
+  "not_verified": [
+    "No deployed Authentik claim mapping, live SpiceDB, network ingress, YugabyteDB, or browser integration was exercised.",
+    "Hasura metadata integration evidence is recorded by the backend repository; the local metadata/row-filter test used synthetic tenant JWTs against disposable PostgreSQL 18."
+  ],
+  "evidence_directory": "docs/evidence/20261029"
+}
