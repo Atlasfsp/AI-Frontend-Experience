@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { getPlatformOverview, listClusters, listWorkspaces } from '@bac/api-clients';
+import type { ClusterSummary, WorkspaceSummary } from '@bac/api-clients';
 import { Card, DataTable, MiniBarChart, PageHeader, StatGrid, Timeline } from '@bac/ui';
 
 import {
@@ -76,7 +77,7 @@ export default async function PlatformDashboardPage() {
         </Card>
         <Timeline items={observabilityTimeline} title="Signals and incidents" />
       </div>
-      <DataTable
+      <DataTable<ClusterSummary>
         columns={[
           { header: 'Cluster', render: (row) => row.id },
           { header: 'Region', render: (row) => row.region },
@@ -87,7 +88,7 @@ export default async function PlatformDashboardPage() {
         rows={clusters}
         title="Regional cluster estate"
       />
-      <DataTable
+      <DataTable<WorkspaceSummary>
         columns={[
           { header: 'Workspace', render: (row) => row.id },
           { header: 'Tenant', render: (row) => row.tenant },

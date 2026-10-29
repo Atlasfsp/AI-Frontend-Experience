@@ -51,6 +51,34 @@ it('shows models returned by the protected backend status probe', async () => {
 
   render(<AgentGatewayConnectionPanel />);
 
-  await waitFor(() => expect(screen.getByText('Connected')).toBeTruthy());
+  await waitFor(() => expect(screen.getByText('Gateway reachable')).toBeTruthy());
+  expect(screen.getByText(/does not qualify a model for engineering work or test inference/i)).toBeTruthy();
   expect(screen.getByText('openai/gpt-test')).toBeTruthy();
+});
+
+it('distinguishes a reachable gateway with an empty catalog from a disconnected gateway', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          configured: true,
+          reachable: true,
+          endpoint: 'http://127.0.0.1:3000',
+          models: [],
+          checked_at: '2026-10-29T10:00:00Z',
+          reason: 'connected',
+        }),
+        { status: 200 },
+      ),
+    ),
+  );
+
+  render(<AgentGatewayConnectionPanel />);
+
+  await waitFor(() => expect(screen.getByText('Gateway reachable')).toBeTruthy());
+  expect(
+    screen.getByText(/gateway is reachable but returned no models/i),
+  ).toBeTruthy();
+  expect(screen.queryByText(/no model IDs can be discovered/i)).toBeNull();
 });

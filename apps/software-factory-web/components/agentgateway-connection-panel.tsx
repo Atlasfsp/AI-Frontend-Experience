@@ -13,6 +13,20 @@ interface AgentGatewayStatus {
   reason: string;
 }
 
+async function fetchGatewayStatus(): Promise<AgentGatewayStatus> {
+  const response = await fetch('/api/proxy/sdx/v1/admin/agentgateway/status', {
+    cache: 'no-store',
+  });
+  if (!response.ok) {
+    throw new Error(
+      response.status === 403
+        ? 'Your account cannot view gateway settings.'
+        : 'The FluxCore API is unavailable or does not yet expose gateway status. Start the local API service, then check again.',
+    );
+  }
+  return (await response.json()) as AgentGatewayStatus;
+}
+
 const reasonLabels: Record<string, string> = {
   connected: 'Gateway is responding and serving models.',
   gateway_configuration_invalid: 'The server-side gateway URL is invalid. Check its scheme, host, and path.',
@@ -31,17 +45,7 @@ export function AgentGatewayConnectionPanel() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/proxy/sdx/v1/admin/agentgateway/status', {
-        cache: 'no-store',
-      });
-      if (!response.ok) {
-        throw new Error(
-          response.status === 403
-            ? 'Your account cannot view gateway settings.'
-            : 'The FluxCore API is unavailable or does not yet expose gateway status. Start the local API service, then check again.',
-        );
-      }
-      setStatus((await response.json()) as AgentGatewayStatus);
+      setStatus(await fetchGatewayStatus());
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Unable to read gateway status.');
       setStatus(null);
@@ -51,8 +55,23 @@ export function AgentGatewayConnectionPanel() {
   }, []);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let active = true;
+    fetchGatewayStatus()
+      .then((nextStatus) => {
+        if (active) setStatus(nextStatus);
+      })
+      .catch((cause: unknown) => {
+        if (!active) return;
+        setError(cause instanceof Error ? cause.message : 'Unable to read gateway status.');
+        setStatus(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const connected = status?.configured && status.reachable;
 
@@ -74,7 +93,7 @@ export function AgentGatewayConnectionPanel() {
           <div className="flex items-center gap-3">
             {status && (
               <Badge variant={connected ? 'success' : status.configured ? 'warning' : 'neutral'}>
-                {connected ? 'Connected' : status.configured ? 'Needs attention' : 'Not configured'}
+                {connected ? 'Gateway reachable' : status.configured ? 'Needs attention' : 'Not configured'}
               </Badge>
             )}
             <button
@@ -108,9 +127,12 @@ export function AgentGatewayConnectionPanel() {
               </p>
             </div>
             <div className="rounded-lg border border-white/10 bg-slate-950/35 p-4">
-              <p className="text-sm font-medium text-white">Models visible through the gateway</p>
+              <p className="text-sm font-medium text-white">Models listed by the gateway</p>
+              <p className="mt-1 text-xs leading-5 text-slate-400">
+                Catalog discovery confirms only that the gateway lists these IDs. It does not qualify a model for engineering work or test inference.
+              </p>
               {status.models.length > 0 ? (
-                <ul className="mt-3 flex flex-wrap gap-2" aria-label="Available models">
+                <ul className="mt-3 flex flex-wrap gap-2" aria-label="Discovered model IDs">
                   {status.models.map((model) => (
                     <li key={model} className="rounded-full border border-cyan-200/20 bg-cyan-950/30 px-3 py-1 font-mono text-xs text-cyan-100">
                       {model}
@@ -118,7 +140,11 @@ export function AgentGatewayConnectionPanel() {
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-sm text-slate-400">No models are available until a gateway is configured and reachable.</p>
+                <p className="mt-2 text-sm text-slate-400">
+                  {connected
+                    ? 'The gateway is reachable but returned no models. Configure an upstream provider and model in agentgateway, then check again.'
+                    : 'No model IDs can be discovered until the gateway is configured and reachable.'}
+                </p>
               )}
             </div>
           </div>
