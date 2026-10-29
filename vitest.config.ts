@@ -5,6 +5,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: {
     alias: {
+      '@/': fileURLToPath(new URL('./apps/software-factory-web/', import.meta.url)),
       '@bac/api-clients': fileURLToPath(new URL('./packages/api-clients/src/index.ts', import.meta.url)),
       '@bac/auth': fileURLToPath(new URL('./packages/auth/src/index.ts', import.meta.url)),
       '@bac/config': fileURLToPath(new URL('./packages/config/src/index.ts', import.meta.url)),

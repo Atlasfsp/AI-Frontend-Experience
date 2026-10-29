@@ -9,9 +9,14 @@ import { loadAppEnv } from '@/lib/env';
 
 export default async function WorkspacesPage() {
   const session = await getServerSession();
+  const config = loadAppEnv();
   const canViewProjects = hasPermission(session, 'application:view');
   const result = canViewProjects
-    ? await listSharedEngineeringProjects(loadAppEnv().hasuraUrl, session?.accessToken)
+    ? await listSharedEngineeringProjects(
+        config.hasuraUrl,
+        `${config.sdxApiUrl.replace(/\/$/, '')}/v1/projects/read-authorization`,
+        session?.accessToken,
+      )
     : { status: 'unavailable' as const, reason: 'forbidden' as const };
 
   return (
@@ -62,9 +67,13 @@ export default async function WorkspacesPage() {
         )
       ) : (
         <p role="status" className="rounded-3xl border border-amber-300/20 bg-amber-300/5 p-6 text-sm leading-6 text-amber-50/90">
-          {result.reason === 'forbidden'
-            ? 'Your account cannot view projects in this workspace.'
-            : `Shared project reads are unavailable (${result.reason}). Configure the trusted Authentik Hasura claim mapping and apply the read-model metadata before this console can display projects. No local/demo projects are substituted.`}
+          {result.reason === 'forbidden' || result.reason === 'authorization_denied'
+            ? 'Your account is not authorized to view projects in this workspace.'
+            : result.reason === 'authorization_unavailable'
+              ? 'Project authorization is unavailable. The console did not query project data.'
+              : result.reason === 'missing_token'
+                ? 'Sign in with an authorized account to view shared projects.'
+                : `Shared project reads are unavailable (${result.reason}). Configure the trusted Authentik/Hasura claim mapping and read-model metadata before this console can display projects. No local/demo projects are substituted.`}
         </p>
       )}
     </div>

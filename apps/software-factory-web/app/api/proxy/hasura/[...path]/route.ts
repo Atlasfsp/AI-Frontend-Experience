@@ -5,6 +5,7 @@ import { hasPermission } from '@bac/auth';
 
 import { loadAppEnv } from '@/lib/env';
 import { readRequestSession } from '@/lib/auth';
+import { authorizeEngineeringProjectRead, queryReadsEngineeringProjects } from '@/lib/hasura-project-access';
 
 function resolvePermission(method: string, path: string[]) {
   if (path[0] === 'subscriptions') {
@@ -26,7 +27,31 @@ async function proxy(request: NextRequest, path: string[]) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
-  const target = new URL(path.join('/'), `${env.hasuraUrl.replace(/\/$/, '')}/`);
+  if (path.join('/') !== 'v1/graphql') {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  }
+
+  const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.text();
+  let graphQLQuery = request.nextUrl.searchParams.get('query');
+  if (body) {
+    try {
+      const parsed = JSON.parse(body) as { query?: unknown };
+      if (typeof parsed.query === 'string') graphQLQuery = parsed.query;
+    } catch {
+      // Hasura will reject malformed request bodies; do not infer an unprotected query.
+    }
+  }
+  if (queryReadsEngineeringProjects(graphQLQuery)) {
+    const authorization = await authorizeEngineeringProjectRead(env.sdxApiUrl, session.accessToken);
+    if (authorization === 'denied' || authorization === 'missing_token') {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    }
+    if (authorization !== 'allowed') {
+      return NextResponse.json({ error: 'authorization_unavailable' }, { status: 503 });
+    }
+  }
+
+  const target = new URL(env.hasuraUrl);
   target.search = request.nextUrl.search;
 
   const headers = new Headers(request.headers);
@@ -37,7 +62,7 @@ async function proxy(request: NextRequest, path: string[]) {
   const init =
     request.method === 'GET' || request.method === 'HEAD'
       ? { headers, method: request.method }
-      : { body: await request.text(), headers, method: request.method };
+      : { body: body ?? '', headers, method: request.method };
 
   const response = await fetch(target, init);
 

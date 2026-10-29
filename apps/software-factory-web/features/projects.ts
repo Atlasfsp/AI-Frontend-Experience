@@ -17,7 +17,7 @@ export type SharedEngineeringProject = {
 
 type ProjectListResult =
   | { status: 'available'; projects: SharedEngineeringProject[] }
-  | { status: 'unavailable'; reason: 'missing_token' | 'upstream_error' | 'invalid_response' };
+  | { status: 'unavailable'; reason: 'missing_token' | 'authorization_denied' | 'authorization_unavailable' | 'upstream_error' | 'invalid_response' };
 
 const PROJECTS_QUERY = `query FluxCoreProjects {
   fluxcore_project_read_model(order_by: {updated_at: desc}, limit: 100) {
@@ -34,12 +34,25 @@ const PROJECTS_QUERY = `query FluxCoreProjects {
 
 export async function listSharedEngineeringProjects(
   endpoint: string,
+  authorizationEndpoint: string,
   accessToken: string | undefined,
   fetcher: typeof fetch = fetch,
 ): Promise<ProjectListResult> {
   if (!accessToken) return { status: 'unavailable', reason: 'missing_token' };
 
   try {
+    const authorization = await fetcher(authorizationEndpoint, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
+    if (authorization.status === 401 || authorization.status === 403) {
+      return { status: 'unavailable', reason: 'authorization_denied' };
+    }
+    if (!authorization.ok) return { status: 'unavailable', reason: 'authorization_unavailable' };
+    const decision = await authorization.json() as { authorized?: unknown };
+    if (decision.authorized !== true) return { status: 'unavailable', reason: 'authorization_denied' };
+
     const response = await fetcher(endpoint, {
       method: 'POST',
       cache: 'no-store',
