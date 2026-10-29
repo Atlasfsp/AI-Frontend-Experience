@@ -1,0 +1,252 @@
+
+> ai-frontend-experience@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
+> turbo run build && node scripts/verify-package-outputs.mjs
+
+• turbo 2.8.20
+
+   • Packages in scope: @bac/api-clients, @bac/auth, @bac/config, @bac/design-tokens, @bac/docs-portal, @bac/domain-contracts, @bac/eslint-config, @bac/governed-browser, @bac/i18n, @bac/observability, @bac/platform-automation-web, @bac/software-factory-web, @bac/testing, @bac/tsconfig, @bac/ui
+   • Running build in 15 packages
+   • Remote caching disabled
+
+@bac/domain-contracts:build: cache hit, replaying logs 4f0386af36388724
+@bac/design-tokens:build: cache hit, replaying logs 8a8c46dd7a76a3f1
+@bac/config:build: cache hit, replaying logs c70a86b758b752a0
+@bac/config:build:
+@bac/domain-contracts:build:
+@bac/config:build: > @bac/config@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/config
+@bac/config:build: > tsc -p tsconfig.build.json
+@bac/config:build:
+@bac/domain-contracts:build: > @bac/domain-contracts@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/domain-contracts
+@bac/domain-contracts:build: > tsc -p tsconfig.build.json
+@bac/domain-contracts:build:
+@bac/design-tokens:build:
+@bac/design-tokens:build: > @bac/design-tokens@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/design-tokens
+@bac/design-tokens:build: > tsc -p tsconfig.build.json
+@bac/design-tokens:build:
+@bac/observability:build: cache hit, replaying logs af0f5bab61703e8a
+@bac/governed-browser:build: cache hit, replaying logs d3d5729f7c573bed
+@bac/observability:build:
+@bac/observability:build: > @bac/observability@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/observability
+@bac/observability:build: > tsc -p tsconfig.build.json
+@bac/observability:build:
+@bac/governed-browser:build:
+@bac/governed-browser:build: > @bac/governed-browser@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/governed-browser
+@bac/governed-browser:build: > tsc -p tsconfig.build.json
+@bac/governed-browser:build:
+@bac/i18n:build: cache hit, replaying logs 4bc3875630df9c66
+@bac/i18n:build:
+@bac/i18n:build: > @bac/i18n@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/i18n
+@bac/i18n:build: > tsc -p tsconfig.build.json
+@bac/i18n:build:
+@bac/auth:build: cache hit, replaying logs 683d50e34d8e3b4b
+@bac/auth:build:
+@bac/auth:build: > @bac/auth@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/auth
+@bac/auth:build: > tsc -p tsconfig.build.json
+@bac/auth:build:
+@bac/testing:build: cache hit, replaying logs 83b8bfbcd6b08045
+@bac/testing:build:
+@bac/testing:build: > @bac/testing@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/testing
+@bac/testing:build: > tsc -p tsconfig.build.json
+@bac/testing:build:
+@bac/ui:build: cache hit, replaying logs 7f3b8ed1344fb5e8
+@bac/api-clients:build: cache hit, replaying logs 4faa397bb69db50f
+@bac/ui:build:
+@bac/ui:build: > @bac/ui@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/ui
+@bac/ui:build: > tsc -p tsconfig.build.json
+@bac/ui:build:
+@bac/api-clients:build:
+@bac/api-clients:build: > @bac/api-clients@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/api-clients
+@bac/api-clients:build: > tsc -p tsconfig.build.json
+@bac/api-clients:build:
+@bac/software-factory-web:build: cache miss, executing 9a5ed766dfd24622
+@bac/platform-automation-web:build: cache hit, replaying logs 889b42505144c2fd
+@bac/platform-automation-web:build:
+@bac/platform-automation-web:build: > @bac/platform-automation-web@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/platform-automation-web
+@bac/platform-automation-web:build: > next build
+@bac/platform-automation-web:build:
+@bac/platform-automation-web:build:    ▲ Next.js 15.5.14
+@bac/platform-automation-web:build:
+@bac/platform-automation-web:build:    Creating an optimized production build ...
+@bac/platform-automation-web:build:  ✓ Compiled successfully in 4.6s
+@bac/platform-automation-web:build:    Linting and checking validity of types ...
+@bac/platform-automation-web:build:
+@bac/platform-automation-web:build:  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+@bac/platform-automation-web:build:    Collecting page data ...
+@bac/platform-automation-web:build:    Generating static pages (0/32) ...
+@bac/platform-automation-web:build:    Generating static pages (8/32)
+@bac/platform-automation-web:build:    Generating static pages (16/32)
+@bac/platform-automation-web:build:    Generating static pages (24/32)
+@bac/platform-automation-web:build:  ✓ Generating static pages (32/32)
+@bac/platform-automation-web:build:    Finalizing page optimization ...
+@bac/platform-automation-web:build:    Collecting build traces ...
+@bac/platform-automation-web:build:
+@bac/platform-automation-web:build: Route (app)                                 Size  First Load JS
+@bac/platform-automation-web:build: ┌ ○ /                                      145 B         102 kB
+@bac/platform-automation-web:build: ├ ○ /_not-found                            145 B         102 kB
+@bac/platform-automation-web:build: ├ ƒ /admin/ecosystem-health              1.26 kB         103 kB
+@bac/platform-automation-web:build: ├ ƒ /admin/tenant-onboarding             2.22 kB         104 kB
+@bac/platform-automation-web:build: ├ ƒ /api-explorer                          227 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /api-explorer/platform                 242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /api/auth/callback                     869 B         125 kB
+@bac/platform-automation-web:build: ├ ƒ /api/auth/login                        869 B         125 kB
+@bac/platform-automation-web:build: ├ ƒ /api/auth/mock-login                   869 B         125 kB
+@bac/platform-automation-web:build: ├ ƒ /api/auth/refresh                      869 B         125 kB
+@bac/platform-automation-web:build: ├ ƒ /api/graphql-explorer                  869 B         125 kB
+@bac/platform-automation-web:build: ├ ƒ /api/health                            145 B         102 kB
+@bac/platform-automation-web:build: ├ ƒ /api/proxy/hasura/[...path]            869 B         125 kB
+@bac/platform-automation-web:build: ├ ƒ /api/proxy/sdx/[...path]               869 B         125 kB
+@bac/platform-automation-web:build: ├ ƒ /login                                 145 B         102 kB
+@bac/platform-automation-web:build: ├ ƒ /logout                                869 B         125 kB
+@bac/platform-automation-web:build: ├ ƒ /platform                              145 B         102 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/[...slug]                    267 B         160 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/clusters                     267 B         160 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/dashboard                    270 B         160 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/gitops                       242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/graphql-explorer           3.56 kB         139 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/identity                     242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/incidents                    242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/observability                242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/policy                       242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/promises                     267 B         160 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/quotas                       242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/real-time                  1.32 kB         103 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/regions                      242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/runbooks                     242 B         135 kB
+@bac/platform-automation-web:build: ├ ƒ /platform/workspace-factory            242 B         135 kB
+@bac/platform-automation-web:build: └ ƒ /platform/workspaces                 2.38 kB         163 kB
+@bac/platform-automation-web:build: + First Load JS shared by all             102 kB
+@bac/platform-automation-web:build:   ├ chunks/5669-451efee5f8b9907e.js      45.4 kB
+@bac/platform-automation-web:build:   ├ chunks/72a1bb16-2d9f92670bf4d552.js  54.2 kB
+@bac/platform-automation-web:build:   └ other shared chunks (total)          1.93 kB
+@bac/platform-automation-web:build:
+@bac/platform-automation-web:build:
+@bac/platform-automation-web:build: ƒ Middleware                             65.7 kB
+@bac/platform-automation-web:build:
+@bac/platform-automation-web:build: ○  (Static)   prerendered as static content
+@bac/platform-automation-web:build: ƒ  (Dynamic)  server-rendered on demand
+@bac/platform-automation-web:build:
+@bac/docs-portal:build: cache hit, replaying logs dba427f191fb7580
+@bac/docs-portal:build:
+@bac/docs-portal:build: > @bac/docs-portal@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/docs-portal
+@bac/docs-portal:build: > next build
+@bac/docs-portal:build:
+@bac/docs-portal:build:    ▲ Next.js 15.5.14
+@bac/docs-portal:build:
+@bac/docs-portal:build:    Creating an optimized production build ...
+@bac/docs-portal:build: (node:34828) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@bac/docs-portal:build: (Use `node --trace-deprecation ...` to show where the warning was created)
+@bac/docs-portal:build:  ✓ Compiled successfully in 26.3s
+@bac/docs-portal:build:    Linting and checking validity of types ...
+@bac/docs-portal:build:
+@bac/docs-portal:build:  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+@bac/docs-portal:build:    Collecting page data ...
+@bac/docs-portal:build:    Generating static pages (0/15) ...
+@bac/docs-portal:build:    Generating static pages (3/15)
+@bac/docs-portal:build:    Generating static pages (7/15)
+@bac/docs-portal:build:    Generating static pages (11/15)
+@bac/docs-portal:build:  ✓ Generating static pages (15/15)
+@bac/docs-portal:build:    Finalizing page optimization ...
+@bac/docs-portal:build:    Collecting build traces ...
+@bac/docs-portal:build:
+@bac/docs-portal:build: Route (app)                                 Size  First Load JS
+@bac/docs-portal:build: ┌ ○ /                                      218 B         133 kB
+@bac/docs-portal:build: ├ ○ /_not-found                            125 B         102 kB
+@bac/docs-portal:build: ├ ○ /adrs                                  225 B         133 kB
+@bac/docs-portal:build: ├ ○ /api                                   225 B         133 kB
+@bac/docs-portal:build: ├ ○ /api-reference                         225 B         133 kB
+@bac/docs-portal:build: ├ ƒ /api/health                            125 B         102 kB
+@bac/docs-portal:build: ├ ○ /architecture                          225 B         133 kB
+@bac/docs-portal:build: ├ ○ /getting-started                       225 B         133 kB
+@bac/docs-portal:build: ├ ○ /help                                  225 B         133 kB
+@bac/docs-portal:build: ├ ○ /platform                              225 B         133 kB
+@bac/docs-portal:build: ├ ○ /runbooks                              225 B         133 kB
+@bac/docs-portal:build: ├ ○ /search                              2.88 kB         137 kB
+@bac/docs-portal:build: └ ○ /software-factory                      225 B         133 kB
+@bac/docs-portal:build: + First Load JS shared by all             102 kB
+@bac/docs-portal:build:   ├ chunks/669-9128fc6bec567094.js       45.4 kB
+@bac/docs-portal:build:   ├ chunks/72a1bb16-7000ff9e983b28a1.js  54.2 kB
+@bac/docs-portal:build:   └ other shared chunks (total)          1.86 kB
+@bac/docs-portal:build:
+@bac/docs-portal:build:
+@bac/docs-portal:build: ○  (Static)   prerendered as static content
+@bac/docs-portal:build: ƒ  (Dynamic)  server-rendered on demand
+@bac/docs-portal:build:
+@bac/software-factory-web:build:
+@bac/software-factory-web:build: > @bac/software-factory-web@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+@bac/software-factory-web:build: > next build
+@bac/software-factory-web:build:
+@bac/software-factory-web:build:    ▲ Next.js 15.5.14
+@bac/software-factory-web:build:
+@bac/software-factory-web:build:    Creating an optimized production build ...
+@bac/software-factory-web:build: (node:48910) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@bac/software-factory-web:build: (Use `node --trace-deprecation ...` to show where the warning was created)
+@bac/software-factory-web:build:  ✓ Compiled successfully in 6.8s
+@bac/software-factory-web:build:    Linting and checking validity of types ...
+@bac/software-factory-web:build:
+@bac/software-factory-web:build:  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+@bac/software-factory-web:build:    Collecting page data ...
+@bac/software-factory-web:build:    Generating static pages (0/37) ...
+@bac/software-factory-web:build:    Generating static pages (9/37)
+@bac/software-factory-web:build:    Generating static pages (18/37)
+@bac/software-factory-web:build:    Generating static pages (27/37)
+@bac/software-factory-web:build:  ✓ Generating static pages (37/37)
+@bac/software-factory-web:build:    Finalizing page optimization ...
+@bac/software-factory-web:build:    Collecting build traces ...
+@bac/software-factory-web:build:
+@bac/software-factory-web:build: Route (app)                                           Size  First Load JS
+@bac/software-factory-web:build: ┌ ○ /                                                148 B         102 kB
+@bac/software-factory-web:build: ├ ○ /_not-found                                      148 B         102 kB
+@bac/software-factory-web:build: ├ ƒ /admin/feature-flags                           3.83 kB         140 kB
+@bac/software-factory-web:build: ├ ƒ /admin/health                                  3.98 kB         140 kB
+@bac/software-factory-web:build: ├ ƒ /api-explorer                                    148 B         102 kB
+@bac/software-factory-web:build: ├ ƒ /api-explorer/sdx                                244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /api/auth/callback                               864 B         125 kB
+@bac/software-factory-web:build: ├ ƒ /api/auth/login                                  864 B         125 kB
+@bac/software-factory-web:build: ├ ƒ /api/auth/mock-login                             864 B         125 kB
+@bac/software-factory-web:build: ├ ƒ /api/auth/refresh                                864 B         125 kB
+@bac/software-factory-web:build: ├ ƒ /api/health                                      148 B         102 kB
+@bac/software-factory-web:build: ├ ƒ /api/health/upstream                             812 B         102 kB
+@bac/software-factory-web:build: ├ ƒ /api/proxy/hasura/[...path]                      864 B         125 kB
+@bac/software-factory-web:build: ├ ƒ /api/proxy/sdx/[...path]                         864 B         125 kB
+@bac/software-factory-web:build: ├ ƒ /login                                           148 B         102 kB
+@bac/software-factory-web:build: ├ ƒ /logout                                          864 B         125 kB
+@bac/software-factory-web:build: ├ ○ /offline                                         560 B         102 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory                                148 B         102 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/[...slug]                      269 B         160 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/activity                       244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/adrs                           244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/agents                       2.41 kB         163 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/api-contracts                  244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/architecture                   244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/builds                         270 B         160 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/builds/[buildId]               269 B         160 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/compliance                     244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/dashboard                      270 B         160 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/domain-model                   244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/prd-intake                   3.16 kB         137 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/release-manager                244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/settings                       232 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/settings/access                244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/settings/audit                 244 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/settings/frontend-providers    232 B         135 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/swagger                        269 B         160 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/work-items                     269 B         160 kB
+@bac/software-factory-web:build: ├ ƒ /software-factory/workloads                      232 B         135 kB
+@bac/software-factory-web:build: └ ƒ /software-factory/workspaces                     906 B         135 kB
+@bac/software-factory-web:build: + First Load JS shared by all                       102 kB
+@bac/software-factory-web:build:   ├ chunks/5669-451efee5f8b9907e.js                45.4 kB
+@bac/software-factory-web:build:   ├ chunks/72a1bb16-2d9f92670bf4d552.js            54.2 kB
+@bac/software-factory-web:build:   └ other shared chunks (total)                    1.93 kB
+@bac/software-factory-web:build:
+@bac/software-factory-web:build:
+@bac/software-factory-web:build: ƒ Middleware                                         66 kB
+@bac/software-factory-web:build:
+@bac/software-factory-web:build: ○  (Static)   prerendered as static content
+@bac/software-factory-web:build: ƒ  (Dynamic)  server-rendered on demand
+@bac/software-factory-web:build:
+
+ Tasks:    13 successful, 13 total
+Cached:    12 cached, 13 total
+  Time:    1m7.174s
+
+Verified 32 built package entry points.

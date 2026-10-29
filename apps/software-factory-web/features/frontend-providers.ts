@@ -24,6 +24,36 @@ export type FrontendPlatform = {
   notes: string;
 };
 
+export type DeploymentPlatform = {
+  id: 'skyforge' | 'appforge';
+  name: string;
+  intendedTargets: readonly ('web' | 'mobile' | 'services')[];
+  connectivity: 'NOT_VERIFIED_LIVE';
+  activation: 'NOT_CONNECTED';
+  notes: string;
+};
+
+const deploymentPlatforms: readonly DeploymentPlatform[] = [
+  {
+    id: 'skyforge',
+    name: 'SkyForge',
+    intendedTargets: ['web', 'services'],
+    connectivity: 'NOT_VERIFIED_LIVE',
+    activation: 'NOT_CONNECTED',
+    notes:
+      'The local contract documents tenant headers but no verified FluxCore authentication. Its manual deploy starts from a branch and commit, so signed-artifact handoff, deployment receipts, rollback evidence, and independent release approval still need qualification.',
+  },
+  {
+    id: 'appforge',
+    name: 'AppForge',
+    intendedTargets: ['mobile'],
+    connectivity: 'NOT_VERIFIED_LIVE',
+    activation: 'NOT_CONNECTED',
+    notes:
+      'Local service code and an API contract exist, but the contract documents tenant headers without verified FluxCore authentication. The portal is not wired to the live API and its public API host is illustrative; provenance, signing, store approval, and release mapping are not qualified.',
+  },
+];
+
 const platforms: readonly FrontendPlatform[] = [
   {
     id: 'vercel-v0',
@@ -32,16 +62,23 @@ const platforms: readonly FrontendPlatform[] = [
     intendedCapabilities: ['code-generation', 'refactoring', 'design-context'],
     connectivity: 'NOT_VERIFIED_LIVE',
     activation: 'NOT_CONNECTED',
-    notes: 'Existing source adapter is optional; no live account, generation receipt or deploy right is attested.',
+    notes:
+      'Existing source adapter is optional; no live account, generation receipt or deploy right is attested.',
   },
   {
     id: 'designer2',
     name: 'Designer2',
     kind: 'design-and-code-candidate',
-    intendedCapabilities: ['design', 'prototype', 'design-export', 'code-generation'],
+    intendedCapabilities: [
+      'design',
+      'prototype',
+      'design-export',
+      'code-generation',
+    ],
     connectivity: 'NOT_VERIFIED_LIVE',
     activation: 'NOT_CONNECTED',
-    notes: 'Separate owned product. MCP server, authenticated tool discovery and artifact export require verification.',
+    notes:
+      'Separate owned product. MCP server, authenticated tool discovery and artifact export require verification.',
   },
   {
     id: 'google-stitch',
@@ -50,16 +87,23 @@ const platforms: readonly FrontendPlatform[] = [
     intendedCapabilities: ['design', 'prototype', 'design-export'],
     connectivity: 'NOT_VERIFIED_LIVE',
     activation: 'NOT_CONNECTED',
-    notes: 'Previously authored 180 screen specifications do not prove native artboards or a connected MCP server.',
+    notes:
+      'Previously authored 180 screen specifications do not prove native artboards or a connected MCP server.',
   },
   {
     id: 'figma',
     name: 'Figma',
     kind: 'design-source',
-    intendedCapabilities: ['design', 'prototype', 'design-context', 'design-export'],
+    intendedCapabilities: [
+      'design',
+      'prototype',
+      'design-context',
+      'design-export',
+    ],
     connectivity: 'NOT_VERIFIED_LIVE',
     activation: 'NOT_CONNECTED',
-    notes: 'Remote MCP exists, but tenant OAuth scope, seat permissions and FluxCore tool compatibility are not validated.',
+    notes:
+      'Remote MCP exists, but tenant OAuth scope, seat permissions and FluxCore tool compatibility are not validated.',
   },
 ] as const;
 
@@ -76,4 +120,8 @@ export const frontendProviderAuthority = {
 
 export function getFrontendProviderCandidates(): readonly FrontendPlatform[] {
   return platforms;
+}
+
+export function getDeploymentProviderCandidates(): readonly DeploymentPlatform[] {
+  return deploymentPlatforms;
 }

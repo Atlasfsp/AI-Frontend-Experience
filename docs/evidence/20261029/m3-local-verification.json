@@ -1,0 +1,53 @@
+{
+  "milestone": "M3 tenant-scoped shared project read model and Engineer project surface",
+  "repository": "Atlasfsp/AI-Frontend-Experience",
+  "branch": "codex/m2-create-engineer-project-binding",
+  "source_commit": "71a9d1a2dbcacb70107e539f87e0decf58dac509",
+  "tested_source_commit": "71a9d1a2dbcacb70107e539f87e0decf58dac509",
+  "local_only": true,
+  "github_runner_used": false,
+  "checks": [
+    {
+      "command": "pnpm test",
+      "exit_status": 0,
+      "evidence": "m3-pnpm-workspace-test.log",
+      "sha256": "27f51abf175b74c8d89cd3d24ffa5f50bdf0436729ae951234840755556f9509"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit_status": 0,
+      "evidence": "m3-pnpm-workspace-typecheck.log",
+      "sha256": "d4f225bf6ecadd3b6e48265a75d11247143ac3565f792f88dc910dc681f56d30"
+    },
+    {
+      "command": "pnpm build",
+      "exit_status": 0,
+      "evidence": "m3-pnpm-workspace-build.log",
+      "sha256": "4c7ce732e4df296b8b49a6e7fe8023bd7fa7a28d99711e81d60f584e869d9f5e"
+    },
+    {
+      "command": "pnpm exec eslint <three changed frontend files>",
+      "exit_status": 0,
+      "evidence": "m3-pnpm-eslint.log",
+      "sha256": "9947b81e4d53ac05f0ad708c33140a66ba90d4f9d2f1e84e1a88645d3bfc80f3",
+      "diagnostic": "Only the existing Next pages-directory configuration warning."
+    }
+  ],
+  "results": {
+    "workspace_test_tasks": 13,
+    "software_factory_tests": 24,
+    "typecheck_tasks": 13,
+    "build_tasks": 13,
+    "built_package_entry_points": 32,
+    "software_factory_routes_generated": 37
+  },
+  "implementation": "Engineer workspaces page reads the shared project view through Hasura using the signed access token; response validation is fail-closed and no demo data is substituted.",
+  "not_verified": [
+    "Live Hasura service/metadata application",
+    "Authentik JWT to Hasura tenant-claim mapping",
+    "database grants and tenant row-isolation integration",
+    "browser/screen-reader acceptance",
+    "live backend to frontend end-to-end"
+  ],
+  "evidence_directory": "docs/evidence/20261029"
+}

@@ -1,0 +1,17 @@
+
+> @bac/software-factory-web@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+> vitest run --config ../../vitest.config.ts --passWithNoTests features/projects.live.integration.test.ts
+
+
+ RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+
+(node:63814) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ features/projects.live.integration.test.ts (1 test) 1568ms
+   ✓ live local Authentik project journey > authorizes the real Authentik bearer token through FluxCore and reads its Hasura tenant rows  1562ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  15:30:54
+   Duration  8.51s (transform 290ms, setup 1.57s, collect 365ms, tests 1.57s, environment 3.09s, prepare 290ms)
+

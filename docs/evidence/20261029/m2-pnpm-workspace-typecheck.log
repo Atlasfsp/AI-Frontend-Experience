@@ -1,0 +1,80 @@
+
+> ai-frontend-experience@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
+> turbo run typecheck
+
+• turbo 2.8.20
+
+   • Packages in scope: @bac/api-clients, @bac/auth, @bac/config, @bac/design-tokens, @bac/docs-portal, @bac/domain-contracts, @bac/eslint-config, @bac/governed-browser, @bac/i18n, @bac/observability, @bac/platform-automation-web, @bac/software-factory-web, @bac/testing, @bac/tsconfig, @bac/ui
+   • Running typecheck in 15 packages
+   • Remote caching disabled
+
+@bac/software-factory-web:typecheck: cache miss, executing 994300ff19151407
+@bac/api-clients:typecheck: cache hit, replaying logs 24ff0929a3c128f8
+@bac/api-clients:typecheck: 
+@bac/api-clients:typecheck: > @bac/api-clients@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/api-clients
+@bac/api-clients:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/api-clients:typecheck: 
+@bac/auth:typecheck: cache hit, replaying logs 3fe7a6de4f29251d
+@bac/design-tokens:typecheck: cache hit, replaying logs 97c3423a600be646
+@bac/i18n:typecheck: cache hit, replaying logs a384c6bdbfac7b22
+@bac/design-tokens:typecheck: 
+@bac/auth:typecheck: 
+@bac/auth:typecheck: > @bac/auth@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/auth
+@bac/design-tokens:typecheck: > @bac/design-tokens@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/design-tokens
+@bac/design-tokens:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/design-tokens:typecheck: 
+@bac/auth:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/auth:typecheck: 
+@bac/config:typecheck: cache hit, replaying logs 190a1e6e875f7130
+@bac/i18n:typecheck: 
+@bac/i18n:typecheck: > @bac/i18n@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/i18n
+@bac/i18n:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/i18n:typecheck: 
+@bac/config:typecheck: 
+@bac/config:typecheck: > @bac/config@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/config
+@bac/config:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/config:typecheck: 
+@bac/docs-portal:typecheck: cache hit, replaying logs 02e1ad3bb32851b4
+@bac/docs-portal:typecheck: 
+@bac/docs-portal:typecheck: > @bac/docs-portal@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/docs-portal
+@bac/docs-portal:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/docs-portal:typecheck: 
+@bac/governed-browser:typecheck: cache hit, replaying logs 5c5040315ccdf007
+@bac/ui:typecheck: cache hit, replaying logs f48d3d9ebe4761f9
+@bac/testing:typecheck: cache hit, replaying logs c48fc34b9fda937a
+@bac/governed-browser:typecheck: 
+@bac/governed-browser:typecheck: > @bac/governed-browser@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/governed-browser
+@bac/governed-browser:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/governed-browser:typecheck: 
+@bac/testing:typecheck: 
+@bac/testing:typecheck: > @bac/testing@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/testing
+@bac/testing:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/testing:typecheck: 
+@bac/ui:typecheck: 
+@bac/ui:typecheck: > @bac/ui@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/ui
+@bac/ui:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/ui:typecheck: 
+@bac/domain-contracts:typecheck: cache hit, replaying logs 78a9671ed6db49ba
+@bac/domain-contracts:typecheck: 
+@bac/domain-contracts:typecheck: > @bac/domain-contracts@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/domain-contracts
+@bac/domain-contracts:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/domain-contracts:typecheck: 
+@bac/observability:typecheck: cache hit, replaying logs 2a447d059935b5a1
+@bac/observability:typecheck: 
+@bac/observability:typecheck: > @bac/observability@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/observability
+@bac/observability:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/observability:typecheck: 
+@bac/platform-automation-web:typecheck: cache hit, replaying logs 694f55047b6d5b5d
+@bac/platform-automation-web:typecheck: 
+@bac/platform-automation-web:typecheck: > @bac/platform-automation-web@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/platform-automation-web
+@bac/platform-automation-web:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/platform-automation-web:typecheck: 
+@bac/software-factory-web:typecheck: 
+@bac/software-factory-web:typecheck: > @bac/software-factory-web@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+@bac/software-factory-web:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/software-factory-web:typecheck: 
+
+ Tasks:    13 successful, 13 total
+Cached:    12 cached, 13 total
+  Time:    4.953s 
+

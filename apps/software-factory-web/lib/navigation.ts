@@ -2,35 +2,57 @@ import type { NavigationSection } from '@bac/ui';
 
 export const navigation: NavigationSection[] = [
   {
-    title: 'Software Factory',
+    title: 'Build',
     items: [
       {
-        href: '/software-factory/dashboard',
-        label: 'Dashboard',
-        description: 'Build health, quality gates, and active flow summary.',
-        keywords: ['overview', 'home', 'delivery'],
-        permission: 'workspace:view',
+        href: '/software-factory/prd-intake',
+        label: 'FluxCore Create',
+        description:
+          'Describe an idea in plain language and review its proposed application SME and engineering team.',
+        keywords: ['vibe coding', 'idea', 'create', 'app', 'SME'],
+        permission: 'workspace:manage',
       },
       {
         href: '/software-factory/workspaces',
-        label: 'Workspaces',
-        description: 'Project and workspace selector for the delivery context.',
-        keywords: ['project', 'workspace', 'selector'],
+        label: 'FluxCore Engineer',
+        description:
+          'Open shared projects, link repositories, and continue work in the engineering console.',
+        keywords: [
+          'developer',
+          'project',
+          'workspace',
+          'repository',
+          'engineer',
+        ],
+        permission: 'workspace:view',
+      },
+    ],
+  },
+  {
+    title: 'Engineering tools',
+    items: [
+      {
+        href: '/software-factory/dashboard',
+        label: 'Operations overview',
+        description:
+          'Factory operations, delivery evidence, and active flow summary.',
+        keywords: ['overview', 'home', 'delivery'],
         permission: 'workspace:view',
       },
       {
         href: '/software-factory/workloads',
         label: 'Workloads',
-        description: 'Factory jobs, builds, preview environments and service workloads; source-labelled.',
-        keywords: ['workload', 'execution', 'capacity', 'service', 'runtime', 'preview'],
+        description:
+          'Factory jobs, builds, preview environments and service workloads; source-labelled.',
+        keywords: [
+          'workload',
+          'execution',
+          'capacity',
+          'service',
+          'runtime',
+          'preview',
+        ],
         permission: 'workspace:view',
-      },
-      {
-        href: '/software-factory/prd-intake',
-        label: 'FluxCore Create',
-        description: 'Conversational intake, proposed domain expert, and engineering readiness.',
-        keywords: ['requirements', 'product', 'intake', 'create', 'SME'],
-        permission: 'workspace:manage',
       },
       {
         href: '/software-factory/architecture',
@@ -63,7 +85,8 @@ export const navigation: NavigationSection[] = [
       {
         href: '/software-factory/release-manager',
         label: 'Release Manager',
-        description: 'Promotion queue, release windows, and rollback readiness.',
+        description:
+          'Promotion queue, release windows, and rollback readiness.',
         keywords: ['promotions', 'rollout', 'release'],
         permission: 'application:deploy',
       },
@@ -103,7 +126,8 @@ export const navigation: NavigationSection[] = [
       {
         href: '/software-factory/swagger',
         label: 'Swagger Explorer',
-        description: 'First-class OpenAPI explorer inside the software-factory shell.',
+        description:
+          'First-class OpenAPI explorer inside the software-factory shell.',
         keywords: ['openapi', 'swagger', 'api explorer'],
         permission: 'workspace:view',
       },

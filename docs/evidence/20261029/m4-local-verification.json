@@ -1,0 +1,50 @@
+{
+  "milestone": "M4 SpiceDB-gated Hasura project reads",
+  "repository": "Atlasfsp/AI-Frontend-Experience",
+  "branch": "codex/m2-create-engineer-project-binding",
+  "source_commit": "9520b67dc1a5ca526e8695102004ca7487a53b0e",
+  "tested_source_commit": "9520b67dc1a5ca526e8695102004ca7487a53b0e",
+  "local_only": true,
+  "github_runner_used": false,
+  "checks": [
+    {
+      "command": "pnpm test",
+      "exit_status": 0,
+      "result": "PASS: 13 tasks; 32 Software Factory app tests",
+      "evidence": "m4-pnpm-test.log",
+      "sha256": "7b6bf70acec901f385e1d1755f74c58c2a83aecdf7f3a74d7a79b78c3982c1e6"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit_status": 0,
+      "result": "PASS: 13 tasks",
+      "evidence": "m4-pnpm-typecheck.log",
+      "sha256": "4745318dcd0440f8b0e01f2fdd976c7f29481b0b19d8f9bca49edd25ee1bb661"
+    },
+    {
+      "command": "pnpm build",
+      "exit_status": 0,
+      "result": "PASS: 13 tasks; 32 package entry points; 37 Software Factory routes",
+      "evidence": "m4-pnpm-build.log",
+      "sha256": "a118780141ba85a10541ae37bcda02634ca8489e44672b92409f87b037f71837"
+    },
+    {
+      "command": "pnpm exec eslint <changed files>",
+      "exit_status": 0,
+      "result": "PASS exit 0; existing Next Pages-directory warning",
+      "evidence": "m4-eslint.log",
+      "sha256": "9947b81e4d53ac05f0ad708c33140a66ba90d4f9d2f1e84e1a88645d3bfc80f3"
+    }
+  ],
+  "implementation": [
+    "Engineer server page checks the FluxCore project_read authorization endpoint before the Hasura project query.",
+    "The Hasura BFF permits only v1/graphql and checks project_read before forwarding operations that read fluxcore_project_read_model.",
+    "Authorization denial and service failure stop the project data query.",
+    "The BFF also rejects raw GraphQL, multipart bodies and persisted-query-only POSTs when it cannot inspect the GraphQL document."
+  ],
+  "not_verified": [
+    "No deployed Authentik claim mapping, live SpiceDB, network ingress, YugabyteDB, or browser integration was exercised.",
+    "Hasura metadata integration evidence is recorded by the backend repository; the local metadata/row-filter test used synthetic tenant JWTs against disposable PostgreSQL 18."
+  ],
+  "evidence_directory": "docs/evidence/20261029"
+}
