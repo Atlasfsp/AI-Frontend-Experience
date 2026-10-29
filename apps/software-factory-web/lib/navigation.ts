@@ -27,9 +27,9 @@ export const navigation: NavigationSection[] = [
       },
       {
         href: '/software-factory/prd-intake',
-        label: 'PRD Intake',
-        description: 'Structured requirement intake and definition-of-ready view.',
-        keywords: ['requirements', 'product', 'intake'],
+        label: 'FluxCore Create',
+        description: 'Conversational intake, proposed domain expert, and engineering readiness.',
+        keywords: ['requirements', 'product', 'intake', 'create', 'SME'],
         permission: 'workspace:manage',
       },
       {

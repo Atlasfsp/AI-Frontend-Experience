@@ -1,8 +1,12 @@
 import { DetailList, DocsCodePanel, MiniBarChart, Modal, PageHeader } from '@bac/ui';
 
+import { CreateIntake } from '@/components/create-intake';
+import { getServerSession } from '@/lib/session';
+
 import { prdReadinessChart, prdTemplateSnippet } from '@/features/data';
 
-export default function PrdIntakePage() {
+export default async function PrdIntakePage() {
+  const session = await getServerSession();
   return (
     <div className="space-y-8">
       <PageHeader
@@ -30,6 +34,7 @@ export default function PrdIntakePage() {
           </Modal>
         }
       />
+      {session && <CreateIntake tenantId={session.tenantId} workspaceId={session.workspaceId} />}
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <DocsCodePanel
           description="The intake flow is intentionally structured so every downstream page starts with the same requirement truth."
