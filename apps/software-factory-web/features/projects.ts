@@ -66,15 +66,19 @@ function parsePersistedStaffingProposals(
     if (
       !isRecord(item) ||
       !Number.isInteger(item.project_version) ||
+      (item.project_version as number) <= 0 ||
       !isRecord(item.team)
     )
       return null;
     const team = item.team;
     if (
       typeof team.team_id !== 'string' ||
+      team.team_id.trim().length === 0 ||
       typeof team.budget_ceiling_usd !== 'number' ||
       !Number.isFinite(team.budget_ceiling_usd) ||
+      team.budget_ceiling_usd <= 0 ||
       typeof team.created_at !== 'string' ||
+      Number.isNaN(Date.parse(team.created_at)) ||
       typeof team.status !== 'string' ||
       !Array.isArray(team.members)
     )
@@ -84,8 +88,11 @@ function parsePersistedStaffingProposals(
         if (
           !isRecord(member) ||
           typeof member.role_id !== 'string' ||
+          member.role_id.trim().length === 0 ||
           typeof member.title !== 'string' ||
-          typeof member.seniority !== 'string'
+          member.title.trim().length === 0 ||
+          typeof member.seniority !== 'string' ||
+          member.seniority.trim().length === 0
         )
           return null;
         return {

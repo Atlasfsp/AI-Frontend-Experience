@@ -204,4 +204,47 @@ describe('shared engineering projects read model', () => {
       ),
     ).resolves.toEqual({ status: 'unavailable', reason: 'upstream_error' });
   });
+
+  it('fails closed when a persisted staffing proposal is malformed', async () => {
+    const invalidProposal = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ authorized: true }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              fluxcore_project_read_model: [
+                {
+                  id: 'project-123',
+                  name: 'Care Planner',
+                  outcome: 'Coordinate appointments',
+                  application_domain: 'HealthTech',
+                  repository_ref: '',
+                  status: 'PROPOSED',
+                  version: 2,
+                  updated_at: '2026-10-29T00:00:00Z',
+                  workforce_plan_json: {
+                    team_proposals: [
+                      { project_version: 2, team: { team_id: 'team-partial' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    await expect(
+      listSharedEngineeringProjects(
+        'http://hasura.local/v1/graphql',
+        'http://fluxcore.local/authz',
+        'signed-access-token',
+        invalidProposal,
+      ),
+    ).resolves.toEqual({ status: 'unavailable', reason: 'invalid_response' });
+  });
 });
