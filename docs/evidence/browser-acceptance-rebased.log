@@ -1,0 +1,1 @@
+PASS: signed mock session → real authenticated BFF → local fixture; 1440/390 screenshots; no execution; same-session Engineer navigation.

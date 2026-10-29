@@ -1,0 +1,4 @@
+
+> @bac/software-factory-web@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+> tsc --noEmit -p tsconfig.json
+
