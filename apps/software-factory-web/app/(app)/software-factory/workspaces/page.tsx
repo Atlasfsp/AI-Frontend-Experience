@@ -100,6 +100,7 @@ export default async function WorkspacesPage() {
                   projectId={project.id}
                   tenantId={session?.tenantId ?? ''}
                   version={project.version}
+                  existingProposals={project.workforcePlan.team_proposals ?? []}
                 />
               </li>
             ))}

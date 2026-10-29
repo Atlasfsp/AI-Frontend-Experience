@@ -1,3 +1,14 @@
+export type PersistedStaffingProposal = {
+  projectVersion: number;
+  team: {
+    teamId: string;
+    budgetCeilingUsd: number;
+    createdAt: string;
+    status: string;
+    members: Array<{ roleId: string; title: string; seniority: string }>;
+  };
+};
+
 export type SharedEngineeringProject = {
   id: string;
   name: string;
@@ -13,6 +24,7 @@ export type SharedEngineeringProject = {
     execution_authorized?: boolean;
     roles?: unknown[];
     expert?: { name?: string; domain?: string };
+    team_proposals?: PersistedStaffingProposal[];
   };
 };
 
@@ -41,6 +53,64 @@ const PROJECTS_QUERY = `query FluxCoreProjects {
     workforce_plan_json
   }
 }`;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function parsePersistedStaffingProposals(
+  value: unknown,
+): PersistedStaffingProposal[] | null {
+  if (!Array.isArray(value)) return null;
+  const proposals = value.map((item): PersistedStaffingProposal | null => {
+    if (
+      !isRecord(item) ||
+      !Number.isInteger(item.project_version) ||
+      !isRecord(item.team)
+    )
+      return null;
+    const team = item.team;
+    if (
+      typeof team.team_id !== 'string' ||
+      typeof team.budget_ceiling_usd !== 'number' ||
+      !Number.isFinite(team.budget_ceiling_usd) ||
+      typeof team.created_at !== 'string' ||
+      typeof team.status !== 'string' ||
+      !Array.isArray(team.members)
+    )
+      return null;
+    const members = team.members.map(
+      (member): { roleId: string; title: string; seniority: string } | null => {
+        if (
+          !isRecord(member) ||
+          typeof member.role_id !== 'string' ||
+          typeof member.title !== 'string' ||
+          typeof member.seniority !== 'string'
+        )
+          return null;
+        return {
+          roleId: member.role_id,
+          title: member.title,
+          seniority: member.seniority,
+        };
+      },
+    );
+    if (members.some((member) => member === null)) return null;
+    return {
+      projectVersion: item.project_version as number,
+      team: {
+        teamId: team.team_id,
+        budgetCeilingUsd: team.budget_ceiling_usd,
+        createdAt: team.created_at,
+        status: team.status,
+        members: members as PersistedStaffingProposal['team']['members'],
+      },
+    };
+  });
+  return proposals.some((proposal) => proposal === null)
+    ? null
+    : (proposals as PersistedStaffingProposal[]);
+}
 
 export async function listSharedEngineeringProjects(
   endpoint: string,
@@ -91,6 +161,11 @@ export async function listSharedEngineeringProjects(
       (value): SharedEngineeringProject | null => {
         if (!value || typeof value !== 'object') return null;
         const row = value as Record<string, unknown>;
+        const workforcePlan = row.workforce_plan_json;
+        const parsedTeamProposals =
+          isRecord(workforcePlan) && 'team_proposals' in workforcePlan
+            ? parsePersistedStaffingProposals(workforcePlan.team_proposals)
+            : undefined;
         if (
           typeof row.id !== 'string' ||
           typeof row.name !== 'string' ||
@@ -104,7 +179,8 @@ export async function listSharedEngineeringProjects(
           typeof row.updated_at !== 'string' ||
           !row.workforce_plan_json ||
           typeof row.workforce_plan_json !== 'object' ||
-          Array.isArray(row.workforce_plan_json)
+          Array.isArray(row.workforce_plan_json) ||
+          parsedTeamProposals === null
         )
           return null;
         return {
@@ -116,8 +192,12 @@ export async function listSharedEngineeringProjects(
           status: row.status,
           version: row.version,
           updatedAt: row.updated_at,
-          workforcePlan:
-            row.workforce_plan_json as SharedEngineeringProject['workforcePlan'],
+          workforcePlan: {
+            ...(workforcePlan as SharedEngineeringProject['workforcePlan']),
+            ...(parsedTeamProposals === undefined
+              ? {}
+              : { team_proposals: parsedTeamProposals }),
+          },
         };
       },
     );

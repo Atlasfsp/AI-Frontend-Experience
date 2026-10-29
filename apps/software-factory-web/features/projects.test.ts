@@ -34,6 +34,24 @@ describe('shared engineering projects read model', () => {
                     expert: {
                       name: 'AI HealthTech Subject Matter Expert (Unverified)',
                     },
+                    team_proposals: [
+                      {
+                        project_version: 2,
+                        team: {
+                          team_id: 'team-1',
+                          budget_ceiling_usd: 2500,
+                          created_at: '2026-10-29T01:00:00Z',
+                          status: 'PROPOSED',
+                          members: [
+                            {
+                              role_id: 'application-domain-sme',
+                              title: 'HealthTech SME',
+                              seniority: 'REQUIRES_ASSESSMENT',
+                            },
+                          ],
+                        },
+                      },
+                    ],
                   },
                 },
               ],
@@ -59,6 +77,10 @@ describe('shared engineering projects read model', () => {
       'Unverified',
     );
     expect(result.projects[0]?.workforcePlan.execution_authorized).toBe(false);
+    expect(
+      result.projects[0]?.workforcePlan.team_proposals?.[0]?.team
+        .budgetCeilingUsd,
+    ).toBe(2500);
     expect(fetcher).toHaveBeenCalledWith(
       'http://hasura.local/v1/graphql',
       expect.objectContaining({
