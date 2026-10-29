@@ -23,5 +23,8 @@
     }
   ],
   "engineerPath": "/software-factory/workspaces",
-  "outcome": "PASS"
+  "outcome": "PASS",
+  "sourceSHA": "c76259aa3440307a97b3f05f9a92bd35d79f8753",
+  "baseSHA": "993ed241bdca21746d41147e33544487b09d2441",
+  "validatedAtUTC": "2026-10-29T07:32:31Z"
 }
