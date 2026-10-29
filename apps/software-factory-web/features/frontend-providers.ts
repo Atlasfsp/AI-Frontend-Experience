@@ -41,7 +41,7 @@ const deploymentPlatforms: readonly DeploymentPlatform[] = [
     connectivity: 'NOT_VERIFIED_LIVE',
     activation: 'NOT_CONNECTED',
     notes:
-      'Optional deployment target. A tenant-scoped adapter, deployment receipt, rollback evidence, and independent release approval are not connected here.',
+      'The local contract documents tenant headers but no verified FluxCore authentication. Its manual deploy starts from a branch and commit, so signed-artifact handoff, deployment receipts, rollback evidence, and independent release approval still need qualification.',
   },
   {
     id: 'appforge',
@@ -50,7 +50,7 @@ const deploymentPlatforms: readonly DeploymentPlatform[] = [
     connectivity: 'NOT_VERIFIED_LIVE',
     activation: 'NOT_CONNECTED',
     notes:
-      'Mobile delivery destination candidate. No AppForge adapter, store submission, signing, or release authority is connected here.',
+      'Local service code and an API contract exist, but the contract documents tenant headers without verified FluxCore authentication. The portal is not wired to the live API and its public API host is illustrative; provenance, signing, store approval, and release mapping are not qualified.',
   },
 ];
 

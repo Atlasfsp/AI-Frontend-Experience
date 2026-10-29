@@ -66,5 +66,9 @@ describe('FluxCore deployment destination catalog', () => {
       expect(target.connectivity).toBe('NOT_VERIFIED_LIVE');
       expect(target.intendedTargets.length).toBeGreaterThan(0);
     }
+    expect(targets[0]?.notes).toContain('signed-artifact handoff');
+    expect(targets[0]?.notes).toContain('FluxCore authentication');
+    expect(targets[1]?.notes).toContain('illustrative');
+    expect(targets[1]?.notes).toContain('FluxCore authentication');
   });
 });
