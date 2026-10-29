@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   frontendProviderAuthority,
+  getDeploymentProviderCandidates,
   getFrontendProviderCandidates,
 } from './frontend-providers';
 
@@ -38,9 +39,32 @@ describe('FluxCore ADR-006 frontend provider candidate view model', () => {
       if (!candidate) throw new Error(`Missing provider: ${id}`);
       return candidate;
     };
-    expect(provider('vercel-v0').intendedCapabilities).toContain('code-generation');
-    expect(provider('designer2').intendedCapabilities).toContain('code-generation');
-    expect(provider('google-stitch').intendedCapabilities).not.toContain('code-generation');
-    expect(provider('figma').intendedCapabilities).not.toContain('code-generation');
+    expect(provider('vercel-v0').intendedCapabilities).toContain(
+      'code-generation',
+    );
+    expect(provider('designer2').intendedCapabilities).toContain(
+      'code-generation',
+    );
+    expect(provider('google-stitch').intendedCapabilities).not.toContain(
+      'code-generation',
+    );
+    expect(provider('figma').intendedCapabilities).not.toContain(
+      'code-generation',
+    );
+  });
+});
+
+describe('FluxCore deployment destination catalog', () => {
+  it('lists SkyForge and AppForge only as disconnected candidate targets', () => {
+    const targets = getDeploymentProviderCandidates();
+    expect(targets.map((target) => target.id)).toEqual([
+      'skyforge',
+      'appforge',
+    ]);
+    for (const target of targets) {
+      expect(target.activation).toBe('NOT_CONNECTED');
+      expect(target.connectivity).toBe('NOT_VERIFIED_LIVE');
+      expect(target.intendedTargets.length).toBeGreaterThan(0);
+    }
   });
 });
