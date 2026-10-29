@@ -3,18 +3,15 @@ import type { NextRequest } from 'next/server';
 
 import { hasPermission } from '@bac/auth';
 
+import { resolveSdxPermission } from '@/lib/sdx-permissions';
 import { loadAppEnv } from '@/lib/env';
 import { readRequestSession } from '@/lib/auth';
-
-function resolvePermission(method: string) {
-  return method === 'GET' ? 'application:view' : 'application:deploy';
-}
 
 async function proxy(request: NextRequest, path: string[]) {
   const env = loadAppEnv();
   const session = await readRequestSession(request.cookies.get('bac_session')?.value);
 
-  if (!session || !hasPermission(session, resolvePermission(request.method))) {
+  if (!session || !hasPermission(session, resolveSdxPermission(request.method, path))) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 

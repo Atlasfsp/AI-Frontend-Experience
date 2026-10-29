@@ -40,3 +40,17 @@ it('rejects responses that claim execution authorization or verified expertise',
   expect((await screen.findByRole('alert')).textContent).toContain('unsupported proposal');
   expect(screen.queryByText('Workforce proposal')).toBeNull();
 });
+it.each([null, undefined])('treats %s cost as unknown and renders untrusted domain and expert names as text', async (cost) => {
+  const unsafe = '<img src=x onerror=alert(1)>';
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({
+    workforce_plan: { domain: unsafe, evidence_status: 'UNVERIFIED', status: 'PROPOSED', roles: [],
+      expert: { expert_id: 'custom', name: unsafe, domain: unsafe, is_verified: false },
+      execution_authorized: false, required_gates: [] }, estimated_cost_usd: cost,
+  }) }));
+  const { container } = render(<CreateIntake tenantId="t" workspaceId="w" />);
+  fireEvent.change(screen.getByLabelText('What would you like to build?'), { target: { value: 'A useful app' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Prepare engineering proposal' }));
+  await screen.findByText('Cost: unknown');
+  expect(screen.getByRole('heading', { name: unsafe })).toBeTruthy();
+  expect(container.querySelector('img')).toBeNull();
+});
