@@ -62,4 +62,31 @@ describe('SDX browser API proxy', () => {
     expect(response.status).toBe(404);
     expect(fetcher).not.toHaveBeenCalled();
   });
+
+  it('keeps the agentgateway connection probe available to administrators only', async () => {
+    vi.mocked(readRequestSession).mockResolvedValue(createMockSession({ roles: ['MEMBER'] }));
+    const path = ['v1', 'admin', 'agentgateway', 'status'];
+    const denied = await GET(new NextRequest('http://localhost/api/proxy/sdx/v1/admin/agentgateway/status'), getContext(path));
+    expect(denied.status).toBe(403);
+    expect(fetcher).not.toHaveBeenCalled();
+
+    vi.mocked(readRequestSession).mockResolvedValue(createMockSession({ roles: ['ADMIN'] }));
+    const allowed = await GET(new NextRequest('http://localhost/api/proxy/sdx/v1/admin/agentgateway/status'), getContext(path));
+    expect(allowed.status).toBe(200);
+    const [target, init] = fetcher.mock.calls[0] as [string, RequestInit];
+    expect(String(target)).toBe('http://fluxcore.local/v1/admin/agentgateway/status');
+    expect(init.method).toBe('GET');
+  });
+
+  it('returns a clean gateway error when the FluxCore API is unavailable', async () => {
+    vi.mocked(readRequestSession).mockResolvedValue(createMockSession({ roles: ['ADMIN'] }));
+    fetcher.mockRejectedValueOnce(new TypeError('connection refused'));
+    const response = await GET(
+      new NextRequest('http://localhost/api/proxy/sdx/v1/admin/agentgateway/status'),
+      getContext(['v1', 'admin', 'agentgateway', 'status']),
+    );
+
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: 'upstream_unavailable' });
+  });
 });

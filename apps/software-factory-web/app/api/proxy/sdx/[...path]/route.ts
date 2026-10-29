@@ -39,7 +39,12 @@ async function proxy(request: NextRequest, path: string[]) {
       ? { headers, method: request.method }
       : { body: await request.text(), headers, method: request.method };
 
-  const response = await fetch(target, init);
+  let response: Response;
+  try {
+    response = await fetch(target, init);
+  } catch {
+    return NextResponse.json({ error: 'upstream_unavailable' }, { status: 502 });
+  }
 
   return new NextResponse(response.body, {
     headers: response.headers,

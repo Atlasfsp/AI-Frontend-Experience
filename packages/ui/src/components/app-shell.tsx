@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
-import type { BacPermission, BacSession } from '@bac/auth';
+import type { BacPermission, BacRole, BacSession } from '@bac/auth';
 import { hasPermission } from '@bac/auth';
 
 import { cn } from '../lib/cn';
@@ -134,7 +134,7 @@ export function AppShell({
               <span aria-label={`Governance mode: ${governanceMode}`}>
                 <Badge variant="warning">{governanceMode}</Badge>
               </span>
-              {session.roles.map((role) => (
+              {session.roles.map((role: BacRole) => (
                 <Badge key={role} variant="neutral">
                   {role}
                 </Badge>

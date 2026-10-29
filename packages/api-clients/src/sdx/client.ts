@@ -37,7 +37,7 @@ export async function listWorkItems(context: RequestContext = {}): Promise<WorkI
     return workItems;
   }
 
-  return requestJson(resolveSdxUrl('api/work-items', context), {}, context);
+  return requestJson<WorkItemSummary[]>(resolveSdxUrl('api/work-items', context), {}, context);
 }
 
 export async function listBuilds(context: RequestContext = {}): Promise<BuildSummary[]> {

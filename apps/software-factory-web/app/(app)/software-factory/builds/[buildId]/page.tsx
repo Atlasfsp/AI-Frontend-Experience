@@ -1,4 +1,4 @@
-import { getBuild } from '@bac/api-clients';
+import { getBuild, type WorkItemSummary } from '@bac/api-clients';
 import { listWorkItems } from '@bac/api-clients';
 import { Card, DataTable, DetailList, DocsCodePanel, Drawer, MiniBarChart, Modal, PageHeader, StatGrid, TerminalPanel, Timeline } from '@bac/ui';
 
@@ -154,7 +154,7 @@ export default async function BuildDetailPage({
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <Timeline title="Build timeline" items={detail.timeline} />
-        <DataTable
+        <DataTable<WorkItemSummary>
           title="Linked work items"
           description="The build is connected back to active planning and delivery work so reviewers can inspect context without leaving the dossier."
           rows={workItems}
