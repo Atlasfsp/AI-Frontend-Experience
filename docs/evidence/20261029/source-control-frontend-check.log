@@ -1,0 +1,676 @@
+
+> ai-frontend-experience@0.1.0 check /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
+> pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration-scripts && pnpm build
+
+
+> ai-frontend-experience@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
+> turbo run lint
+
+
+   • turbo 2.11.10
+   • Packages in scope: @bac/api-clients, @bac/auth, @bac/config, @bac/design-tokens, @bac/docs-portal, @bac/domain-contracts, @bac/eslint-config, @bac/governed-browser, @bac/i18n, @bac/observability, @bac/platform-automation-web, @bac/software-factory-web, @bac/testing, @bac/tsconfig, @bac/ui
+   • Running lint in 15 packages
+   • Remote caching disabled
+
+@bac/software-factory-web:lint: cache miss, executing 284a991587986c02
+@bac/platform-automation-web:lint: cache miss, executing 7f71058e77288254
+@bac/ui:lint: cache hit, replaying logs 80ecb0c061234d81
+@bac/auth:lint: cache hit, replaying logs a7cb6b05d5e966fa
+@bac/api-clients:lint: cache hit, replaying logs d825d7df3fb2b4ce
+@bac/testing:lint: cache hit, replaying logs e588b58a7736df1b
+@bac/config:lint: cache hit, replaying logs 2155050dc1efd18e
+@bac/observability:lint: cache hit, replaying logs 37ee3363ffd9f014
+@bac/i18n:lint: cache hit, replaying logs 03c47ee39a8d6d30
+@bac/design-tokens:lint: cache hit, replaying logs 7afb1846d0b1e46e
+@bac/ui:lint: 
+@bac/ui:lint: > @bac/ui@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/ui
+@bac/ui:lint: > tsc --noEmit -p tsconfig.json
+@bac/ui:lint: 
+@bac/api-clients:lint: 
+@bac/api-clients:lint: > @bac/api-clients@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/api-clients
+@bac/api-clients:lint: > tsc --noEmit -p tsconfig.json
+@bac/api-clients:lint: 
+@bac/i18n:lint: 
+@bac/i18n:lint: > @bac/i18n@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/i18n
+@bac/i18n:lint: > tsc --noEmit -p tsconfig.json
+@bac/i18n:lint: 
+@bac/observability:lint: 
+@bac/observability:lint: > @bac/observability@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/observability
+@bac/observability:lint: > tsc --noEmit -p tsconfig.json
+@bac/observability:lint: 
+@bac/config:lint: 
+@bac/config:lint: > @bac/config@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/config
+@bac/config:lint: > tsc --noEmit -p tsconfig.json
+@bac/config:lint: 
+@bac/auth:lint: 
+@bac/auth:lint: > @bac/auth@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/auth
+@bac/auth:lint: > tsc --noEmit -p tsconfig.json
+@bac/auth:lint: 
+@bac/testing:lint: 
+@bac/testing:lint: > @bac/testing@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/testing
+@bac/testing:lint: > tsc --noEmit -p tsconfig.json
+@bac/testing:lint: 
+@bac/design-tokens:lint: 
+@bac/design-tokens:lint: > @bac/design-tokens@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/design-tokens
+@bac/design-tokens:lint: > tsc --noEmit -p tsconfig.json
+@bac/design-tokens:lint: 
+@bac/governed-browser:lint: cache hit, replaying logs 441f13d2104583da
+@bac/governed-browser:lint: 
+@bac/governed-browser:lint: > @bac/governed-browser@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/governed-browser
+@bac/governed-browser:lint: > tsc --noEmit -p tsconfig.json
+@bac/governed-browser:lint: 
+@bac/domain-contracts:lint: cache hit, replaying logs ec71b2a1b1bc0d3b
+@bac/domain-contracts:lint: 
+@bac/domain-contracts:lint: > @bac/domain-contracts@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/domain-contracts
+@bac/domain-contracts:lint: > tsc --noEmit -p tsconfig.json
+@bac/domain-contracts:lint: 
+@bac/docs-portal:lint: cache hit, replaying logs b14e9efcccc67875
+@bac/docs-portal:lint: 
+@bac/docs-portal:lint: > @bac/docs-portal@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/docs-portal
+@bac/docs-portal:lint: > eslint .
+@bac/docs-portal:lint: 
+@bac/software-factory-web:lint: 
+@bac/software-factory-web:lint: > @bac/software-factory-web@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+@bac/software-factory-web:lint: > eslint .
+@bac/software-factory-web:lint: 
+@bac/platform-automation-web:lint: 
+@bac/platform-automation-web:lint: > @bac/platform-automation-web@0.1.0 lint /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/platform-automation-web
+@bac/platform-automation-web:lint: > eslint .
+@bac/platform-automation-web:lint: 
+
+ Tasks:    13 successful, 13 total
+Cached:    11 cached, 13 total
+  Time:    9.857s 
+
+
+> ai-frontend-experience@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
+> turbo run typecheck
+
+
+   • turbo 2.11.10
+   • Packages in scope: @bac/api-clients, @bac/auth, @bac/config, @bac/design-tokens, @bac/docs-portal, @bac/domain-contracts, @bac/eslint-config, @bac/governed-browser, @bac/i18n, @bac/observability, @bac/platform-automation-web, @bac/software-factory-web, @bac/testing, @bac/tsconfig, @bac/ui
+   • Running typecheck in 15 packages
+   • Remote caching disabled
+
+@bac/platform-automation-web:typecheck: cache miss, executing f6ac99a4603a7094
+@bac/design-tokens:typecheck: cache hit, replaying logs 97c3423a600be646
+@bac/auth:typecheck: cache hit, replaying logs 93f3f6346997fb06
+@bac/domain-contracts:typecheck: cache hit, replaying logs 78a9671ed6db49ba
+@bac/auth:typecheck: 
+@bac/auth:typecheck: > @bac/auth@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/auth
+@bac/auth:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/auth:typecheck: 
+@bac/ui:typecheck: cache hit, replaying logs 3ce4fe4c53ae9bd2
+@bac/ui:typecheck: 
+@bac/ui:typecheck: > @bac/ui@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/ui
+@bac/ui:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/ui:typecheck: 
+@bac/testing:typecheck: cache hit, replaying logs c48fc34b9fda937a
+@bac/api-clients:typecheck: cache hit, replaying logs a42ed8dcaaceb62d
+@bac/design-tokens:typecheck: 
+@bac/design-tokens:typecheck: > @bac/design-tokens@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/design-tokens
+@bac/design-tokens:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/design-tokens:typecheck: 
+@bac/testing:typecheck: 
+@bac/testing:typecheck: > @bac/testing@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/testing
+@bac/testing:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/testing:typecheck: 
+@bac/api-clients:typecheck: 
+@bac/api-clients:typecheck: > @bac/api-clients@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/api-clients
+@bac/api-clients:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/api-clients:typecheck: 
+@bac/config:typecheck: cache hit, replaying logs 190a1e6e875f7130
+@bac/governed-browser:typecheck: cache hit, replaying logs 5c5040315ccdf007
+@bac/domain-contracts:typecheck: 
+@bac/domain-contracts:typecheck: > @bac/domain-contracts@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/domain-contracts
+@bac/domain-contracts:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/domain-contracts:typecheck: 
+@bac/software-factory-web:typecheck: cache miss, executing b41a2ab76c0a278e
+@bac/governed-browser:typecheck: 
+@bac/governed-browser:typecheck: > @bac/governed-browser@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/governed-browser
+@bac/governed-browser:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/governed-browser:typecheck: 
+@bac/observability:typecheck: cache hit, replaying logs 2a447d059935b5a1
+@bac/config:typecheck: 
+@bac/config:typecheck: > @bac/config@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/config
+@bac/config:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/config:typecheck: 
+@bac/observability:typecheck: 
+@bac/observability:typecheck: > @bac/observability@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/observability
+@bac/observability:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/observability:typecheck: 
+@bac/i18n:typecheck: cache hit, replaying logs a384c6bdbfac7b22
+@bac/i18n:typecheck: 
+@bac/i18n:typecheck: > @bac/i18n@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/i18n
+@bac/i18n:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/i18n:typecheck: 
+@bac/docs-portal:typecheck: cache hit, replaying logs 02e1ad3bb32851b4
+@bac/docs-portal:typecheck: 
+@bac/docs-portal:typecheck: > @bac/docs-portal@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/docs-portal
+@bac/docs-portal:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/docs-portal:typecheck: 
+@bac/platform-automation-web:typecheck: 
+@bac/platform-automation-web:typecheck: > @bac/platform-automation-web@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/platform-automation-web
+@bac/platform-automation-web:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/platform-automation-web:typecheck: 
+@bac/software-factory-web:typecheck: 
+@bac/software-factory-web:typecheck: > @bac/software-factory-web@0.1.0 typecheck /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+@bac/software-factory-web:typecheck: > tsc --noEmit -p tsconfig.json
+@bac/software-factory-web:typecheck: 
+
+ Tasks:    13 successful, 13 total
+Cached:    11 cached, 13 total
+  Time:    8.68s 
+
+
+> ai-frontend-experience@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
+> turbo run test
+
+
+   • turbo 2.11.10
+   • Packages in scope: @bac/api-clients, @bac/auth, @bac/config, @bac/design-tokens, @bac/docs-portal, @bac/domain-contracts, @bac/eslint-config, @bac/governed-browser, @bac/i18n, @bac/observability, @bac/platform-automation-web, @bac/software-factory-web, @bac/testing, @bac/tsconfig, @bac/ui
+   • Running test in 15 packages
+   • Remote caching disabled
+
+@bac/software-factory-web:test: cache miss, executing 33775ab4f3ceccf1
+@bac/platform-automation-web:test: cache miss, executing c75ecc713f4e2363
+@bac/observability:test: cache hit, replaying logs 2c11fa47f1ae2888
+@bac/observability:test: 
+@bac/observability:test: > @bac/observability@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/observability
+@bac/observability:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/observability:test: 
+@bac/observability:test: 
+@bac/observability:test:  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/observability
+@bac/observability:test: 
+@bac/observability:test: No test files found, exiting with code 0
+@bac/observability:test: 
+@bac/observability:test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+@bac/observability:test: exclude:  **/node_modules/**, **/dist/**, **/.next/**
+@bac/observability:test: 
+@bac/i18n:test: cache hit, replaying logs c971b1d0db899554
+@bac/config:test: cache hit, replaying logs b712a9b5a4eae6e8
+@bac/api-clients:test: cache hit, replaying logs 3355ce6c38a44801
+@bac/api-clients:test: 
+@bac/api-clients:test: > @bac/api-clients@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/api-clients
+@bac/api-clients:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/api-clients:test: 
+@bac/api-clients:test: 
+@bac/api-clients:test:  RUN  v5.0.3 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/api-clients
+@bac/api-clients:test: 
+@bac/api-clients:test:  ✓ src/platform/client.test.ts (3 tests) 247ms
+@bac/api-clients:test: 
+@bac/api-clients:test:  Test Files  1 passed (1)
+@bac/api-clients:test:       Tests  3 passed (3)
+@bac/api-clients:test:    Start at  21:37:12
+@bac/api-clients:test:    Duration  4.76s (environment 62%, import 18%, setup 10%, tests 6%, transform 4%, worker 1%)
+@bac/api-clients:test: 
+@bac/auth:test: cache hit, replaying logs 25a5b96dfedb2530
+@bac/i18n:test: 
+@bac/i18n:test: > @bac/i18n@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/i18n
+@bac/i18n:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/i18n:test: 
+@bac/i18n:test: 
+@bac/i18n:test:  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/i18n
+@bac/i18n:test: 
+@bac/i18n:test: No test files found, exiting with code 0
+@bac/i18n:test: 
+@bac/i18n:test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+@bac/i18n:test: exclude:  **/node_modules/**, **/dist/**, **/.next/**
+@bac/i18n:test: 
+@bac/auth:test: 
+@bac/auth:test: > @bac/auth@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/auth
+@bac/auth:test: > vitest run --config ../../vitest.config.ts
+@bac/auth:test: 
+@bac/auth:test: 
+@bac/auth:test:  RUN  v5.0.3 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/auth
+@bac/auth:test: 
+@bac/auth:test:  ✓ src/oidc.test.ts (1 test) 92ms
+@bac/auth:test:  ↓ src/claims.test.ts (1 test | 1 skipped)
+@bac/auth:test:  ✓ src/index.test.ts (4 tests) 21ms
+@bac/auth:test: 
+@bac/auth:test:  Test Files  2 passed | 1 skipped (3)
+@bac/auth:test:       Tests  5 passed | 1 skipped (6)
+@bac/auth:test:    Start at  21:37:12
+@bac/auth:test:    Duration  4.66s (environment 67%, setup 15%, import 10%, transform 6%, worker 1%, tests 1%)
+@bac/auth:test: 
+@bac/config:test: 
+@bac/config:test: > @bac/config@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/config
+@bac/config:test: > vitest run --config ../../vitest.config.ts
+@bac/config:test: 
+@bac/config:test: 
+@bac/config:test:  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/config
+@bac/config:test: 
+@bac/config:test:  ✓ src/tenant-overrides.test.ts (1 test) 6ms
+@bac/config:test:  ✓ src/index.test.ts (2 tests) 402ms
+@bac/config:test: 
+@bac/config:test:  Test Files  2 passed (2)
+@bac/config:test:       Tests  3 passed (3)
+@bac/config:test:    Start at  09:07:23
+@bac/config:test:    Duration  20.91s (transform 1.18s, setup 3.94s, collect 1.88s, tests 408ms, environment 13.11s, prepare 7.25s)
+@bac/config:test: 
+@bac/ui:test: cache hit, replaying logs 62d6e9e269812efd
+@bac/governed-browser:test: cache hit, replaying logs 379d0928998a7005
+@bac/ui:test: 
+@bac/ui:test: > @bac/ui@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/ui
+@bac/ui:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/ui:test: 
+@bac/ui:test: 
+@bac/ui:test:  RUN  v5.0.3 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/ui
+@bac/ui:test: 
+@bac/ui:test:  ✓ src/components/data-table.test.tsx (1 test) 126ms
+@bac/ui:test:  ✓ src/components/docs-code-panel.test.tsx (1 test) 486ms
+@bac/ui:test:    ✓ DocsCodePanel (1)
+@bac/ui:test:      ✓ switches between narrative and code tabs 482ms
+@bac/ui:test:  ✓ src/components/governance-gate.test.tsx (3 tests) 872ms
+@bac/ui:test:    ✓ GovernanceGate (3)
+@bac/ui:test:      ✓ requires explicit confirmation in HOTL mode 753ms
+@bac/ui:test:  ✓ src/components/app-shell.test.tsx (1 test) 543ms
+@bac/ui:test:    ✓ AppShell (1)
+@bac/ui:test:      ✓ filters navigation by permission and opens the command palette 537ms
+@bac/ui:test: 
+@bac/ui:test:  Test Files  4 passed (4)
+@bac/ui:test:       Tests  6 passed (6)
+@bac/ui:test:    Start at  21:37:12
+@bac/ui:test:    Duration  5.45s (environment 61%, setup 13%, tests 12%, transform 11%, import 3%)
+@bac/ui:test: 
+@bac/governed-browser:test: 
+@bac/governed-browser:test: > @bac/governed-browser@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/governed-browser
+@bac/governed-browser:test: > vitest run --config ../../vitest.config.ts
+@bac/governed-browser:test: 
+@bac/governed-browser:test: 
+@bac/governed-browser:test:  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/governed-browser
+@bac/governed-browser:test: 
+@bac/governed-browser:test:  ✓ src/index.test.ts (9 tests) 499ms
+@bac/governed-browser:test: 
+@bac/governed-browser:test:  Test Files  1 passed (1)
+@bac/governed-browser:test:       Tests  9 passed (9)
+@bac/governed-browser:test:    Start at  09:07:23
+@bac/governed-browser:test:    Duration  20.45s (transform 1.26s, setup 1.84s, collect 1.07s, tests 499ms, environment 6.87s, prepare 1.58s)
+@bac/governed-browser:test: 
+@bac/domain-contracts:test: cache hit, replaying logs 1e426c84124b9188
+@bac/design-tokens:test: cache hit, replaying logs 7536654110f4b9c1
+@bac/docs-portal:test: cache hit, replaying logs 9ab194f6d2a8bc7d
+@bac/testing:test: cache hit, replaying logs 25513561a4bad2d9
+@bac/testing:test: 
+@bac/testing:test: > @bac/testing@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/testing
+@bac/testing:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/testing:test: 
+@bac/testing:test: 
+@bac/testing:test:  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/testing
+@bac/testing:test: 
+@bac/testing:test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+@bac/testing:test: No test files found, exiting with code 0
+@bac/testing:test: exclude:  **/node_modules/**, **/dist/**, **/.next/**
+@bac/testing:test: 
+@bac/testing:test: 
+@bac/docs-portal:test: 
+@bac/docs-portal:test: > @bac/docs-portal@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/docs-portal
+@bac/docs-portal:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/docs-portal:test: 
+@bac/docs-portal:test: 
+@bac/docs-portal:test:  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/docs-portal
+@bac/docs-portal:test: 
+@bac/docs-portal:test: (node:34360) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@bac/docs-portal:test: (Use `node --trace-deprecation ...` to show where the warning was created)
+@bac/docs-portal:test:  ✓ components/docs-search-panel.test.tsx (4 tests) 290ms
+@bac/docs-portal:test: 
+@bac/docs-portal:test:  Test Files  1 passed (1)
+@bac/docs-portal:test:       Tests  4 passed (4)
+@bac/docs-portal:test:    Start at  09:07:45
+@bac/docs-portal:test:    Duration  9.73s (transform 980ms, setup 432ms, collect 1.31s, tests 290ms, environment 2.01s, prepare 1.22s)
+@bac/docs-portal:test: 
+@bac/design-tokens:test: 
+@bac/design-tokens:test: > @bac/design-tokens@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/design-tokens
+@bac/design-tokens:test: > vitest run --config ../../vitest.config.ts
+@bac/design-tokens:test: 
+@bac/design-tokens:test: 
+@bac/design-tokens:test:  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/design-tokens
+@bac/design-tokens:test: 
+@bac/design-tokens:test:  ✓ src/index.test.ts (2 tests) 31ms
+@bac/design-tokens:test: 
+@bac/design-tokens:test:  Test Files  1 passed (1)
+@bac/design-tokens:test:       Tests  2 passed (2)
+@bac/design-tokens:test:    Start at  09:07:23
+@bac/design-tokens:test:    Duration  19.40s (transform 404ms, setup 1.47s, collect 659ms, tests 31ms, environment 6.42s, prepare 2.27s)
+@bac/design-tokens:test: 
+@bac/domain-contracts:test: 
+@bac/domain-contracts:test: > @bac/domain-contracts@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/domain-contracts
+@bac/domain-contracts:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/domain-contracts:test: 
+@bac/domain-contracts:test: 
+@bac/domain-contracts:test:  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/domain-contracts
+@bac/domain-contracts:test: 
+@bac/domain-contracts:test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+@bac/domain-contracts:test: No test files found, exiting with code 0
+@bac/domain-contracts:test: 
+@bac/domain-contracts:test: exclude:  **/node_modules/**, **/dist/**, **/.next/**
+@bac/domain-contracts:test: 
+@bac/software-factory-web:test: 
+@bac/software-factory-web:test: > @bac/software-factory-web@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+@bac/software-factory-web:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/software-factory-web:test: 
+@bac/platform-automation-web:test: 
+@bac/platform-automation-web:test: > @bac/platform-automation-web@0.1.0 test /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/platform-automation-web
+@bac/platform-automation-web:test: > vitest run --config ../../vitest.config.ts --passWithNoTests
+@bac/platform-automation-web:test: 
+@bac/software-factory-web:test: 
+@bac/software-factory-web:test:  RUN  v5.0.3 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+@bac/software-factory-web:test: 
+@bac/platform-automation-web:test: 
+@bac/platform-automation-web:test:  RUN  v5.0.3 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/platform-automation-web
+@bac/platform-automation-web:test: 
+@bac/platform-automation-web:test:  ✓ features/graphql-explorer.test.ts (2 tests) 36ms
+@bac/platform-automation-web:test: 
+@bac/platform-automation-web:test:  Test Files  1 passed (1)
+@bac/platform-automation-web:test:       Tests  2 passed (2)
+@bac/platform-automation-web:test:    Start at  22:11:40
+@bac/platform-automation-web:test:    Duration  8.38s (environment 81%, setup 12%, transform 4%, worker 1%, tests 1%)
+@bac/platform-automation-web:test: 
+@bac/software-factory-web:test:  ✓ features/projects.test.ts (5 tests) 115ms
+@bac/software-factory-web:test:  ✓ app/api/proxy/hasura/[...path]/route.test.ts (4 tests) 219ms
+@bac/software-factory-web:test:  ✓ components/dashboard-start.test.tsx (2 tests) 1456ms
+@bac/software-factory-web:test:    ✓ lets a new builder start from a short idea or an example prompt 1282ms
+@bac/software-factory-web:test:  ✓ components/source-control-panel.test.tsx (2 tests) 1487ms
+@bac/software-factory-web:test:    ✓ shows a truthful empty state when no local repository manifest is configured 433ms
+@bac/software-factory-web:test:    ✓ resolves a selected repository to the immutable SHA returned by the API 1048ms
+@bac/software-factory-web:test:  ✓ components/project-workspace.test.tsx (2 tests) 1626ms
+@bac/software-factory-web:test:    ✓ carries shared product context into an iteration prompt and saves an explicitly local draft 1330ms
+@bac/software-factory-web:test:  ✓ components/staffing-proposal.test.tsx (3 tests) 1850ms
+@bac/software-factory-web:test:    ✓ keeps saved staffing proposals visible after the project is reloaded 1139ms
+@bac/software-factory-web:test:    ✓ persists a budgeted project staffing proposal and clearly keeps it inactive 333ms
+@bac/software-factory-web:test:    ✓ surfaces stale project versions without claiming that staffing succeeded 368ms
+@bac/software-factory-web:test:  ✓ app/(app)/api-explorer/sdx/page.test.tsx (3 tests) 401ms
+@bac/software-factory-web:test:  ✓ components/create-intake.test.tsx (8 tests) 3036ms
+@bac/software-factory-web:test:    ✓ carries a dashboard idea into the Create form without creating a project early 476ms
+@bac/software-factory-web:test:    ✓ lets a first-time builder start from one plain-language idea and suggests the general SME path 815ms
+@bac/software-factory-web:test:    ✓ creates a shared tenant project and displays its unverified workforce proposal without authorizing execution 389ms
+@bac/software-factory-web:test:    ✓ rejects a project response from a different tenant 407ms
+@bac/software-factory-web:test:  ✓ components/agentgateway-connection-panel.test.tsx (3 tests) 844ms
+@bac/software-factory-web:test:    ✓ explains how an administrator can connect an agentgateway without entering provider keys 656ms
+@bac/software-factory-web:test:  ✓ lib/hasura-project-access.test.ts (3 tests) 36ms
+@bac/software-factory-web:test:  ✓ features/frontend-providers.test.ts (4 tests) 24ms
+@bac/software-factory-web:test:  ✓ features/telemetry-provenance.test.ts (4 tests) 23ms
+@bac/software-factory-web:test:  ✓ features/workload-registry.test.ts (3 tests) 31ms
+@bac/software-factory-web:test:  ✓ app/api/proxy/sdx/[...path]/route.test.ts (6 tests) 74ms
+@bac/software-factory-web:test:  ✓ lib/sdx-permissions.test.ts (4 tests) 23ms
+@bac/software-factory-web:test:  ↓ features/projects.live.integration.test.ts (1 test | 1 skipped)
+@bac/software-factory-web:test: 
+@bac/software-factory-web:test:  Test Files  15 passed | 1 skipped (16)
+@bac/software-factory-web:test:       Tests  56 passed | 1 skipped (57)
+@bac/software-factory-web:test:    Start at  22:11:40
+@bac/software-factory-web:test:    Duration  15.13s (environment 62%, setup 13%, tests 11%, transform 9%, import 5%, worker 1%)
+@bac/software-factory-web:test: 
+@bac/software-factory-web:test: Environment  jsdom was created 16 times · 64.13s total, 62% of tracked time
+@bac/software-factory-web:test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+@bac/software-factory-web:test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
+@bac/software-factory-web:test: 
+
+ Tasks:    13 successful, 13 total
+Cached:    11 cached, 13 total
+  Time:    17.184s 
+
+
+> ai-frontend-experience@0.1.0 test:integration-scripts /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
+> node --test scripts/integration/sync-upstreams.test.mjs
+
+✔ snapshotGeneratedAt makes client generation deterministic (1.19175ms)
+✔ syncConfiguredUpstreams downloads and validates GitHub release assets (62.514792ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 186.610833
+
+> ai-frontend-experience@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
+> turbo run build && node scripts/verify-package-outputs.mjs
+
+
+   • turbo 2.11.10
+   • Packages in scope: @bac/api-clients, @bac/auth, @bac/config, @bac/design-tokens, @bac/docs-portal, @bac/domain-contracts, @bac/eslint-config, @bac/governed-browser, @bac/i18n, @bac/observability, @bac/platform-automation-web, @bac/software-factory-web, @bac/testing, @bac/tsconfig, @bac/ui
+   • Running build in 15 packages
+   • Remote caching disabled
+
+@bac/governed-browser:build: cache hit, replaying logs d3d5729f7c573bed
+@bac/governed-browser:build: 
+@bac/governed-browser:build: > @bac/governed-browser@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/governed-browser
+@bac/governed-browser:build: > tsc -p tsconfig.build.json
+@bac/governed-browser:build: 
+@bac/design-tokens:build: cache hit, replaying logs 8a8c46dd7a76a3f1
+@bac/domain-contracts:build: cache hit, replaying logs 4f0386af36388724
+@bac/design-tokens:build: 
+@bac/design-tokens:build: > @bac/design-tokens@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/design-tokens
+@bac/design-tokens:build: > tsc -p tsconfig.build.json
+@bac/design-tokens:build: 
+@bac/i18n:build: cache hit, replaying logs 4bc3875630df9c66
+@bac/config:build: cache hit, replaying logs c70a86b758b752a0
+@bac/domain-contracts:build: 
+@bac/domain-contracts:build: > @bac/domain-contracts@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/domain-contracts
+@bac/domain-contracts:build: > tsc -p tsconfig.build.json
+@bac/domain-contracts:build: 
+@bac/observability:build: cache hit, replaying logs af0f5bab61703e8a
+@bac/i18n:build: 
+@bac/i18n:build: > @bac/i18n@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/i18n
+@bac/i18n:build: > tsc -p tsconfig.build.json
+@bac/i18n:build: 
+@bac/config:build: 
+@bac/config:build: > @bac/config@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/config
+@bac/config:build: > tsc -p tsconfig.build.json
+@bac/config:build: 
+@bac/observability:build: 
+@bac/observability:build: > @bac/observability@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/observability
+@bac/observability:build: > tsc -p tsconfig.build.json
+@bac/observability:build: 
+@bac/auth:build: cache hit, replaying logs 39a5e0d7771930b3
+@bac/auth:build: 
+@bac/auth:build: > @bac/auth@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/auth
+@bac/auth:build: > tsc -p tsconfig.build.json
+@bac/auth:build: 
+@bac/testing:build: cache hit, replaying logs ce452f08aea0d3a9
+@bac/testing:build: 
+@bac/testing:build: > @bac/testing@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/testing
+@bac/testing:build: > tsc -p tsconfig.build.json
+@bac/testing:build: 
+@bac/api-clients:build: cache hit, replaying logs e713a3c08af80bd7
+@bac/api-clients:build: 
+@bac/api-clients:build: > @bac/api-clients@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/api-clients
+@bac/api-clients:build: > tsc -p tsconfig.build.json
+@bac/api-clients:build: 
+@bac/ui:build: cache hit, replaying logs b7e29a32cb60d282
+@bac/ui:build: 
+@bac/ui:build: > @bac/ui@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/packages/ui
+@bac/ui:build: > tsc -p tsconfig.build.json
+@bac/ui:build: 
+@bac/software-factory-web:build: cache miss, executing f96a4704dc620794
+@bac/platform-automation-web:build: cache miss, executing 6c650b221283de68
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build: > @bac/software-factory-web@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+@bac/software-factory-web:build: > next build
+@bac/software-factory-web:build: 
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build: > @bac/platform-automation-web@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/platform-automation-web
+@bac/platform-automation-web:build: > next build
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build: ▲ Next.js 16.4.2 (Turbopack)
+@bac/software-factory-web:build: ▲ Next.js 16.4.2 (Turbopack)
+@bac/platform-automation-web:build: ✓ Running next.config.ts took 261ms
+@bac/software-factory-web:build: ✓ Running next.config.ts took 256ms
+@bac/software-factory-web:build: Warning: Custom Cache-Control headers detected for the following routes:
+@bac/software-factory-web:build:   - /_next/static/:path*
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build: Setting a custom Cache-Control header can break Next.js development behavior.
+@bac/docs-portal:build: cache hit, replaying logs 31ba5b2019a50ecb
+@bac/docs-portal:build: 
+@bac/docs-portal:build: > @bac/docs-portal@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/docs-portal
+@bac/docs-portal:build: > next build
+@bac/docs-portal:build: 
+@bac/docs-portal:build: ▲ Next.js 16.4.2 (Turbopack)
+@bac/docs-portal:build: ✓ Running next.config.ts took 63ms
+@bac/docs-portal:build: 
+@bac/docs-portal:build:   Creating an optimized production build ...
+@bac/docs-portal:build: ✓ Compiled successfully in 13.3s
+@bac/docs-portal:build:   Running TypeScript ...
+@bac/docs-portal:build:   Finished TypeScript in 8.4s ...
+@bac/docs-portal:build:   Collecting page data using 9 workers ...
+@bac/docs-portal:build:   Generating static pages using 9 workers (0/14) ...
+@bac/docs-portal:build:   Generating static pages using 9 workers (3/14) 
+@bac/docs-portal:build:   Generating static pages using 9 workers (6/14) 
+@bac/docs-portal:build:   Generating static pages using 9 workers (10/14) 
+@bac/docs-portal:build: ✓ Generating static pages using 9 workers (14/14) in 845ms
+@bac/docs-portal:build:   Finalizing page optimization ...
+@bac/docs-portal:build: 
+@bac/docs-portal:build: Route (app)
+@bac/docs-portal:build: ┌ ○ /
+@bac/docs-portal:build: ├ ○ /_not-found
+@bac/docs-portal:build: ├ ○ /adrs
+@bac/docs-portal:build: ├ ○ /api
+@bac/docs-portal:build: ├ ○ /api-reference
+@bac/docs-portal:build: ├ ƒ /api/health
+@bac/docs-portal:build: ├ ○ /architecture
+@bac/docs-portal:build: ├ ○ /getting-started
+@bac/docs-portal:build: ├ ○ /help
+@bac/docs-portal:build: ├ ○ /platform
+@bac/docs-portal:build: ├ ○ /runbooks
+@bac/docs-portal:build: ├ ○ /search
+@bac/docs-portal:build: └ ○ /software-factory
+@bac/docs-portal:build: 
+@bac/docs-portal:build: 
+@bac/docs-portal:build: ○  (Static)   prerendered as static content
+@bac/docs-portal:build: ƒ  (Dynamic)  server-rendered on demand
+@bac/docs-portal:build: 
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build: ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build:   To migrate automatically, run:
+@bac/platform-automation-web:build:   npx @next/codemod@canary middleware-to-proxy .
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build:   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build: ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build:   To migrate automatically, run:
+@bac/software-factory-web:build:   npx @next/codemod@canary middleware-to-proxy .
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build:   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+@bac/platform-automation-web:build:   Creating an optimized production build ...
+@bac/software-factory-web:build:   Creating an optimized production build ...
+@bac/platform-automation-web:build: ✓ Compiled successfully in 2.2s
+@bac/platform-automation-web:build:   Running TypeScript ...
+@bac/software-factory-web:build: ✓ Compiled successfully in 4.2s
+@bac/software-factory-web:build:   Running TypeScript ...
+@bac/platform-automation-web:build:   Finished TypeScript in 5.3s ...
+@bac/platform-automation-web:build:   Collecting page data using 9 workers ...
+@bac/platform-automation-web:build:   Generating static pages using 9 workers (0/31) ...
+@bac/platform-automation-web:build:   Generating static pages using 9 workers (7/31) 
+@bac/platform-automation-web:build:   Generating static pages using 9 workers (15/31) 
+@bac/platform-automation-web:build:   Generating static pages using 9 workers (23/31) 
+@bac/platform-automation-web:build: ✓ Generating static pages using 9 workers (31/31) in 11.2s
+@bac/platform-automation-web:build:   Finalizing page optimization ...
+@bac/software-factory-web:build:   Finished TypeScript in 24.7s ...
+@bac/software-factory-web:build:   Collecting page data using 9 workers ...
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build: Route (app)
+@bac/platform-automation-web:build: ┌ ○ /
+@bac/platform-automation-web:build: ├ ○ /_not-found
+@bac/platform-automation-web:build: ├ ƒ /admin/ecosystem-health
+@bac/platform-automation-web:build: ├ ƒ /admin/tenant-onboarding
+@bac/platform-automation-web:build: ├ ƒ /api-explorer
+@bac/platform-automation-web:build: ├ ƒ /api-explorer/platform
+@bac/platform-automation-web:build: ├ ƒ /api/auth/callback
+@bac/platform-automation-web:build: ├ ƒ /api/auth/login
+@bac/platform-automation-web:build: ├ ƒ /api/auth/mock-login
+@bac/platform-automation-web:build: ├ ƒ /api/auth/refresh
+@bac/platform-automation-web:build: ├ ƒ /api/graphql-explorer
+@bac/platform-automation-web:build: ├ ƒ /api/health
+@bac/platform-automation-web:build: ├ ƒ /api/proxy/hasura/[...path]
+@bac/platform-automation-web:build: ├ ƒ /api/proxy/sdx/[...path]
+@bac/platform-automation-web:build: ├ ƒ /login
+@bac/platform-automation-web:build: ├ ƒ /logout
+@bac/platform-automation-web:build: ├ ƒ /platform
+@bac/platform-automation-web:build: ├ ƒ /platform/[...slug]
+@bac/platform-automation-web:build: ├ ƒ /platform/clusters
+@bac/platform-automation-web:build: ├ ƒ /platform/dashboard
+@bac/platform-automation-web:build: ├ ƒ /platform/gitops
+@bac/platform-automation-web:build: ├ ƒ /platform/graphql-explorer
+@bac/platform-automation-web:build: ├ ƒ /platform/identity
+@bac/platform-automation-web:build: ├ ƒ /platform/incidents
+@bac/platform-automation-web:build: ├ ƒ /platform/observability
+@bac/platform-automation-web:build: ├ ƒ /platform/policy
+@bac/platform-automation-web:build: ├ ƒ /platform/promises
+@bac/platform-automation-web:build: ├ ƒ /platform/quotas
+@bac/platform-automation-web:build: ├ ƒ /platform/real-time
+@bac/platform-automation-web:build: ├ ƒ /platform/regions
+@bac/platform-automation-web:build: ├ ƒ /platform/runbooks
+@bac/platform-automation-web:build: ├ ƒ /platform/workspace-factory
+@bac/platform-automation-web:build: └ ƒ /platform/workspaces
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build: ƒ Proxy (Middleware)
+@bac/platform-automation-web:build: 
+@bac/platform-automation-web:build: ○  (Static)   prerendered as static content
+@bac/platform-automation-web:build: ƒ  (Dynamic)  server-rendered on demand
+@bac/platform-automation-web:build: 
+@bac/software-factory-web:build:   Generating static pages using 9 workers (0/37) ...
+@bac/software-factory-web:build:   Generating static pages using 9 workers (9/37) 
+@bac/software-factory-web:build:   Generating static pages using 9 workers (18/37) 
+@bac/software-factory-web:build:   Generating static pages using 9 workers (27/37) 
+@bac/software-factory-web:build: ✓ Generating static pages using 9 workers (37/37) in 2.8s
+@bac/software-factory-web:build:   Finalizing page optimization ...
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build: Route (app)
+@bac/software-factory-web:build: ┌ ○ /
+@bac/software-factory-web:build: ├ ○ /_not-found
+@bac/software-factory-web:build: ├ ƒ /admin
+@bac/software-factory-web:build: ├ ƒ /admin/feature-flags
+@bac/software-factory-web:build: ├ ƒ /admin/health
+@bac/software-factory-web:build: ├ ƒ /api-explorer
+@bac/software-factory-web:build: ├ ƒ /api-explorer/sdx
+@bac/software-factory-web:build: ├ ƒ /api/auth/callback
+@bac/software-factory-web:build: ├ ƒ /api/auth/login
+@bac/software-factory-web:build: ├ ƒ /api/auth/mock-login
+@bac/software-factory-web:build: ├ ƒ /api/auth/refresh
+@bac/software-factory-web:build: ├ ƒ /api/health
+@bac/software-factory-web:build: ├ ƒ /api/health/upstream
+@bac/software-factory-web:build: ├ ƒ /api/proxy/hasura/[...path]
+@bac/software-factory-web:build: ├ ƒ /api/proxy/sdx/[...path]
+@bac/software-factory-web:build: ├ ƒ /login
+@bac/software-factory-web:build: ├ ƒ /logout
+@bac/software-factory-web:build: ├ ○ /offline
+@bac/software-factory-web:build: ├ ƒ /software-factory
+@bac/software-factory-web:build: ├ ƒ /software-factory/[...slug]
+@bac/software-factory-web:build: ├ ƒ /software-factory/activity
+@bac/software-factory-web:build: ├ ƒ /software-factory/adrs
+@bac/software-factory-web:build: ├ ƒ /software-factory/agents
+@bac/software-factory-web:build: ├ ƒ /software-factory/api-contracts
+@bac/software-factory-web:build: ├ ƒ /software-factory/architecture
+@bac/software-factory-web:build: ├ ƒ /software-factory/builds
+@bac/software-factory-web:build: ├ ƒ /software-factory/builds/[buildId]
+@bac/software-factory-web:build: ├ ƒ /software-factory/compliance
+@bac/software-factory-web:build: ├ ƒ /software-factory/dashboard
+@bac/software-factory-web:build: ├ ƒ /software-factory/domain-model
+@bac/software-factory-web:build: ├ ƒ /software-factory/prd-intake
+@bac/software-factory-web:build: ├ ƒ /software-factory/release-manager
+@bac/software-factory-web:build: ├ ƒ /software-factory/settings
+@bac/software-factory-web:build: ├ ƒ /software-factory/settings/access
+@bac/software-factory-web:build: ├ ƒ /software-factory/settings/audit
+@bac/software-factory-web:build: ├ ƒ /software-factory/settings/frontend-providers
+@bac/software-factory-web:build: ├ ƒ /software-factory/swagger
+@bac/software-factory-web:build: ├ ƒ /software-factory/work-items
+@bac/software-factory-web:build: ├ ƒ /software-factory/workloads
+@bac/software-factory-web:build: ├ ƒ /software-factory/workspaces
+@bac/software-factory-web:build: └ ƒ /software-factory/workspaces/[projectId]
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build: ƒ Proxy (Middleware)
+@bac/software-factory-web:build: 
+@bac/software-factory-web:build: ○  (Static)   prerendered as static content
+@bac/software-factory-web:build: ƒ  (Dynamic)  server-rendered on demand
+@bac/software-factory-web:build: 
+
+ Tasks:    13 successful, 13 total
+Cached:    11 cached, 13 total
+  Time:    49.223s 
+
+Verified 32 built package entry points.

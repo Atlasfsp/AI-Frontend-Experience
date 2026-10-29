@@ -7,6 +7,7 @@ import { listSharedEngineeringProjects } from '@/features/projects';
 import { getServerSession } from '@/lib/session';
 import { loadAppEnv } from '@/lib/env';
 import { StaffingProposal } from '@/components/staffing-proposal';
+import { SourceControlPanel } from '@/components/source-control-panel';
 
 export default async function WorkspacesPage() {
   const session = await getServerSession();
@@ -35,6 +36,7 @@ export default async function WorkspacesPage() {
           </Link>
         }
       />
+      <SourceControlPanel />
       {result.status === 'available' ? (
         result.projects.length ? (
           <ul

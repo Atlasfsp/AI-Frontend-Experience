@@ -28,6 +28,7 @@ async function proxy(request: NextRequest, path: string[]) {
     headers.set('authorization', `Bearer ${session.accessToken}`);
   }
   headers.set('x-tenant-id', session.tenantId);
+  headers.set('x-fluxcore-tenant-id', session.tenantId);
   headers.set('x-workspace-id', session.workspaceId);
   for (const name of ['accept', 'content-type', 'idempotency-key', 'traceparent', 'tracestate']) {
     const value = request.headers.get(name);

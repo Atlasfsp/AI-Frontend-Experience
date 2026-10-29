@@ -28,3 +28,9 @@ it('allows only backend routes explicitly exposed to the web BFF', () => {
   expect(resolveSdxPermission('POST', ['v1', 'projects', '..', 'admin'])).toBeNull();
   expect(resolveSdxPermission('GET', ['v1', 'runs', '..'])).toBeNull();
 });
+
+it('exposes tenant-scoped source-control browsing and governed scope resolution', () => {
+  expect(resolveSdxPermission('GET', ['v1', 'source-control', 'connections'])).toBe('workspace:view');
+  expect(resolveSdxPermission('POST', ['v1', 'source-control', 'resolve'])).toBe('workspace:manage');
+  expect(resolveSdxPermission('DELETE', ['v1', 'source-control', 'connections'])).toBeNull();
+});
