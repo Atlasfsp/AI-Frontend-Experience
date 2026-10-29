@@ -38,7 +38,7 @@ export async function buildAuthorizationUrl({
   authorizationUrl,
   clientId,
   redirectUri,
-  scope = ['openid', 'profile', 'email', 'offline_access'],
+  scope = ['openid', 'profile', 'email', 'offline_access', 'fluxcore'],
 }: {
   authorizationUrl: string;
   clientId: string;
