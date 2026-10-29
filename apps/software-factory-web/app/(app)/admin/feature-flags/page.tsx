@@ -10,9 +10,11 @@ import { Badge, Card, DataTable, type Column } from '@bac/ui';
 /*  Flag metadata registry                                             */
 /* ------------------------------------------------------------------ */
 
+type BooleanFlagName = { [K in keyof FeatureFlags]: FeatureFlags[K] extends boolean ? K : never }[keyof FeatureFlags];
+
 interface FlagMeta {
   id: string;
-  name: Exclude<keyof FeatureFlags, 'governanceMode'>;
+  name: BooleanFlagName;
   envVar: string;
   description: string;
   defaultValue: boolean;
@@ -183,7 +185,7 @@ export default function FeatureFlagsAdminPage() {
 
       setOverrides((prev) => {
         const currentValue =
-          resolvedFlags[flagName as keyof FeatureFlags] ?? false;
+          resolvedFlags[flagName as BooleanFlagName] ?? false;
         const next = { ...prev, [flagName]: !currentValue };
 
         // If the override matches the env value, remove it.
