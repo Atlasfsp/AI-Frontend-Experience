@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getBuild, listBuilds, listWorkItems } from '@bac/api-clients';
@@ -214,20 +215,15 @@ export default async function SoftwareFactoryDeepPage({
         <PageHeader
           eyebrow="Code Review"
           title="Review queue"
-          description="Operator-facing review surfacing with change-risk and policy badges."
+          description="Provider-backed pull request reviews will appear here once a Git connection and review API are enabled."
         />
-        <DataTable
-          columns={[
-            { header: 'Review', render: (row) => row.title },
-            { header: 'Risk', render: (row) => row.risk },
-            { header: 'Gate', render: (row) => row.gate },
-          ]}
-          rows={[
-            { gate: 'pending', id: 'review-1', risk: 'high', title: 'Payments release orchestration' },
-            { gate: 'approved', id: 'review-2', risk: 'medium', title: 'Tenant quota enforcement' },
-          ]}
-          title="Pending reviews"
-        />
+        <Card className="space-y-4">
+          <div role="status" className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.05] p-5">
+            <h2 className="font-semibold text-amber-100">No live code review connection</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">FluxCore has no connected Git provider or pull request review feed in this workspace. Review items, diffs, approvals, and risk badges are intentionally not fabricated.</p>
+          </div>
+          <Link className="inline-flex min-h-11 items-center rounded-xl border border-cyan-200/30 px-4 text-sm font-semibold text-cyan-100 hover:bg-cyan-200/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300" href="/software-factory/workspaces">Open project workspaces <span aria-hidden="true" className="ml-2">→</span></Link>
+        </Card>
       </div>
     );
   }
@@ -247,7 +243,8 @@ export default async function SoftwareFactoryDeepPage({
           description="Review commentary, compliance annotations, and promotion readiness."
         />
         <Card className="space-y-3">
-          <p className="text-sm text-slate-300">Diff presentation, compliance highlights, and approver notes land here once the SDX review APIs are connected.</p>
+          <p role="status" className="text-sm leading-6 text-amber-100">This review cannot be loaded because no live review provider is connected. FluxCore will not display a fabricated diff or approval state.</p>
+          <Link className="inline-flex min-h-11 items-center text-sm font-semibold text-cyan-200 underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300" href="/software-factory/workspaces">Open project workspaces</Link>
         </Card>
       </div>
     );

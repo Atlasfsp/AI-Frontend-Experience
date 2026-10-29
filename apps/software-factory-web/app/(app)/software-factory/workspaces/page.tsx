@@ -87,6 +87,12 @@ export default async function WorkspacesPage() {
                 <p className="mt-4 break-all font-mono text-xs text-slate-400">
                   Project ID: {project.id}
                 </p>
+                <Link
+                  className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-cyan-200/30 bg-cyan-200/[0.06] px-4 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-200/[0.12] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                  href={`/software-factory/workspaces/${encodeURIComponent(project.id)}`}
+                >
+                  Open project workspace <span aria-hidden="true" className="ml-2">→</span>
+                </Link>
                 {project.repositoryRef ? (
                   <p className="mt-2 text-xs text-slate-400">
                     Repository: {project.repositoryRef}
