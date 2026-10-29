@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 
 import type { SharedEngineeringProject } from '@/features/projects';
 
@@ -34,6 +34,25 @@ function readDrafts(value: string | null): IterationDraft[] {
   }
 }
 
+const draftStorageChange = 'fluxcore:workspace-drafts-changed';
+
+function subscribeToDraftChanges(onChange: () => void) {
+  window.addEventListener('storage', onChange);
+  window.addEventListener(draftStorageChange, onChange);
+  return () => {
+    window.removeEventListener('storage', onChange);
+    window.removeEventListener(draftStorageChange, onChange);
+  };
+}
+
+function readDraftSnapshot(key: string) {
+  return window.localStorage.getItem(key) ?? '[]';
+}
+
+function getServerDraftSnapshot() {
+  return null;
+}
+
 function starterPrompt(project: SharedEngineeringProject) {
   return `For ${project.name}, ${project.outcome}\n\nPlease first inspect the existing repository and summarize the relevant files, current behavior, and a small implementation plan. Do not change files until I approve the plan.`;
 }
@@ -41,14 +60,14 @@ function starterPrompt(project: SharedEngineeringProject) {
 export function ProjectWorkspace({ project }: { project: SharedEngineeringProject }) {
   const key = useMemo(() => storageKey(project.id), [project.id]);
   const [prompt, setPrompt] = useState('');
-  const [drafts, setDrafts] = useState<IterationDraft[]>([]);
-  const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState('');
-
-  useEffect(() => {
-    setDrafts(readDrafts(window.localStorage.getItem(key)));
-    setReady(true);
-  }, [key]);
+  const storedDrafts = useSyncExternalStore(
+    subscribeToDraftChanges,
+    () => readDraftSnapshot(key),
+    getServerDraftSnapshot,
+  );
+  const ready = storedDrafts !== null;
+  const drafts = readDrafts(storedDrafts);
 
   function saveDraft() {
     const text = prompt.trim();
@@ -58,7 +77,7 @@ export function ProjectWorkspace({ project }: { project: SharedEngineeringProjec
       ...drafts,
     ].slice(0, 25);
     window.localStorage.setItem(key, JSON.stringify(next));
-    setDrafts(next);
+    window.dispatchEvent(new Event(draftStorageChange));
     setNotice('Iteration draft saved in this browser. It has not been sent to an agent.');
   }
 
