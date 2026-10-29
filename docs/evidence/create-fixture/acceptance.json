@@ -1,0 +1,30 @@
+{
+  "fixtureOnly": true,
+  "anonymousStatus": 403,
+  "forwardedRequests": [
+    {
+      "path": "/v1/activation/compiler/compile",
+      "tenant": "fixture-tenant",
+      "workspace": "fixture-workspace",
+      "authorizationPresent": true,
+      "body": "{\"idea_prompt\":\"A coral monitoring application\",\"application_domain\":\"Marine biology\"}"
+    }
+  ],
+  "screenshots": [
+    {
+      "width": 1440,
+      "documentWidth": 1440,
+      "viewportWidth": 1440
+    },
+    {
+      "width": 390,
+      "documentWidth": 390,
+      "viewportWidth": 390
+    }
+  ],
+  "engineerPath": "/software-factory/workspaces",
+  "outcome": "PASS",
+  "sourceSHA": "94a1f5ec34d50be0bab99079fd058503735cbb56",
+  "baseSHA": "993ed241bdca21746d41147e33544487b09d2441",
+  "validatedAtUTC": "2026-10-29T07:41:24Z"
+}
