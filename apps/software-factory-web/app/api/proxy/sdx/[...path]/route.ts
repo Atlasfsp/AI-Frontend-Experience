@@ -10,18 +10,29 @@ import { readRequestSession } from '@/lib/auth';
 async function proxy(request: NextRequest, path: string[]) {
   const env = loadAppEnv();
   const session = await readRequestSession(request.cookies.get('bac_session')?.value);
+  const permission = resolveSdxPermission(request.method, path);
 
-  if (!session || !hasPermission(session, resolveSdxPermission(request.method, path))) {
+  if (!permission) {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  }
+
+  if (!session || !hasPermission(session, permission)) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
   const target = new URL(path.join('/'), `${env.sdxApiUrl.replace(/\/$/, '')}/`);
   target.search = request.nextUrl.search;
 
-  const headers = new Headers(request.headers);
-  headers.set('authorization', `Bearer ${session.accessToken ?? 'mock-access-token'}`);
+  const headers = new Headers();
+  if (session.accessToken) {
+    headers.set('authorization', `Bearer ${session.accessToken}`);
+  }
   headers.set('x-tenant-id', session.tenantId);
   headers.set('x-workspace-id', session.workspaceId);
+  for (const name of ['accept', 'content-type', 'idempotency-key', 'traceparent', 'tracestate']) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
 
   const init =
     request.method === 'GET' || request.method === 'HEAD'
@@ -41,13 +52,5 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pat
 }
 
 export async function POST(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
-  return proxy(request, (await context.params).path);
-}
-
-export async function PATCH(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
-  return proxy(request, (await context.params).path);
-}
-
-export async function DELETE(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   return proxy(request, (await context.params).path);
 }

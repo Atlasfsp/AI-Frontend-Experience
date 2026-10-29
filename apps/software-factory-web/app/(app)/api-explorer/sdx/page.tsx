@@ -1,55 +1,58 @@
 import React from 'react';
+
 import { DataTable, DocsCodePanel, PageHeader } from '@bac/ui';
 
 const contractRows = [
   {
-    id: 'work-items',
-    contract: 'Work item lifecycle',
-    consumer: 'Dashboard, PRD intake, activity timeline, and work-item review surfaces',
-    owner: 'AI Software Factory services',
+    id: 'projects',
+    contract: 'Shared project and SME staffing',
+    consumer: 'Create intake, Engineer workspaces, and proposed team review',
+    owner: 'FluxCore project and workforce API',
   },
   {
-    id: 'builds',
-    contract: 'Build and test status',
-    consumer: 'Build dashboard, build detail, compliance evidence, and release manager',
-    owner: 'Build orchestration',
+    id: 'orchestration',
+    contract: 'Routing, plans, SDLC execution, and run reads',
+    consumer: 'Governed engineering operations and execution history',
+    owner: 'FluxCore orchestrator API',
   },
   {
-    id: 'artifacts',
-    contract: 'Release artifacts and evidence',
-    consumer: 'Release manager, compliance terminal, and audit views',
-    owner: 'Artifact governance',
+    id: 'governance',
+    contract: 'Governance, evidence, release promotion, and evaluation',
+    consumer: 'Restricted control-plane operations and audit views',
+    owner: 'FluxCore policy and release APIs',
   },
   {
-    id: 'swagger',
-    contract: 'Swagger / OpenAPI',
-    consumer: 'Dedicated Swagger explorer and API contracts screens',
-    owner: 'SDX gateway',
+    id: 'integrations',
+    contract: 'Activation, frontend providers, and workforce routing',
+    consumer: 'Project setup and platform integration surfaces',
+    owner: 'FluxCore integration APIs',
   },
 ] as const;
 
-const routingSnippet = `// Browser -> BFF -> SDX gateway
-GET  /api/proxy/sdx/software-factory/overview
-GET  /api/proxy/sdx/software-factory/builds
-GET  /api/proxy/sdx/swagger
+const routingSnippet = `// Browser -> BFF -> canonical FluxCore API
+POST /api/proxy/sdx/v1/projects
+POST /api/proxy/sdx/v1/workforce/org/staff
+POST /api/proxy/sdx/v1/sdlc/execute
+GET  /api/proxy/sdx/v1/runs/{runId}
+GET  /api/proxy/sdx/v1/evidence/bundles/{bundleId}
 
 // BFF expectations
-- inject signed session context
-- preserve tenant and workspace scope
-- keep tokens out of browser JavaScript
-- normalize upstream errors for the operator shell`;
+- explicit method/path allowlist with operation-specific role checks
+- never forward browser cookies or caller-supplied tenant headers
+- authenticate with the session token; never fabricate a production bearer
+- backend remains responsible for tenant/resource authorization`;
 
 export default function SdxApiExplorerDetailPage() {
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="API Explorer"
-        title="SDX contract explorer"
-        description="Contract guide for the Software Factory backend surfaces that power intake, builds, releases, and API exploration inside the web shell."
+        title="FluxCore API coverage"
+        description="Verified local backend routes and their intended frontend consumers. Unimplemented read models are called out instead of being implied by legacy examples."
       />
       <DataTable
-        title="SDX contract map"
-        description="Use this view when you need to understand which backend surface a Software Factory screen should depend on."
+        title="Canonical backend surfaces"
+        description="Every user-facing operation must use the authenticated BFF and the backend tenant/resource authorization check."
         rows={contractRows.map((row) => ({ ...row }))}
         columns={[
           { header: 'Contract', render: (row) => row.contract },
@@ -57,21 +60,25 @@ export default function SdxApiExplorerDetailPage() {
           { header: 'Owner', render: (row) => row.owner },
         ]}
       />
+      <section role="status" className="rounded-3xl border border-amber-300/20 bg-amber-300/[0.05] p-5">
+        <h2 className="font-semibold text-amber-100">Frontend coverage gaps</h2>
+        <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-300">
+          The dashboard/build clients still request <code>/api/dashboard/overview</code>, <code>/api/work-items</code>, <code>/api/builds</code>, and <code>/api/agents</code>. These paths are not registered by the Go API. Live reports for those surfaces remain unavailable; demo records are separately labelled.
+        </p>
+        <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-300">
+          Repository connections, server-persisted iterations, provider-backed diffs/reviews, and deployment receipts also need durable backend APIs before those workflows can be called live.
+        </p>
+      </section>
       <DocsCodePanel
         title="Routing model"
-        description="The SDX gateway should remain behind the shared BFF proxy so auth, tenancy, and observability stay aligned with the rest of the web platform."
+        description="The BFF constrains each browser operation; FluxCore still decides tenant scope and resource authorization."
         tabs={[
-          {
-            id: 'routing',
-            label: 'BFF routing',
-            kind: 'code',
-            content: routingSnippet,
-          },
+          { id: 'routing', label: 'BFF routing', kind: 'code', content: routingSnippet },
           {
             id: 'guidance',
-            label: 'Guidance',
+            label: 'Implementation rules',
             content:
-              'Prefer the dedicated Swagger and API contracts routes for day-to-day exploration inside the Software Factory experience.\n\nAdd new backend surfaces to @bac/api-clients first, then wire route-level presentation with loading, empty, and error states.\n\nKeep tenant and workspace context explicit in request helpers so evidence and audit screens always render scoped data correctly.',
+              'Add each operation to the BFF allowlist with a least-privilege BAC permission and a backend SpiceDB action. Add a typed API client, loading/empty/error UI, and an integration test that asserts tenant isolation.\n\nDo not expose a route just because it is registered: handlers returning NOT_CONNECTED or NOT_PERSISTED must be presented as unavailable, and must not be described as completed work.',
           },
         ]}
       />
