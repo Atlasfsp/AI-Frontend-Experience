@@ -4,6 +4,27 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { CreateIntake } from './create-intake';
 
 afterEach(() => vi.unstubAllGlobals());
+it('carries a dashboard idea into the Create form without creating a project early', () => {
+  const request = vi.fn();
+  vi.stubGlobal('fetch', request);
+  render(
+    <CreateIntake
+      tenantId="tenant-a"
+      workspaceId="workspace-a"
+      initialIdea="Build an accessible booking calendar"
+    />,
+  );
+
+  expect(
+    (
+      screen.getByLabelText(
+        'Describe what you have in mind',
+      ) as HTMLTextAreaElement
+    ).value,
+  ).toBe('Build an accessible booking calendar');
+  expect(request).not.toHaveBeenCalled();
+});
+
 it('lets a first-time builder start from one plain-language idea and suggests the general SME path', async () => {
   const project = {
     id: 'project-quick',

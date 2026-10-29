@@ -43,11 +43,13 @@ const fieldClass =
 export function CreateIntake({
   tenantId,
   workspaceId,
+  initialIdea = '',
 }: {
   tenantId: string;
   workspaceId: string;
+  initialIdea?: string;
 }) {
-  const [idea, setIdea] = useState('');
+  const [idea, setIdea] = useState(initialIdea.slice(0, 12000));
   const [name, setName] = useState('');
   const [domain, setDomain] = useState('');
   const [project, setProject] = useState<Project | null>(null);

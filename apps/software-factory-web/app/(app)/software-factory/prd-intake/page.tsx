@@ -5,8 +5,14 @@ import { getServerSession } from '@/lib/session';
 
 import { prdReadinessChart, prdTemplateSnippet } from '@/features/data';
 
-export default async function PrdIntakePage() {
+export default async function PrdIntakePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await getServerSession();
+  const params = await searchParams;
+  const initialIdea = typeof params.idea === 'string' ? params.idea : '';
   return (
     <div className="space-y-8">
       <PageHeader
@@ -18,6 +24,7 @@ export default async function PrdIntakePage() {
         <CreateIntake
           tenantId={session.tenantId}
           workspaceId={session.workspaceId}
+          initialIdea={initialIdea}
         />
       )}
       <details className="rounded-3xl border border-white/10 bg-slate-900/40 p-5">
