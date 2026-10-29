@@ -1,13 +1,14 @@
 
  RUN  v3.2.4 /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience
 
- ✓ packages/config/src/tenant-overrides.test.ts (1 test) 5ms
- ✓ packages/config/src/index.test.ts (2 tests) 20ms
- ✓ apps/software-factory-web/components/create-intake.test.tsx (5 tests) 470ms
- ✓ apps/software-factory-web/lib/sdx-permissions.test.ts (2 tests) 7ms
+ ✓ packages/config/src/tenant-overrides.test.ts (1 test) 8ms
+ ✓ packages/config/src/index.test.ts (2 tests) 21ms
+ ✓ apps/software-factory-web/lib/sdx-permissions.test.ts (2 tests) 20ms
+ ✓ apps/software-factory-web/components/create-intake.test.tsx (5 tests) 742ms
+   ✓ submits a custom industry and displays an unverified proposal without authorizing execution  481ms
 
  Test Files  4 passed (4)
       Tests  10 passed (10)
-   Start at  08:33:24
-   Duration  3.34s (transform 692ms, setup 1.21s, collect 1.14s, tests 502ms, environment 5.48s, prepare 998ms)
+   Start at  08:40:30
+   Duration  6.47s (transform 879ms, setup 2.44s, collect 1.68s, tests 790ms, environment 8.51s, prepare 3.71s)
 

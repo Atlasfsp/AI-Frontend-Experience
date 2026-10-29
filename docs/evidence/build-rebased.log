@@ -1,0 +1,72 @@
+
+> @bac/software-factory-web@0.1.0 build /Users/AbiolaOgunsakin1/Workflows/AI-Frontend-Experience/apps/software-factory-web
+> next build
+
+   ▲ Next.js 15.5.14
+
+   Creating an optimized production build ...
+(node:31578) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ Compiled successfully in 16.5s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/37) ...
+   Generating static pages (9/37)
+   Generating static pages (18/37)
+   Generating static pages (27/37)
+ ✓ Generating static pages (37/37)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                           Size  First Load JS
+┌ ○ /                                                148 B         102 kB
+├ ○ /_not-found                                      148 B         102 kB
+├ ƒ /admin/feature-flags                           3.83 kB         140 kB
+├ ƒ /admin/health                                  3.98 kB         140 kB
+├ ƒ /api-explorer                                    148 B         102 kB
+├ ƒ /api-explorer/sdx                                248 B         135 kB
+├ ƒ /api/auth/callback                               864 B         125 kB
+├ ƒ /api/auth/login                                  864 B         125 kB
+├ ƒ /api/auth/mock-login                             864 B         125 kB
+├ ƒ /api/auth/refresh                                864 B         125 kB
+├ ƒ /api/health                                      148 B         102 kB
+├ ƒ /api/health/upstream                             812 B         102 kB
+├ ƒ /api/proxy/hasura/[...path]                      864 B         125 kB
+├ ƒ /api/proxy/sdx/[...path]                         864 B         125 kB
+├ ƒ /login                                           148 B         102 kB
+├ ƒ /logout                                          864 B         125 kB
+├ ○ /offline                                         560 B         102 kB
+├ ƒ /software-factory                                148 B         102 kB
+├ ƒ /software-factory/[...slug]                      269 B         160 kB
+├ ƒ /software-factory/activity                       248 B         135 kB
+├ ƒ /software-factory/adrs                           248 B         135 kB
+├ ƒ /software-factory/agents                       2.41 kB         163 kB
+├ ƒ /software-factory/api-contracts                  248 B         135 kB
+├ ƒ /software-factory/architecture                   248 B         135 kB
+├ ƒ /software-factory/builds                         270 B         160 kB
+├ ƒ /software-factory/builds/[buildId]               269 B         160 kB
+├ ƒ /software-factory/compliance                     248 B         135 kB
+├ ƒ /software-factory/dashboard                      270 B         160 kB
+├ ƒ /software-factory/domain-model                   248 B         135 kB
+├ ƒ /software-factory/prd-intake                   2.86 kB         137 kB
+├ ƒ /software-factory/release-manager                248 B         135 kB
+├ ƒ /software-factory/settings                       232 B         135 kB
+├ ƒ /software-factory/settings/access                248 B         135 kB
+├ ƒ /software-factory/settings/audit                 248 B         135 kB
+├ ƒ /software-factory/settings/frontend-providers    232 B         135 kB
+├ ƒ /software-factory/swagger                        269 B         160 kB
+├ ƒ /software-factory/work-items                     269 B         160 kB
+├ ƒ /software-factory/workloads                      232 B         135 kB
+└ ƒ /software-factory/workspaces                     248 B         135 kB
++ First Load JS shared by all                       102 kB
+  ├ chunks/5669-451efee5f8b9907e.js                45.4 kB
+  ├ chunks/72a1bb16-2d9f92670bf4d552.js            54.2 kB
+  └ other shared chunks (total)                    1.93 kB
+
+
+ƒ Middleware                                         66 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
