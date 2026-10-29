@@ -16,6 +16,8 @@ type SdxRoutePolicy = {
 const policies: readonly SdxRoutePolicy[] = [
   { method: 'GET', path: /^v1\/frontend\/providers$/, permission: 'workspace:view' },
   { method: 'GET', path: /^v1\/admin\/agentgateway\/status$/, permission: 'workspace:manage' },
+  { method: 'GET', path: /^v1\/source-control\/connections$/, permission: 'workspace:view' },
+  { method: 'POST', path: /^v1\/source-control\/resolve$/, permission: 'workspace:manage' },
   { method: 'POST', path: /^v1\/routing\/decide$/, permission: 'workspace:manage' },
   { method: 'POST', path: /^v1\/workflows\/plans$/, permission: 'workspace:manage' },
   { method: 'POST', path: /^v1\/governance\/authorize$/, permission: 'workspace:deploy' },

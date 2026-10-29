@@ -35,6 +35,7 @@ describe('SDX browser API proxy', () => {
     const [url, init] = fetcher.mock.calls[0] as [string, RequestInit];
     expect(String(url)).toBe('http://fluxcore.local/v1/runs/run-123');
     expect(new Headers(init.headers).get('x-tenant-id')).toBe('tenant-echo');
+    expect(new Headers(init.headers).get('x-fluxcore-tenant-id')).toBe('tenant-echo');
     expect(new Headers(init.headers).get('x-workspace-id')).toBe('workspace-core');
     expect(new Headers(init.headers).get('cookie')).toBeNull();
     expect(new Headers(init.headers).get('authorization')).toBeNull();
@@ -76,6 +77,18 @@ describe('SDX browser API proxy', () => {
     const [target, init] = fetcher.mock.calls[0] as [string, RequestInit];
     expect(String(target)).toBe('http://fluxcore.local/v1/admin/agentgateway/status');
     expect(init.method).toBe('GET');
+  });
+
+  it('permits source browsing to viewers and requires workspace management to resolve scopes', async () => {
+    vi.mocked(readRequestSession).mockResolvedValue(createMockSession({ roles: ['VIEWER'] }));
+    const listPath = ['v1', 'source-control', 'connections'];
+    const listed = await GET(new NextRequest('http://localhost/api/proxy/sdx/v1/source-control/connections'), getContext(listPath));
+    expect(listed.status).toBe(200);
+
+    const resolvePath = ['v1', 'source-control', 'resolve'];
+    const denied = await POST(new NextRequest('http://localhost/api/proxy/sdx/v1/source-control/resolve', { method: 'POST', body: '{}' }), getContext(resolvePath));
+    expect(denied.status).toBe(403);
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
   it('returns a clean gateway error when the FluxCore API is unavailable', async () => {
