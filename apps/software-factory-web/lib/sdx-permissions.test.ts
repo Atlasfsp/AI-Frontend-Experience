@@ -14,3 +14,6 @@ it('keeps deployment authority for other mutations and read permission for GET',
   expect(resolveSdxPermission('POST', ['v1', 'activation', 'compiler', 'compile', 'execute'])).toBe('application:deploy');
   expect(resolveSdxPermission('GET', ['v1', 'activation'])).toBe('application:view');
 });
+it('requires workspace management to create projects', () => {
+  expect(resolveSdxPermission('POST', ['v1', 'projects'])).toBe('workspace:manage');
+});
