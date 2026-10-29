@@ -23,6 +23,7 @@ it('submits a custom industry and displays an unverified proposal without author
   expect(screen.getByText('Cost: unknown')).toBeTruthy();
   expect((screen.getByRole('button', { name: 'Execution blocked' }) as HTMLButtonElement).disabled).toBe(true);
   expect(screen.getByText('tenant-a / workspace-a')).toBeTruthy();
+  expect(screen.getByRole('link', { name: 'Open FluxCore Engineer workspace selector' }).getAttribute('href')).toBe('/software-factory/workspaces');
 });
 it('reports service failures without success evidence', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));

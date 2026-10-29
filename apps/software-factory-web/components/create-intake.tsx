@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { z } from 'zod';
 
 // Consumer-side validation: the backend remains the contract owner.
@@ -63,7 +64,7 @@ export function CreateIntake({ tenantId, workspaceId }: { tenantId: string; work
       <button type="button" disabled className="rounded-2xl border border-white/20 px-5 py-3 opacity-60">Execution blocked</button>
       <p>No generated files, test results, preview, deployment, or production authorization is claimed.</p>
     </div>}</div>
-    <a className="inline-block rounded-2xl border border-white/20 px-5 py-3 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300" href="/software-factory/workspaces">Open FluxCore Engineer workspace selector</a>
+    <Link className="inline-block rounded-2xl border border-white/20 px-5 py-3 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300" href="/software-factory/workspaces">Open FluxCore Engineer workspace selector</Link>
     <p className="text-sm text-slate-300">Engineer uses the same authenticated tenant and workspace. Proposal persistence and project binding are not yet available.</p>
   </section>;
 }
