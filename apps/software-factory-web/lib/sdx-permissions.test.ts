@@ -19,6 +19,8 @@ it('uses the operation-specific permission for project and approval workflows', 
 
 it('allows only backend routes explicitly exposed to the web BFF', () => {
   expect(resolveSdxPermission('GET', ['v1', 'frontend', 'providers'])).toBe('workspace:view');
+  expect(resolveSdxPermission('GET', ['v1', 'admin', 'agentgateway', 'status'])).toBe('workspace:manage');
+  expect(resolveSdxPermission('POST', ['v1', 'admin', 'agentgateway', 'status'])).toBeNull();
   expect(resolveSdxPermission('GET', ['v1', 'runs', 'run-1'])).toBe('workspace:view');
   expect(resolveSdxPermission('POST', ['v1', 'releases', 'webhooks', 'jenkins'])).toBeNull();
   expect(resolveSdxPermission('GET', ['v1', 'activation'])).toBeNull();

@@ -91,6 +91,6 @@ export function hasRole(session: BacSession | null, requiredRoles: BacRole[]): b
     return false;
   }
 
-  const highestRoleIndex = Math.max(...session.roles.map((role) => roleHierarchy.indexOf(role)));
+  const highestRoleIndex = Math.max(...session.roles.map((role: BacRole) => roleHierarchy.indexOf(role)));
   return requiredRoles.some((role) => highestRoleIndex >= roleHierarchy.indexOf(role));
 }

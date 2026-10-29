@@ -133,4 +133,16 @@ export const navigation: NavigationSection[] = [
       },
     ],
   },
+  {
+    title: 'Administration',
+    items: [
+      {
+        href: '/admin',
+        label: 'Admin console',
+        description: 'Manage platform health, model gateway connections, and operator settings.',
+        keywords: ['admin', 'platform', 'agentgateway', 'llm', 'models'],
+        permission: 'workspace:manage',
+      },
+    ],
+  },
 ];
