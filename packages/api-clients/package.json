@@ -16,7 +16,7 @@
     "@bac/config": "workspace:*",
     "@bac/domain-contracts": "workspace:*",
     "@bac/observability": "workspace:*",
-    "@tanstack/react-query": "^5.69.0",
+    "@tanstack/react-query": "^5.105.0",
     "react": "19.3.1"
   }
 }
