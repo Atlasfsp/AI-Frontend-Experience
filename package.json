@@ -49,6 +49,7 @@
     "test:e2e": "playwright test",
     "test:e2e:fluxcore": "playwright test --config playwright.fluxcore.config.ts",
     "test:release0-matrix": "node scripts/run-release0-matrix.mjs",
+    "test:release0:browser-fence": "playwright test --config playwright.release0-fence.config.ts",
     "test:e2e:ui": "playwright test --ui",
     "audit:security": "node scripts/security-audit.mjs",
     "contracts:upgrade": "node scripts/contract-upgrade-pr.mjs",
