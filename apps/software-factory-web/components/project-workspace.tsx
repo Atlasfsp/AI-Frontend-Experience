@@ -88,7 +88,7 @@ type AuditPage = {
   verification: string | undefined;
 };
 type Section<T> = { status: 'loading' } | { status: 'ready'; value: T } | { status: 'error'; message: string };
-type PendingCommand = { scope: string; success: string; method: 'POST' | 'PUT'; path: string; body: Record<string, unknown> };
+type PendingCommand = { scope: string; success: string; method: 'POST' | 'PUT'; path: string; body: Record<string, unknown>; key: string };
 
 const hexCommit = /^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$/;
 const card = 'rounded-3xl border border-white/10 bg-slate-900/70 p-5 sm:p-6';
@@ -345,11 +345,16 @@ export function ProjectWorkspace({
       await load();
       return true;
     } catch (error) {
-      const unconfirmed = isOutcomeUnconfirmed(error);
-      setFailure(describeFailure(error));
+      // Once a request is uncertain, *any* unsuccessful retry (including a new
+      // 401/403 after session expiry) cannot disprove the original commit.
+      const unconfirmed = retry || isOutcomeUnconfirmed(error);
+      setFailure(unconfirmed && retry
+        ? 'The original change is still unconfirmed. Restore authorization and retry the same pending request; do not submit a new change.'
+        : describeFailure(error));
       if (ownedFence.current && !settleWriteFence(ownedFence.current, !unconfirmed)) setFenceBlocked(true);
-      if (unconfirmed && activeCommand.current && ownedFence.current) {
-        setPendingCommand({ ...activeCommand.current, success, scope });
+      if (unconfirmed && ownedFence.current) {
+        const pending = retry ? currentPending : activeCommand.current ? { ...activeCommand.current, success, scope } : null;
+        setPendingCommand(pending);
       } else {
         setPendingCommand(null);
       }
@@ -364,7 +369,8 @@ export function ProjectWorkspace({
 
   const write = <T,>(method: 'POST' | 'PUT', path: string, body: Record<string, unknown>) => {
     const snapshot = JSON.parse(JSON.stringify({ tenant_id: tenantId, ...body })) as Record<string, unknown>;
-    activeCommand.current = { method, path, body: snapshot };
+    const key = keys.current.keyFor(`${method} ${path} ${JSON.stringify(snapshot)}`);
+    activeCommand.current = { method, path, body: snapshot, key };
     return callFluxCore<T>(method, path, { body: snapshot, keys: keys.current });
   };
 
@@ -402,7 +408,10 @@ export function ProjectWorkspace({
     <div className="mt-3 rounded-2xl border border-amber-200/30 p-4">
       <p className="text-sm text-amber-100">A change is awaiting confirmation. New changes are paused. Retry here reuses the original payload, project version and Idempotency-Key. Do not reload the browser before the outcome is confirmed.</p>
       <button className={`${secondary} mt-3`} disabled={working} type="button" onClick={() =>
-        void mutate(currentPending.success, () => callFluxCore(currentPending.method, currentPending.path, { body: currentPending.body, keys: keys.current }), true)
+        void mutate(currentPending.success, () => callFluxCore(currentPending.method, currentPending.path, {
+          body: currentPending.body,
+          keys: { keyFor: () => currentPending.key, settle: () => undefined },
+        }), true)
       }>Retry pending change</button>
     </div>
   );
