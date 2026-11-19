@@ -52,6 +52,26 @@ describe('callFluxCore', () => {
     const failure = await callFluxCore('POST', 'v1/x', { body: {}, fetcher }).catch((error: unknown) => error);
     expect(failure).toMatchObject({ status: 409, reason: 'PLAN_STALE_REPOSITORY' });
     expect(describeFailure(failure)).toContain('PLAN_STALE_REPOSITORY');
-    expect(describeFailure(new TypeError('x'))).toContain('Nothing was confirmed as saved');
+    expect(describeFailure(new TypeError('x'))).toContain('outcome is unconfirmed');
+  });
+
+  it.each([408, 500, 502, 503, 504])('keeps the key and reports an unconfirmed outcome for HTTP %s', async (status) => {
+    const keys = new IdempotencyKeys();
+    const fetcher = vi.fn().mockImplementation(async () => json(status, {}));
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const failure = await callFluxCore('POST', 'v1/x', { body: {}, keys, fetcher }).catch((error: unknown) => error);
+      const message = describeFailure(failure);
+      expect(message).toContain('outcome is unconfirmed');
+      expect(message).toContain('Retry the same request');
+      expect(message).not.toMatch(/nothing was (?:confirmed as )?saved|nothing was committed/i);
+    }
+    expect(fetcher.mock.calls[0]?.[1].headers['Idempotency-Key']).toBe(fetcher.mock.calls[1]?.[1].headers['Idempotency-Key']);
+  });
+
+  it('does not claim a network failure means nothing was committed', () => {
+    const message = describeFailure(new TypeError('offline'));
+    expect(message).toContain('outcome is unconfirmed');
+    expect(message).toContain('Retry the same request');
+    expect(message).not.toMatch(/nothing was (?:confirmed as )?saved|nothing was committed/i);
   });
 });

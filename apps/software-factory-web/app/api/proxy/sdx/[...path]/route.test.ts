@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockSession, type BacSession } from '@bac/auth';
 import { readRequestSession } from '@/lib/auth';
@@ -19,6 +19,11 @@ const oidc = (roles: BacSession['roles']) =>
 
 describe('SDX browser API proxy', () => {
   const fetcher = vi.fn();
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -214,6 +219,80 @@ describe('SDX browser API proxy', () => {
     vi.mocked(readRequestSession).mockResolvedValue(oidc(['ADMIN']));
     const verified = await GET(new NextRequest('http://localhost/api/proxy/sdx/v1/projects/p-1'), getContext(['v1', 'projects', 'p-1']));
     expect(verified.status).toBe(200);
+  });
+
+  it('cancels a streamed body as soon as it exceeds 64 KiB without fetching upstream', async () => {
+    const cancel = vi.fn();
+    let chunks = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        chunks++;
+        controller.enqueue(new Uint8Array(32 * 1024));
+      },
+      cancel,
+    }, { highWaterMark: 0 });
+    const init = { method: 'POST', body, duplex: 'half' as const };
+    const response = await POST(new NextRequest('http://localhost/x', init), getContext(['v1', 'control-plane', 'intake']));
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ error: 'payload_too_large' });
+    expect(chunks).toBe(3);
+    expect(cancel).toHaveBeenCalledTimes(1);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('rejects a declared oversize body before reading its stream', async () => {
+    const pull = vi.fn();
+    const cancel = vi.fn();
+    const body = new ReadableStream<Uint8Array>({ pull, cancel }, { highWaterMark: 0 });
+    const init = { method: 'POST', body, duplex: 'half' as const, headers: { 'content-length': String(64 * 1024 + 1) } };
+    const response = await POST(new NextRequest('http://localhost/x', init), getContext(['v1', 'control-plane', 'intake']));
+    expect(response.status).toBe(413);
+    expect(pull).not.toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalledTimes(1);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed UTF-8 instead of replacing bytes inside JSON', async () => {
+    const body = new Uint8Array([123, 34, 120, 34, 58, 34, 255, 34, 125]);
+    const response = await POST(new NextRequest('http://localhost/x', { method: 'POST', body }), getContext(['v1', 'control-plane', 'intake']));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'invalid_json' });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it.each([301, 302, 303, 307, 308])('refuses HTTP %s redirects without forwarding credentials to the redirect target', async (status) => {
+    vi.mocked(readRequestSession).mockResolvedValue(oidc(['ADMIN']));
+    const cancel = vi.fn();
+    fetcher.mockResolvedValueOnce(new Response(new ReadableStream({ cancel }), {
+      status,
+      headers: { location: 'https://other.example/?token=secret', 'set-cookie': 'token=secret', authorization: 'Bearer secret' },
+    }));
+    const response = await GET(new NextRequest('http://localhost/x'), getContext(['v1', 'projects', 'p-1']));
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: 'upstream_redirect_refused' });
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('set-cookie')).toBeNull();
+    expect(response.headers.get('authorization')).toBeNull();
+    expect(cancel).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    const [target, init] = fetcher.mock.calls[0] as [URL, RequestInit];
+    expect(String(target)).toBe('http://fluxcore.local/v1/projects/p-1');
+    expect(init.redirect).toBe('manual');
+    expect(new Headers(init.headers).get('authorization')).toBe('Bearer access-token-1');
+  });
+
+  it('aborts an upstream timeout and reports an unconfirmed outcome', async () => {
+    vi.useFakeTimers();
+    fetcher.mockImplementationOnce((_url: URL, init: RequestInit) => new Promise((_resolve, reject) => {
+      init.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+    }));
+    const pending = POST(new NextRequest('http://localhost/x', { method: 'POST', body: '{}' }), getContext(['v1', 'control-plane', 'intake']));
+    await vi.advanceTimersByTimeAsync(15_000);
+    const response = await pending;
+    expect(response.status).toBe(504);
+    expect(await response.json()).toEqual({ error: 'upstream_timeout_outcome_unconfirmed' });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect((fetcher.mock.calls[0]?.[1] as RequestInit).signal?.aborted).toBe(true);
   });
 
   it('passes backend conflicts and replay markers through without leaking upstream cookies', async () => {

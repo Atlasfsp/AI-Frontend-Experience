@@ -155,7 +155,9 @@ it('reuses the same Idempotency-Key when retrying after the backend is not conne
   const triage = await screen.findByRole('form', { name: 'Triage Seller onboarding' });
   fireEvent.change(within(triage).getByLabelText('Reason'), { target: { value: 'Clear scope' } });
   fireEvent.click(within(triage).getByRole('button', { name: 'Record decision' }));
-  expect((await screen.findByRole('alert')).textContent).toContain('Nothing was saved');
+  expect((await screen.findByRole('alert')).textContent).toContain('outcome is unconfirmed');
+  expect(screen.getByRole('alert').textContent).not.toContain('Nothing was saved');
+  await waitFor(() => expect((within(triage).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(within(triage).getByRole('button', { name: 'Record decision' }));
   await screen.findByText('Intake accepted.');
   expect(mutations()).toHaveLength(2);

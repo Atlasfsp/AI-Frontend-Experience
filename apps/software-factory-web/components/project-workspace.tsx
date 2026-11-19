@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 
-import { callFluxCore, describeFailure, FluxCoreApiError, IdempotencyKeys } from '@/lib/fluxcore-api';
+import { callFluxCore, describeFailure, FluxCoreApiError, IdempotencyKeys, isOutcomeUnconfirmed } from '@/lib/fluxcore-api';
 
 type Project = {
   id: string;
@@ -227,7 +227,7 @@ export function ProjectWorkspace({
       return true;
     } catch (error) {
       setFailure(describeFailure(error));
-      if (error instanceof FluxCoreApiError && (error.status === 409 || error.status === 404)) await load();
+      if (isOutcomeUnconfirmed(error) || (error instanceof FluxCoreApiError && (error.status === 409 || error.status === 404))) await load();
       return false;
     } finally {
       setBusy(false);

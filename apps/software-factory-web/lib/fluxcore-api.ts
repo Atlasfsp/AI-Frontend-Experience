@@ -11,24 +11,30 @@ export class FluxCoreApiError extends Error {
 
 export type ApiResult<T> = { data: T; replayed: boolean };
 
+const unconfirmed =
+  'The outcome is unconfirmed: FluxCore may or may not have saved this change. Retry the same request; it reuses the same Idempotency-Key, so a completed write is replayed instead of repeated.';
+
 const statusMessages: Record<number, string> = {
-  401: 'Your sign-in has expired. Sign in again; nothing was saved.',
+  401: 'Your sign-in has expired. Sign in again before retrying.',
   403: 'Your account is not permitted to perform this action in this tenant.',
   404: 'The project or record was not found in your tenant.',
-  408: 'The request timed out before anything was saved. Retry to continue.',
   409: 'The project changed or this decision is already final. The workspace was reloaded; review and retry.',
   413: 'The request is too large.',
   422: 'The request could not be applied to this project.',
-  502: 'The FluxCore API is unreachable. Nothing was saved.',
-  503: 'Project persistence is not connected. Nothing was saved.',
 };
 
+/** Failures where the backend may have committed the write before the response was lost. */
+export function isOutcomeUnconfirmed(error: unknown) {
+  return !(error instanceof FluxCoreApiError) || error.status === 408 || error.status >= 500;
+}
+
 export function describeFailure(error: unknown) {
-  if (error instanceof FluxCoreApiError) {
-    const detail = error.message && error.message !== statusMessages[error.status] ? ` (${error.message}${error.reason ? `: ${error.reason}` : ''})` : '';
-    return `${statusMessages[error.status] ?? `The FluxCore API returned ${error.status}.`}${detail}`;
-  }
-  return 'The FluxCore API could not be reached. Nothing was confirmed as saved.';
+  if (!(error instanceof FluxCoreApiError)) return unconfirmed;
+  const base = isOutcomeUnconfirmed(error)
+    ? `${unconfirmed} (HTTP ${error.status})`
+    : statusMessages[error.status] ?? `The FluxCore API returned ${error.status}.`;
+  const detail = error.message && error.message !== statusMessages[error.status] ? ` (${error.message}${error.reason ? `: ${error.reason}` : ''})` : '';
+  return `${base}${detail}`;
 }
 
 function newKey() {
@@ -86,7 +92,7 @@ export async function callFluxCore<T>(
   if (!response.ok) {
     throw new FluxCoreApiError(
       response.status,
-      typeof payload?.error === 'string' ? payload.error : statusMessages[response.status] ?? `HTTP ${response.status}`,
+      typeof payload?.error === 'string' ? payload.error : (statusMessages[response.status] ?? ''),
       typeof payload?.reason === 'string' ? payload.reason : undefined,
     );
   }
