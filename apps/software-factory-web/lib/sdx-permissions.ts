@@ -1,6 +1,9 @@
 import type { BacPermission } from '@bac/auth';
 
-type SdxMethod = 'GET' | 'POST';
+type SdxMethod = 'GET' | 'POST' | 'PUT';
+
+const id = '[A-Za-z0-9][A-Za-z0-9._:-]{0,127}';
+const taskId = '[A-Za-z0-9][A-Za-z0-9._:-]{0,199}';
 
 type SdxRoutePolicy = {
   method: SdxMethod;
@@ -35,6 +38,20 @@ const policies: readonly SdxRoutePolicy[] = [
   { method: 'POST', path: /^v1\/workforce\/org\/staff$/, permission: 'workspace:manage' },
   { method: 'POST', path: /^v1\/projects$/, permission: 'workspace:manage' },
   { method: 'GET', path: /^v1\/projects\/read-authorization$/, permission: 'workspace:view' },
+  { method: 'GET', path: new RegExp(`^v1/projects/${id}$`), permission: 'workspace:view' },
+  { method: 'PUT', path: new RegExp(`^v1/projects/${id}/repository$`), permission: 'workspace:manage' },
+  { method: 'GET', path: new RegExp(`^v1/projects/${id}/engineering-plans$`), permission: 'workspace:view' },
+  { method: 'POST', path: new RegExp(`^v1/projects/${id}/engineering-plans$`), permission: 'workspace:manage' },
+  { method: 'POST', path: new RegExp(`^v1/projects/${id}/engineering-plans/${id}/decision$`), permission: 'approval:action' },
+  { method: 'GET', path: new RegExp(`^v1/projects/${id}/team-proposals$`), permission: 'workspace:view' },
+  { method: 'POST', path: new RegExp(`^v1/projects/${id}/team-proposals/${id}/decision$`), permission: 'approval:action' },
+  { method: 'GET', path: new RegExp(`^v1/projects/${id}/engineering-tasks$`), permission: 'workspace:view' },
+  { method: 'POST', path: new RegExp(`^v1/projects/${id}/engineering-tasks$`), permission: 'workspace:manage' },
+  { method: 'POST', path: new RegExp(`^v1/projects/${id}/engineering-tasks/${taskId}/cancel$`), permission: 'workspace:manage' },
+  { method: 'GET', path: new RegExp(`^v1/projects/${id}/decision-events$`), permission: 'workspace:view' },
+  { method: 'GET', path: /^v1\/control-plane\/intake$/, permission: 'workspace:view' },
+  { method: 'GET', path: new RegExp(`^v1/control-plane/intake/${id}$`), permission: 'workspace:view' },
+  { method: 'POST', path: new RegExp(`^v1/control-plane/intake/${id}/triage$`), permission: 'workspace:manage' },
   { method: 'GET', path: /^v1\/workforce\/sme\/list$/, permission: 'workspace:view' },
   { method: 'POST', path: /^v1\/workforce\/router\/select$/, permission: 'workspace:manage' },
   { method: 'GET', path: /^v1\/activation\/blueprints$/, permission: 'workspace:view' },

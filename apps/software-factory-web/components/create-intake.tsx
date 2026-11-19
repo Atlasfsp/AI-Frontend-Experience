@@ -322,13 +322,13 @@ export function CreateIntake({
                 {JSON.stringify(project, null, 2)}
               </pre>
             </details>
-            <button
-              type="button"
-              disabled
-              className="rounded-2xl border border-white/20 px-5 py-3 opacity-60"
+            <Link
+              className="inline-block rounded-2xl bg-[var(--bac-color-primary)] px-5 py-3 font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+              href={`/software-factory/workspaces/${encodeURIComponent(project.id)}`}
             >
-              Execution blocked
-            </button>
+              Continue in FluxCore Engineer
+            </Link>
+            <p className="text-sm text-slate-300">Execution remains blocked.</p>
             <p>
               No generated files, test results, preview, deployment, or
               production authorization is claimed.

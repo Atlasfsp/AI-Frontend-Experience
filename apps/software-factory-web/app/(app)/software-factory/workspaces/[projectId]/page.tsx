@@ -5,9 +5,9 @@ import { hasPermission } from '@bac/auth';
 import { PageHeader } from '@bac/ui';
 
 import { ProjectWorkspace } from '@/components/project-workspace';
-import { listSharedEngineeringProjects } from '@/features/projects';
-import { loadAppEnv } from '@/lib/env';
 import { getServerSession } from '@/lib/session';
+
+const projectIdPattern = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/;
 
 export default async function ProjectWorkspacePage({
   params,
@@ -16,26 +16,14 @@ export default async function ProjectWorkspacePage({
 }) {
   const { projectId } = await params;
   const session = await getServerSession();
-  if (!hasPermission(session, 'application:view')) notFound();
-
-  const config = loadAppEnv();
-  const result = await listSharedEngineeringProjects(
-    config.hasuraUrl,
-    `${config.sdxApiUrl.replace(/\/$/, '')}/v1/projects/read-authorization`,
-    session?.accessToken,
-  );
-  const project = result.status === 'available'
-    ? result.projects.find((item) => item.id === projectId)
-    : undefined;
-
-  if (!project) notFound();
+  if (!session || !hasPermission(session, 'workspace:view') || !projectIdPattern.test(projectId)) notFound();
 
   return (
     <div className="space-y-7">
       <PageHeader
         eyebrow="FluxCore Engineer · shared project"
-        title={project.name}
-        description="Keep the product brief, design intent, engineering decisions, and future code changes together in one project workspace."
+        title="Project workspace"
+        description="Link the repository, triage intake, and record plan, staffing and task decisions on the shared FluxCore project. Every action is saved by the FluxCore API; nothing is executed."
         actions={
           <Link
             className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
@@ -45,7 +33,12 @@ export default async function ProjectWorkspacePage({
           </Link>
         }
       />
-      <ProjectWorkspace project={project} />
+      <ProjectWorkspace
+        projectId={projectId}
+        tenantId={session.tenantId}
+        canManage={hasPermission(session, 'workspace:manage')}
+        canApprove={hasPermission(session, 'approval:action')}
+      />
     </div>
   );
 }

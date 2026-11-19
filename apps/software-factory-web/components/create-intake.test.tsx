@@ -146,13 +146,12 @@ it('creates a shared tenant project and displays its unverified workforce propos
   ).toBeGreaterThanOrEqual(8);
   expect(screen.getByText('Verify SME expertise')).toBeTruthy();
   expect(screen.getByText('Cost: unknown until measured')).toBeTruthy();
+  expect(screen.getByText('Execution remains blocked.')).toBeTruthy();
   expect(
-    (
-      screen.getByRole('button', {
-        name: 'Execution blocked',
-      }) as HTMLButtonElement
-    ).disabled,
-  ).toBe(true);
+    screen
+      .getByRole('link', { name: 'Continue in FluxCore Engineer' })
+      .getAttribute('href'),
+  ).toBe('/software-factory/workspaces/project-1');
   expect(screen.getByText('Shared project ID: project-1')).toBeTruthy();
   expect(
     screen.getByText(
