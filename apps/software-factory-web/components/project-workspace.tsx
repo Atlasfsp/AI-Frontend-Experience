@@ -338,6 +338,11 @@ export function ProjectWorkspace({
     setNotice('');
     try {
       const result = await action();
+      if (retry && currentPending) {
+        // A successful exact retry ends the original logical request. Rotate
+        // its in-memory key only now, never on denial/outage.
+        keys.current.settle(`${currentPending.method} ${currentPending.path} ${JSON.stringify(currentPending.body)}`, 200);
+      }
       if (!ownedFence.current || !settleWriteFence(ownedFence.current, true)) setFenceBlocked(true);
       ownedFence.current = null;
       setPendingCommand(null);
