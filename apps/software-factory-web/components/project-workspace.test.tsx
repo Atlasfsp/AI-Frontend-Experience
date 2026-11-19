@@ -129,7 +129,7 @@ it('requires acknowledgement before accepting a quarantined intake', async () =>
 });
 
 it('reloads after a stale version conflict and shows the backend failure instead of success', async () => {
-  state.plans = [{ plan_id: 'plan-1', intake_id: 'in-1', status: 'DRAFT', project_version: 2, plan: { commit_sha: '', stages: [] } }];
+  state.plans = [{ plan_id: 'plan-1', intake_id: 'in-1', status: 'DRAFT', project_version: 2, requested_by: 'user:other', plan: { commit_sha: '', stages: [] } }];
   override = (call) => (call.method === 'POST' ? json(409, { error: 'project version changed or decision is already final' }) : undefined);
   render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove />);
   const decide = await screen.findByRole('form', { name: 'Decide plan plan-1' });
@@ -231,4 +231,68 @@ it('reports a missing or cross-tenant project without rendering actions', async 
   render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove />);
   expect((await screen.findByRole('status')).textContent).toContain('not found in your tenant');
   expect(screen.queryByRole('form')).toBeNull();
+});
+
+it('explains separation of duties instead of offering decisions the backend must refuse', async () => {
+  state.plans = [
+    { plan_id: 'plan-mine', intake_id: 'in-1', status: 'DRAFT', project_version: 2, requested_by: 'user:me', plan: { commit_sha: '', stages: [] } },
+    { plan_id: 'plan-legacy', intake_id: 'in-1', status: 'DRAFT', project_version: 2, plan: { commit_sha: '', stages: [] } },
+    { plan_id: 'plan-other', intake_id: 'in-1', status: 'DRAFT', project_version: 2, requested_by: 'user:ann', plan: { commit_sha: '', stages: [] } },
+  ];
+  state.proposals = [
+    { team_id: 'team-mine', project_version: 2, requested_by: 'user:me', decision_status: 'PROPOSED', activation_state: 'NOT_ACTIVATED', execution_readiness: { blocked_reasons: ['QUALIFICATION_UNVERIFIED'] }, team: {} },
+    { team_id: 'team-other', project_version: 2, requested_by: 'user:ann', decision_status: 'PROPOSED', activation_state: 'NOT_ACTIVATED', execution_readiness: { blocked_reasons: ['QUALIFICATION_UNVERIFIED'] }, team: {} },
+  ];
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove subject="user:me" />);
+  expect(await screen.findByText('You requested this plan. A different person must record the decision.')).toBeTruthy();
+  expect(screen.getByText('This plan has no recorded requester, so FluxCore cannot accept a decision on it.')).toBeTruthy();
+  expect(screen.getByText('You proposed this team. A different person must record the decision.')).toBeTruthy();
+  expect(screen.queryByRole('form', { name: 'Decide plan plan-mine' })).toBeNull();
+  expect(screen.queryByRole('form', { name: 'Decide plan plan-legacy' })).toBeNull();
+  expect(screen.queryByRole('form', { name: 'Decide team team-mine' })).toBeNull();
+  expect(screen.getByRole('form', { name: 'Decide plan plan-other' })).toBeTruthy();
+  expect(screen.getByRole('form', { name: 'Decide team team-other' })).toBeTruthy();
+  expect(screen.getAllByText(/requested by user:ann/, { selector: 'p' })).toHaveLength(2);
+});
+
+it('pages newer audit events forward without dropping loaded events, and reports a failed page', async () => {
+  const event = (v: number) => ({ project_version: v, event_kind: 'PLAN_DECIDED', resource_id: `plan-${v}`, from_state: 'DRAFT', to_state: 'APPROVED', actor_subject: 'user:bo', reason: '', recorded_at: '2026-10-29T10:00:00Z' });
+  let failNext = true;
+  override = (call) => {
+    if (!call.url.includes('/decision-events')) return undefined;
+    const after = new URL(call.url, 'http://x').searchParams.get('after_project_version');
+    expect(new URL(call.url, 'http://x').searchParams.get('limit')).toBe('100');
+    if (after === null) return json(200, { decision_events: [event(1), event(2)], next_after_project_version: 2, coverage: 'RECORDED_EVENTS_ONLY', legacy_history: 'UNAVAILABLE', independent_verification: 'UNVERIFIED' });
+    if (failNext) { failNext = false; return json(503, { error: 'unavailable' }); }
+    expect(after).toBe('2');
+    return json(200, { decision_events: [event(3)], next_after_project_version: null, coverage: 'RECORDED_EVENTS_ONLY', legacy_history: 'UNAVAILABLE', independent_verification: 'UNVERIFIED' });
+  };
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} />);
+  const list = await screen.findByRole('list', { name: 'Decision events' });
+  expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+  expect(screen.getByText(/History from before audit recording is unavailable\. Events are not independently verified\./)).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'Load newer events' }));
+  expect(await screen.findByText(/Newer events could not be loaded/)).toBeTruthy();
+  expect(within(screen.getByRole('list', { name: 'Decision events' })).getAllByRole('listitem')).toHaveLength(2);
+  fireEvent.click(screen.getByRole('button', { name: 'Load newer events' }));
+  await waitFor(() => expect(within(screen.getByRole('list', { name: 'Decision events' })).getAllByRole('listitem')).toHaveLength(3));
+  expect(screen.queryByRole('button', { name: 'Load newer events' })).toBeNull();
+  expect(screen.queryByText(/Newer events could not be loaded/)).toBeNull();
+  expect(mutations()).toHaveLength(0);
+});
+
+it('shows task dependencies, dispatch state and cancellation details from FluxCore', async () => {
+  state.tasks = [
+    { task_id: 'plan-1:s1', plan_id: 'plan-1', stage_id: 's1', title: 'Requirements analysis', capability: 'requirements', risk_tier: 'TIER_1', depends_on: [], requires_human_approval: false, status: 'CANCELLED', state: 'CANCELLED', blocked_reasons: [], execution_blocked_reasons: ['EXECUTION_NOT_AUTHORIZED'], dispatch_state: 'NOT_DISPATCHED', cancelled_by: 'user:bo', cancelled_at: '2026-10-29T11:00:00Z', cancel_reason: 'Scope removed' },
+    { task_id: 'plan-1:s2', plan_id: 'plan-1', stage_id: 's2', title: 'Build API', capability: 'backend', risk_tier: 'TIER_2', depends_on: ['s1'], requires_human_approval: true, status: 'OPEN', state: 'BLOCKED', blocked_reasons: ['DEPENDENCY_CANCELLED'], execution_blocked_reasons: ['EXECUTION_NOT_AUTHORIZED'], dispatch_state: 'NOT_DISPATCHED' },
+  ];
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} />);
+  const list = await screen.findByRole('list', { name: 'Engineering tasks' });
+  const [first, second] = within(list).getAllByRole('listitem');
+  expect(first!.textContent).toContain('Cancelled: by user:bo 2026-10-29T11:00:00Z (Scope removed)');
+  expect(second!.textContent).toContain('Depends on: Requirements analysis');
+  expect(second!.textContent).toContain('Human approval: required');
+  expect(second!.textContent).toContain('Dispatch: NOT_DISPATCHED');
+  expect(second!.textContent).toContain('Execution blocked: EXECUTION_NOT_AUTHORIZED');
+  expect(second!.textContent).toContain('Capability: backend');
 });

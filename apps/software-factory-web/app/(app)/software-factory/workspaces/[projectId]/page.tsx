@@ -38,6 +38,7 @@ export default async function ProjectWorkspacePage({
         tenantId={session.tenantId}
         canManage={hasPermission(session, 'workspace:manage')}
         canApprove={hasPermission(session, 'approval:action')}
+        subject={session.subject}
       />
     </div>
   );

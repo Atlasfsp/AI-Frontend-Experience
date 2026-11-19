@@ -129,7 +129,12 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     projectId = link.getAttribute('href')!.split('/').at(-1)!;
     expect((await api('GET', `${projectPath()}?${query}`)).name).toBe('Integrated checkout');
     create.unmount();
-    render(<ProjectWorkspace projectId={projectId} tenantId={tenant} canManage canApprove />);
+    const workspace = (subject: string) => <ProjectWorkspace projectId={projectId} tenantId={tenant} canManage canApprove subject={subject} />;
+    const view = render(workspace('requester'));
+    const actAs = async (subject: string) => {
+      await identity(subject);
+      view.rerender(workspace(subject));
+    };
     fireEvent.click(await screen.findByRole('button', { name: 'Check commit' }));
     await screen.findByText(new RegExp(`Resolves to ${commit}`));
     fireEvent.click(screen.getByRole('button', { name: 'Link repository' }));
@@ -145,23 +150,29 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     await screen.findByText('Draft engineering plan saved.');
     const plans = await api<{ engineering_plans: Array<{ plan_id: string }> }>('GET', `${projectPath()}/engineering-plans?${query}`);
     planId = plans.engineering_plans[0]!.plan_id;
-    await decide(`Decide plan ${planId}`, 'Self-approval must be refused');
-    await screen.findByRole('alert');
+    await screen.findByText('You requested this plan. A different person must record the decision.');
+    expect(screen.queryByRole('form', { name: `Decide plan ${planId}` })).toBeNull();
+    // The UI explanation is advisory; the backend must still refuse the requester.
+    await expect(api('POST', `${projectPath()}/engineering-plans/${planId}/decision`, {
+      tenant_id: tenant, expected_version: await version(), decision: 'APPROVED', reason: 'Self-approval must be refused',
+    })).rejects.toMatchObject({ status: 403 });
     expect((await api<{ engineering_plans: Array<{ status: string }> }>('GET', `${projectPath()}/engineering-plans?${query}`)).engineering_plans[0]!.status).toBe('DRAFT');
-    await identity('reviewer');
+    await actAs('reviewer');
     await decide(`Decide plan ${planId}`, 'Independent human plan review');
     await screen.findByText('Plan approved.');
-    await identity('requester');
+    await screen.findByText(/Decision reason: Independent human plan review/);
+    await actAs('requester');
     const staffing = await screen.findByRole('form', { name: 'Propose staffing' });
     fireEvent.change(within(staffing).getByLabelText('Budget ceiling (USD)'), { target: { value: '2500' } });
     fireEvent.change(within(staffing).getByLabelText('Linked plan'), { target: { value: planId } });
     fireEvent.click(within(staffing).getByRole('button', { name: 'Propose team' }));
     await screen.findByText('Staffing proposal saved. No member is activated.');
     const teams = await api<{ staffing_proposals: Array<{ team_id: string }> }>('GET', `${projectPath()}/team-proposals?${query}`);
-    await identity('staff-reviewer');
+    await screen.findByText('You proposed this team. A different person must record the decision.');
+    await actAs('staff-reviewer');
     await decide(`Decide team ${teams.staffing_proposals[0]!.team_id}`, 'Approve task preparation only');
     await screen.findByText('Staffing approved.');
-    await identity('task-planner');
+    await actAs('task-planner');
     fireEvent.click(await screen.findByRole('button', { name: 'Create tasks' }));
     await screen.findByText('Engineering tasks created without dispatch.');
     const list = await screen.findByRole('list', { name: 'Engineering tasks' });
@@ -169,6 +180,10 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     fireEvent.change(within(cancel).getByLabelText('Cancellation reason'), { target: { value: 'Requirement removed during review' } });
     fireEvent.click(within(cancel).getByRole('button', { name: 'Cancel task' }));
     await screen.findByText('Task cancelled.');
+    await waitFor(() => expect(screen.getByRole('list', { name: 'Engineering tasks' }).textContent).toMatch(/Cancelled: by task-planner .*\(Requirement removed during review\)/));
+    expect(screen.getByRole('list', { name: 'Engineering tasks' }).textContent).toContain('Dispatch: NOT_DISPATCHED');
+    expect(within(screen.getByRole('list', { name: 'Decision events' })).getAllByText(/TASK_CANCELLED/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Recorded events only\. History from before audit recording is unavailable\. Events are not independently verified\./)).toBeTruthy();
     const events = await api<{ decision_events: Array<{ event_kind: string }> }>('GET', `${projectPath()}/decision-events?${query}`);
     expect(events.decision_events.some((event) => event.event_kind === 'TASK_CANCELLED')).toBe(true);
     const tasks = await api<{ engineering_tasks: Array<{ status: string; execution_authorized: boolean; dispatch_state: string }> }>('GET', `${projectPath()}/engineering-tasks?${query}`);

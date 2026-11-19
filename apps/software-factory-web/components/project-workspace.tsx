@@ -26,7 +26,7 @@ type Intake = {
   version?: number;
   warning?: string;
 };
-type Stage = { stage_id: string; title: string; risk_tier: string; requires_human_approval: boolean };
+type Stage = { stage_id: string; title: string; risk_tier: string; requires_human_approval: boolean; capability?: string; depends_on?: string[] };
 type Plan = {
   plan_id: string;
   intake_id: string;
@@ -34,6 +34,7 @@ type Plan = {
   project_version: number;
   requested_by?: string;
   decided_by?: string;
+  decided_at?: string;
   decision_reason?: string;
   plan: { commit_sha: string; stages: Stage[] };
 };
@@ -41,8 +42,10 @@ type Proposal = {
   team_id: string;
   project_version: number;
   engineering_plan_id?: string;
+  requested_by?: string;
   decision_status: 'PROPOSED' | 'APPROVED' | 'REJECTED';
   decided_by?: string;
+  decision_reason?: string;
   activation_state: string;
   execution_readiness: { blocked_reasons: string[] };
   team: { members?: Array<{ role_id?: string; title?: string }> };
@@ -50,12 +53,21 @@ type Proposal = {
 type Task = {
   task_id: string;
   plan_id: string;
+  stage_id?: string;
   title: string;
+  capability?: string;
   risk_tier: string;
+  depends_on?: string[];
+  requires_human_approval?: boolean;
   status: 'OPEN' | 'CANCELLED';
   state: string;
   blocked_reasons: string[];
+  execution_blocked_reasons?: string[];
+  dispatch_state?: string;
   assigned_role_title?: string;
+  cancelled_by?: string;
+  cancelled_at?: string;
+  cancel_reason?: string;
 };
 type DecisionEvent = {
   project_version: number;
@@ -67,6 +79,13 @@ type DecisionEvent = {
   reason: string;
   recorded_at: string;
 };
+type AuditPage = {
+  rows: DecisionEvent[];
+  next: number | null;
+  coverage: string | undefined;
+  legacyHistory: string | undefined;
+  verification: string | undefined;
+};
 type Section<T> = { status: 'loading' } | { status: 'ready'; value: T } | { status: 'error'; message: string };
 type PendingCommand = { success: string; method: 'POST' | 'PUT'; path: string; body: Record<string, unknown> };
 
@@ -75,6 +94,42 @@ const card = 'rounded-3xl border border-white/10 bg-slate-900/70 p-5 sm:p-6';
 const field = 'min-h-11 w-full rounded-xl border border-white/15 bg-slate-950 px-3 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300';
 const primary = 'min-h-11 rounded-xl bg-cyan-300 px-4 text-sm font-bold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-50';
 const secondary = 'min-h-11 rounded-xl border border-white/20 px-4 text-sm font-semibold text-slate-100 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50';
+const auditPageSize = 100;
+
+type DecisionEventsPayload = {
+  decision_events: DecisionEvent[];
+  next_after_project_version?: number | null;
+  coverage?: string;
+  legacy_history?: string;
+  independent_verification?: string;
+};
+
+function toAuditPage(data: DecisionEventsPayload): AuditPage | undefined {
+  if (!Array.isArray(data.decision_events)) return undefined;
+  const next = data.next_after_project_version;
+  return {
+    rows: data.decision_events,
+    next: Number.isInteger(next) ? (next as number) : null,
+    coverage: data.coverage,
+    legacyHistory: data.legacy_history,
+    verification: data.independent_verification,
+  };
+}
+
+/**
+ * FluxCore refuses decisions by the recorded requester and on records without a
+ * recorded requester (separation cannot be proven). The UI explains these cases
+ * instead of offering a form that cannot succeed; the backend stays authoritative.
+ */
+function decisionBlocker(requestedBy: string | undefined, subject: string | undefined, noun: 'plan' | 'team') {
+  if (!requestedBy?.trim()) return `This ${noun} has no recorded requester, so FluxCore cannot accept a decision on it.`;
+  if (subject && requestedBy === subject) {
+    return noun === 'plan'
+      ? 'You requested this plan. A different person must record the decision.'
+      : 'You proposed this team. A different person must record the decision.';
+  }
+  return null;
+}
 
 /** Returns a user-facing problem with a source selection, or null when it matches the source-control scope contract. */
 export function validateSelection(selection: Selection): string | null {
@@ -161,11 +216,13 @@ export function ProjectWorkspace({
   tenantId,
   canManage,
   canApprove,
+  subject,
 }: {
   projectId: string;
   tenantId: string;
   canManage: boolean;
   canApprove: boolean;
+  subject?: string;
 }) {
   const keys = useRef(new IdempotencyKeys());
   const [project, setProject] = useState<Section<Project>>({ status: 'loading' });
@@ -173,7 +230,8 @@ export function ProjectWorkspace({
   const [plans, setPlans] = useState<Section<Plan[]>>({ status: 'loading' });
   const [proposals, setProposals] = useState<Section<Proposal[]>>({ status: 'loading' });
   const [tasks, setTasks] = useState<Section<Task[]>>({ status: 'loading' });
-  const [events, setEvents] = useState<Section<DecisionEvent[]>>({ status: 'loading' });
+  const [events, setEvents] = useState<Section<AuditPage>>({ status: 'loading' });
+  const [auditMore, setAuditMore] = useState<'idle' | 'loading' | 'failed'>('idle');
   const [connections, setConnections] = useState<Section<Connection[]>>({ status: 'loading' });
   const [working, setWorking] = useState(false);
   const workingRef = useRef(false);
@@ -194,7 +252,7 @@ export function ProjectWorkspace({
       read<{ engineering_plans: Plan[] }>(`v1/projects/${pid}/engineering-plans?tenant_id=${tid}`),
       read<{ staffing_proposals: Proposal[] }>(`v1/projects/${pid}/team-proposals?tenant_id=${tid}`),
       read<{ engineering_tasks: Task[] }>(`v1/projects/${pid}/engineering-tasks?tenant_id=${tid}`),
-      read<{ decision_events: DecisionEvent[] }>(`v1/projects/${pid}/decision-events?tenant_id=${tid}&limit=100`),
+      read<DecisionEventsPayload>(`v1/projects/${pid}/decision-events?tenant_id=${tid}&limit=${auditPageSize}`),
       canManage ? read<{ connections: Connection[] }>('v1/source-control/connections') : Promise.resolve({ data: { connections: [] }, replayed: false }),
     ]);
     function settle<T, R>(result: PromiseSettledResult<{ data: R }>, pick: (data: R) => T | undefined, set: (value: Section<T>) => void) {
@@ -207,7 +265,8 @@ export function ProjectWorkspace({
     settle(pl, (data) => (Array.isArray(data.engineering_plans) ? data.engineering_plans : undefined), setPlans);
     settle(tp, (data) => (Array.isArray(data.staffing_proposals) ? data.staffing_proposals : undefined), setProposals);
     settle(t, (data) => (Array.isArray(data.engineering_tasks) ? data.engineering_tasks : undefined), setTasks);
-    settle(e, (data) => (Array.isArray(data.decision_events) ? data.decision_events : undefined), setEvents);
+    settle(e, toAuditPage, setEvents);
+    setAuditMore('idle');
     if (c.status === 'rejected' && c.reason instanceof FluxCoreApiError && c.reason.status === 503) {
       setConnections({ status: 'error', message: 'No repository connections are configured for this deployment.' });
     } else {
@@ -253,6 +312,24 @@ export function ProjectWorkspace({
     activeCommand.current = { method, path, body: snapshot };
     return callFluxCore<T>(method, path, { body: snapshot, keys: keys.current });
   };
+
+  async function loadNewerEvents() {
+    if (events.status !== 'ready' || events.value.next === null || auditMore === 'loading') return;
+    const current = events.value;
+    setAuditMore('loading');
+    try {
+      const { data } = await callFluxCore<DecisionEventsPayload>(
+        'GET',
+        `v1/projects/${pid}/decision-events?tenant_id=${tid}&limit=${auditPageSize}&after_project_version=${current.next}`,
+      );
+      const page = toAuditPage(data);
+      if (!page) throw new Error('unsupported');
+      setEvents({ status: 'ready', value: { ...page, rows: [...current.rows, ...page.rows] } });
+      setAuditMore('idle');
+    } catch {
+      setAuditMore('failed');
+    }
+  }
 
   async function reload() {
     if (workingRef.current) return;
@@ -392,11 +469,20 @@ export function ProjectWorkspace({
               {rows.map((plan) => (
                 <li key={plan.plan_id} className="rounded-2xl border border-white/10 p-4">
                   <p className="font-medium text-white">Plan {plan.plan_id} · {plan.status}</p>
-                  <p className="text-xs text-slate-400">Commit {plan.plan.commit_sha || 'none linked'} · saved at project version {plan.project_version}{plan.decided_by ? ` · decided by ${plan.decided_by}` : ''}</p>
-                  <ol className="mt-2 list-inside list-decimal text-sm text-slate-200">
-                    {plan.plan.stages.map((stage) => <li key={stage.stage_id}>{stage.title} · {stage.risk_tier}{stage.requires_human_approval ? ' · human approval required' : ''}</li>)}
+                  <p className="text-xs text-slate-400">Commit {plan.plan.commit_sha || 'none linked'} · saved at project version {plan.project_version}{plan.requested_by ? ` · requested by ${plan.requested_by}` : ''}{plan.decided_by ? ` · decided by ${plan.decided_by}` : ''}{plan.decided_at ? ` on ${plan.decided_at}` : ''}</p>
+                  {plan.decision_reason && <p className="mt-1 text-sm text-slate-300">Decision reason: {plan.decision_reason}</p>}
+                  <ol aria-label={`Stages of plan ${plan.plan_id}`} className="mt-2 list-inside list-decimal text-sm text-slate-200">
+                    {plan.plan.stages.map((stage) => (
+                      <li key={stage.stage_id}>
+                        {stage.title} · {stage.risk_tier}{stage.capability ? ` · ${stage.capability}` : ''}{stage.requires_human_approval ? ' · human approval required' : ''}
+                        {stage.depends_on && stage.depends_on.length > 0 ? ` · after ${stage.depends_on.map((id) => plan.plan.stages.find((s) => s.stage_id === id)?.title ?? id).join(', ')}` : ''}
+                      </li>
+                    ))}
                   </ol>
-                  {plan.status === 'DRAFT' && canApprove && (
+                  {plan.status === 'DRAFT' && canApprove && decisionBlocker(plan.requested_by, subject, 'plan') && (
+                    <p className="mt-3 text-sm text-amber-100">{decisionBlocker(plan.requested_by, subject, 'plan')}</p>
+                  )}
+                  {plan.status === 'DRAFT' && canApprove && !decisionBlocker(plan.requested_by, subject, 'plan') && (
                     <DecisionForm
                       label={`Decide plan ${plan.plan_id}`}
                       options={['APPROVED', 'REJECTED']}
@@ -439,9 +525,13 @@ export function ProjectWorkspace({
               {rows.map((proposal) => (
                 <li key={proposal.team_id} className="rounded-2xl border border-white/10 p-4">
                   <p className="font-medium text-white">Team {proposal.team_id} · {proposal.decision_status} · {proposal.activation_state}</p>
-                  <p className="text-xs text-slate-400">Plan {proposal.engineering_plan_id ?? 'not linked'} · blocked: {proposal.execution_readiness.blocked_reasons.join(', ')}</p>
+                  <p className="text-xs text-slate-400">Plan {proposal.engineering_plan_id ?? 'not linked'}{proposal.requested_by ? ` · requested by ${proposal.requested_by}` : ''}{proposal.decided_by ? ` · decided by ${proposal.decided_by}` : ''} · blocked: {proposal.execution_readiness.blocked_reasons.join(', ')}</p>
+                  {proposal.decision_reason && <p className="mt-1 text-sm text-slate-300">Decision reason: {proposal.decision_reason}</p>}
                   <p className="mt-1 text-sm text-slate-200">{(proposal.team.members ?? []).map((member) => member.title ?? member.role_id ?? 'Role').join(' · ')}</p>
-                  {proposal.decision_status === 'PROPOSED' && canApprove && (
+                  {proposal.decision_status === 'PROPOSED' && canApprove && decisionBlocker(proposal.requested_by, subject, 'team') && (
+                    <p className="mt-3 text-sm text-amber-100">{decisionBlocker(proposal.requested_by, subject, 'team')}</p>
+                  )}
+                  {proposal.decision_status === 'PROPOSED' && canApprove && !decisionBlocker(proposal.requested_by, subject, 'team') && (
                     <DecisionForm
                       label={`Decide team ${proposal.team_id}`}
                       options={['APPROVED', 'REJECTED']}
@@ -488,6 +578,18 @@ export function ProjectWorkspace({
                 <li key={task.task_id} className="rounded-2xl border border-white/10 p-4">
                   <p className="font-medium text-white">{task.title} · {task.state}</p>
                   <p className="text-xs text-slate-400">{task.risk_tier} · {task.assigned_role_title ?? 'unassigned'} · {task.blocked_reasons.join(', ') || 'no blocking reasons reported'}</p>
+                  <dl className="mt-2 grid gap-x-4 gap-y-1 text-xs text-slate-300 sm:grid-cols-2">
+                    {task.capability && <div><dt className="inline text-slate-400">Capability: </dt><dd className="inline">{task.capability}</dd></div>}
+                    <div><dt className="inline text-slate-400">Depends on: </dt><dd className="inline">{task.depends_on && task.depends_on.length > 0 ? task.depends_on.map((id) => rows.find((other) => other.plan_id === task.plan_id && other.stage_id === id)?.title ?? id).join(', ') : 'nothing'}</dd></div>
+                    <div><dt className="inline text-slate-400">Human approval: </dt><dd className="inline">{task.requires_human_approval ? 'required' : 'not required'}</dd></div>
+                    <div><dt className="inline text-slate-400">Dispatch: </dt><dd className="inline">{task.dispatch_state ?? 'NOT_DISPATCHED'}</dd></div>
+                    {task.execution_blocked_reasons && task.execution_blocked_reasons.length > 0 && (
+                      <div className="sm:col-span-2"><dt className="inline text-slate-400">Execution blocked: </dt><dd className="inline">{task.execution_blocked_reasons.join(', ')}</dd></div>
+                    )}
+                    {task.status === 'CANCELLED' && (
+                      <div className="sm:col-span-2"><dt className="inline text-slate-400">Cancelled: </dt><dd className="inline">{[task.cancelled_by && `by ${task.cancelled_by}`, task.cancelled_at, task.cancel_reason && `(${task.cancel_reason})`].filter(Boolean).join(' ') || 'yes'}</dd></div>
+                    )}
+                  </dl>
                   {task.status === 'OPEN' && canManage && (
                     <CancelTask
                       busy={busy}
@@ -508,17 +610,29 @@ export function ProjectWorkspace({
 
       <section aria-labelledby="audit-heading" className={card}>
         <h2 id="audit-heading" className="text-lg font-semibold text-white">Decision audit</h2>
-        <p className="mt-1 text-xs text-slate-400">Recorded events only. Older history is unavailable and events are not independently verified.</p>
-        <SectionStatus section={events} empty={events.status === 'ready' && events.value.length === 0}>
-          {(rows) => (
+        <p className="mt-1 text-xs text-slate-400">
+          {events.status === 'ready' && events.value.coverage === 'RECORDED_EVENTS_ONLY' ? 'Recorded events only.' : 'Recorded events.'}
+          {events.status === 'ready' && events.value.legacyHistory === 'UNAVAILABLE' ? ' History from before audit recording is unavailable.' : ''}
+          {events.status !== 'ready' || events.value.verification !== 'VERIFIED' ? ' Events are not independently verified.' : ''}
+        </p>
+        <SectionStatus section={events} empty={events.status === 'ready' && events.value.rows.length === 0}>
+          {(page) => (
+            <>
             <ol aria-label="Decision events" className="mt-4 space-y-2 text-sm text-slate-200">
-              {rows.map((event) => (
+              {page.rows.map((event) => (
                 <li key={`${event.project_version}-${event.resource_id}-${event.event_kind}`}>
                   v{event.project_version} · {event.event_kind} · {event.resource_id}: {event.from_state} → {event.to_state} by {event.actor_subject}
                   {event.reason ? ` (${event.reason})` : ''} · <time dateTime={event.recorded_at}>{event.recorded_at}</time>
                 </li>
               ))}
             </ol>
+            {page.next !== null && (
+              <button className={`${secondary} mt-3`} disabled={auditMore === 'loading'} type="button" onClick={() => void loadNewerEvents()}>
+                {auditMore === 'loading' ? 'Loading newer events…' : 'Load newer events'}
+              </button>
+            )}
+            {auditMore === 'failed' && <p role="status" className="mt-2 text-sm text-amber-100">Newer events could not be loaded. The events above are unchanged; try again.</p>}
+            </>
           )}
         </SectionStatus>
       </section>
