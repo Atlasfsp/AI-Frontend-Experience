@@ -98,7 +98,8 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
       const command = { method, path, body: String(init.body ?? ''), key: headers.get('idempotency-key') ?? '' };
       if (method !== 'GET') commands.push(command);
       const request = new NextRequest(target, { method, headers, ...(typeof init.body === 'string' ? { body: init.body } : {}) });
-      const context = { params: Promise.resolve({ path: path.split('/') }) };
+      // Next.js decodes each catch-all segment before invoking the route handler.
+      const context = { params: Promise.resolve({ path: path.split('/').map(decodeURIComponent) }) };
       const handler = { GET, POST, PUT }[method as 'GET' | 'POST' | 'PUT'];
       if (!handler) throw new Error('unsupported test method');
       const response = await handler(request, context);
