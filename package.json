@@ -27,7 +27,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "test:integration-scripts": "node --test scripts/integration/sync-upstreams.test.mjs",
+    "test:integration-scripts": "node --test scripts/integration/sync-upstreams.test.mjs scripts/release0-source-guard.test.mjs",
     "test:security-audit": "node --test scripts/security-audit.test.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration-scripts && pnpm build",
     "clean": "node scripts/clean.mjs",
