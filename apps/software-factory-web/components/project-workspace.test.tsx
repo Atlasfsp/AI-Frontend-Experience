@@ -327,3 +327,28 @@ it('fails closed after a browser remount with an unresolved server write, withou
   expect((within(triage).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(true);
   expect(mutations()).toHaveLength(1);
 });
+
+
+it('keeps the original retry identity when a later 401 cannot resolve the first uncertain write', async () => {
+  let attempt = 0;
+  override = (call) => {
+    if (call.method !== 'POST' || !call.url.endsWith('/triage')) return undefined;
+    attempt++;
+    if (attempt === 1) return json(503, { error: 'persistence timed out' });
+    if (attempt === 2) return json(401, { error: 'session expired' });
+    return undefined;
+  };
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
+  const triage = await screen.findByRole('form', { name: 'Triage Seller onboarding' });
+  fireEvent.change(within(triage).getByLabelText('Reason'), { target: { value: 'Reviewed' } });
+  await waitFor(() => expect((within(triage).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(within(triage).getByRole('button', { name: 'Record decision' }));
+  const firstRetry = await screen.findByRole('button', { name: 'Retry pending change' });
+  fireEvent.click(firstRetry);
+  expect((await screen.findByRole('alert')).textContent).toContain('still unconfirmed');
+  const secondRetry = await screen.findByRole('button', { name: 'Retry pending change' });
+  fireEvent.click(secondRetry);
+  await screen.findByText('Intake accepted.');
+  expect(mutations()).toHaveLength(3);
+  expect(new Set(mutations().map((call) => call.key)).size).toBe(1);
+});
