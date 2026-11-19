@@ -345,8 +345,9 @@ it('keeps the original retry identity when a later 401 cannot resolve the first 
   fireEvent.click(within(triage).getByRole('button', { name: 'Record decision' }));
   const firstRetry = await screen.findByRole('button', { name: 'Retry pending change' });
   fireEvent.click(firstRetry);
-  expect((await screen.findByRole('alert')).textContent).toContain('still unconfirmed');
+  await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('still unconfirmed'));
   const secondRetry = await screen.findByRole('button', { name: 'Retry pending change' });
+  await waitFor(() => expect((secondRetry as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(secondRetry);
   await screen.findByText('Intake accepted.');
   expect(mutations()).toHaveLength(3);
