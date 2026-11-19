@@ -1,4 +1,5 @@
 import React from 'react';
+import { webcrypto } from 'node:crypto';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
@@ -62,6 +63,8 @@ function backend(call: Call): Response {
 }
 
 beforeEach(() => {
+  vi.stubGlobal('crypto', webcrypto);
+  window.localStorage.clear();
   calls = [];
   state = initialState();
   override = undefined;
@@ -80,7 +83,7 @@ afterEach(() => vi.unstubAllGlobals());
 const mutations = () => calls.filter((call) => call.method !== 'GET');
 
 it('loads the project and journey records from FluxCore with the session tenant', async () => {
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
   expect(await screen.findByText('Help farmers sell produce.')).toBeTruthy();
   expect(screen.getByText(/Shared project · version 2/)).toBeTruthy();
   expect(await screen.findByText('Seller onboarding')).toBeTruthy();
@@ -92,7 +95,7 @@ it('loads the project and journey records from FluxCore with the session tenant'
 });
 
 it('triages an intake and drafts a plan using the current versions and real request bodies', async () => {
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
   const triage = await screen.findByRole('form', { name: 'Triage Seller onboarding' });
   fireEvent.change(within(triage).getByLabelText('Reason'), { target: { value: 'Clear scope' } });
   fireEvent.click(within(triage).getByRole('button', { name: 'Record decision' }));
@@ -117,7 +120,7 @@ it('triages an intake and drafts a plan using the current versions and real requ
 
 it('requires acknowledgement before accepting a quarantined intake', async () => {
   state.intakes = [{ intake_id: 'in-1', project_id: 'p-1', title: 'Risky', triage_state: 'QUARANTINED_REQUIRES_REVIEW', version: 1, warning: 'Matched heuristic pattern' }];
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
   const triage = await screen.findByRole('form', { name: 'Triage Risky' });
   fireEvent.change(within(triage).getByLabelText('Reason'), { target: { value: 'Reviewed' } });
   const submit = within(triage).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement;
@@ -131,7 +134,7 @@ it('requires acknowledgement before accepting a quarantined intake', async () =>
 it('reloads after a stale version conflict and shows the backend failure instead of success', async () => {
   state.plans = [{ plan_id: 'plan-1', intake_id: 'in-1', status: 'DRAFT', project_version: 2, requested_by: 'user:other', plan: { commit_sha: '', stages: [] } }];
   override = (call) => (call.method === 'POST' ? json(409, { error: 'project version changed or decision is already final' }) : undefined);
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove subject="user:me" />);
   const decide = await screen.findByRole('form', { name: 'Decide plan plan-1' });
   fireEvent.change(within(decide).getByLabelText('Reason'), { target: { value: 'Looks right' } });
   const readsBefore = calls.filter((call) => call.method === 'GET').length;
@@ -151,7 +154,7 @@ it('reuses the same Idempotency-Key when retrying after the backend is not conne
     if (call.method === 'POST' && call.url.endsWith('/triage') && attempts++ === 0) return json(503, { status: 'NOT_CONNECTED', error: 'persistence unavailable' });
     return undefined;
   };
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
   const triage = await screen.findByRole('form', { name: 'Triage Seller onboarding' });
   fireEvent.change(within(triage).getByLabelText('Reason'), { target: { value: 'Clear scope' } });
   fireEvent.click(within(triage).getByRole('button', { name: 'Record decision' }));
@@ -167,7 +170,7 @@ it('reuses the same Idempotency-Key when retrying after the backend is not conne
 });
 
 it('links a repository only after the server resolves the selection, sending the resolved commit as a check', async () => {
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
   const form = await screen.findByRole('form', { name: 'Repository selection' });
   expect((within(form).getByRole('button', { name: 'Link repository' }) as HTMLButtonElement).disabled).toBe(true);
   fireEvent.change(within(form).getByLabelText('Scope'), { target: { value: 'branch' } });
@@ -200,7 +203,7 @@ it('creates tasks only for an approved plan with an approved linked team and sho
     { team_id: 'team-2', project_version: 4, engineering_plan_id: 'plan-1', decision_status: 'REJECTED', activation_state: 'NOT_ACTIVATED', execution_readiness: { blocked_reasons: ['A', 'B'] }, team: {} },
   ];
   state.project = { ...state.project, version: 5 };
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
   const form = await screen.findByRole('form', { name: 'Create engineering tasks' });
   expect(within(form).getAllByRole('option')).toHaveLength(1);
   fireEvent.click(within(form).getByRole('button', { name: 'Create tasks' }));
@@ -211,7 +214,7 @@ it('creates tasks only for an approved plan with an approved linked team and sho
 
 it('hides mutation controls from read-only sessions', async () => {
   state.plans = [{ plan_id: 'plan-1', intake_id: 'in-1', status: 'DRAFT', project_version: 2, plan: { commit_sha: '', stages: [] } }];
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} subject="user:me" />);
   await screen.findByText('Seller onboarding');
   expect(screen.queryByRole('form')).toBeNull();
   expect(screen.getAllByRole('button')).toHaveLength(1);
@@ -221,14 +224,14 @@ it('hides mutation controls from read-only sessions', async () => {
 
 it('refuses a project returned for another tenant', async () => {
   state.project = { ...state.project, tenant_id: 'tenant-b' };
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove subject="user:me" />);
   expect((await screen.findByRole('status')).textContent).toContain('unsupported response');
   expect(screen.queryByText('Help farmers sell produce.')).toBeNull();
 });
 
 it('reports a missing or cross-tenant project without rendering actions', async () => {
   override = (call) => (call.url.startsWith('/api/proxy/sdx/v1/projects/p-1?') ? json(404, { error: 'project not found' }) : undefined);
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove subject="user:me" />);
   expect((await screen.findByRole('status')).textContent).toContain('not found in your tenant');
   expect(screen.queryByRole('form')).toBeNull();
 });
@@ -267,7 +270,7 @@ it('pages newer audit events forward without dropping loaded events, and reports
     expect(after).toBe('2');
     return json(200, { decision_events: [event(3)], next_after_project_version: null, coverage: 'RECORDED_EVENTS_ONLY', legacy_history: 'UNAVAILABLE', independent_verification: 'UNVERIFIED' });
   };
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} subject="user:me" />);
   const list = await screen.findByRole('list', { name: 'Decision events' });
   expect(within(list).getAllByRole('listitem')).toHaveLength(2);
   expect(screen.getByText(/History from before audit recording is unavailable\. Events are not independently verified\./)).toBeTruthy();
@@ -286,7 +289,7 @@ it('shows task dependencies, dispatch state and cancellation details from FluxCo
     { task_id: 'plan-1:s1', plan_id: 'plan-1', stage_id: 's1', title: 'Requirements analysis', capability: 'requirements', risk_tier: 'TIER_1', depends_on: [], requires_human_approval: false, status: 'CANCELLED', state: 'CANCELLED', blocked_reasons: [], execution_blocked_reasons: ['EXECUTION_NOT_AUTHORIZED'], dispatch_state: 'NOT_DISPATCHED', cancelled_by: 'user:bo', cancelled_at: '2026-10-29T11:00:00Z', cancel_reason: 'Scope removed' },
     { task_id: 'plan-1:s2', plan_id: 'plan-1', stage_id: 's2', title: 'Build API', capability: 'backend', risk_tier: 'TIER_2', depends_on: ['s1'], requires_human_approval: true, status: 'OPEN', state: 'BLOCKED', blocked_reasons: ['DEPENDENCY_CANCELLED'], execution_blocked_reasons: ['EXECUTION_NOT_AUTHORIZED'], dispatch_state: 'NOT_DISPATCHED' },
   ];
-  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} />);
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} subject="user:me" />);
   const list = await screen.findByRole('list', { name: 'Engineering tasks' });
   const [first, second] = within(list).getAllByRole('listitem');
   expect(first!.textContent).toContain('Cancelled: by user:bo 2026-10-29T11:00:00Z (Scope removed)');
@@ -295,4 +298,32 @@ it('shows task dependencies, dispatch state and cancellation details from FluxCo
   expect(second!.textContent).toContain('Dispatch: NOT_DISPATCHED');
   expect(second!.textContent).toContain('Execution blocked: EXECUTION_NOT_AUTHORIZED');
   expect(second!.textContent).toContain('Capability: backend');
+});
+
+
+it('fails closed after a browser remount with an unresolved server write, without replay payload storage', async () => {
+  let attempts = 0;
+  override = (call) => {
+    if (call.method === 'POST' && call.url.endsWith('/triage') && attempts++ === 0) {
+      return json(503, { error: 'outcome unknown' });
+    }
+    return undefined;
+  };
+  const view = render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
+  const form = await screen.findByRole('form', { name: 'Triage Seller onboarding' });
+  fireEvent.change(within(form).getByLabelText('Reason'), { target: { value: 'Private decision text' } });
+  await waitFor(() => expect((within(form).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(within(form).getByRole('button', { name: 'Record decision' }));
+  await screen.findByRole('button', { name: 'Retry pending change' });
+  const stored = Object.entries(window.localStorage);
+  expect(stored).toHaveLength(1);
+  expect(JSON.stringify(stored)).not.toMatch(/Private decision text|tenant-a|user:me|p-1|Idempotency-Key|access_token/);
+  view.unmount(); // Simulates a full reload destroying in-memory payload/key.
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
+  const block = await screen.findByRole('alert');
+  expect(block.textContent).toContain('New changes are blocked');
+  expect(screen.queryByRole('button', { name: 'Retry pending change' })).toBeNull();
+  const triage = await screen.findByRole('form', { name: 'Triage Seller onboarding' });
+  expect((within(triage).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(true);
+  expect(mutations()).toHaveLength(1);
 });
