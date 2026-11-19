@@ -223,7 +223,7 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
 
   it('retries the exact unresolved staffing command after reload without creating a duplicate proposal', async () => {
     await identity('requester');
-    render(<ProjectWorkspace projectId={projectId} tenantId={tenant} canManage canApprove />);
+    render(<ProjectWorkspace projectId={projectId} tenantId={tenant} canManage canApprove subject="requester" />);
     const form = await screen.findByRole('form', { name: 'Propose staffing' });
     fireEvent.change(within(form).getByLabelText('Budget ceiling (USD)'), { target: { value: '3000' } });
     fireEvent.change(within(form).getByLabelText('Linked plan'), { target: { value: planId } });
@@ -242,7 +242,7 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
 
   it('reports service outages and offers explicit recovery without claiming success', async () => {
     await control('outage?enabled=true');
-    render(<ProjectWorkspace projectId={projectId} tenantId={tenant} canManage canApprove />);
+    render(<ProjectWorkspace projectId={projectId} tenantId={tenant} canManage canApprove subject="requester" />);
     await screen.findByText(/unavailable/i);
     await control('outage?enabled=false');
     fireEvent.click(screen.getByRole('button', { name: 'Reload workspace' }));
