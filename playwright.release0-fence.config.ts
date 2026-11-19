@@ -6,6 +6,7 @@ export default defineConfig({
   testMatch: 'release0-write-fence.spec.ts',
   workers: 1,
   retries: 0,
+  forbidOnly: true,
   reporter: 'list',
   use: { ...devices['Desktop Chrome'], headless: true },
 });
