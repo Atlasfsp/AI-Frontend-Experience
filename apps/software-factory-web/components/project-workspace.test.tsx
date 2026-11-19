@@ -157,8 +157,10 @@ it('reuses the same Idempotency-Key when retrying after the backend is not conne
   fireEvent.click(within(triage).getByRole('button', { name: 'Record decision' }));
   expect((await screen.findByRole('alert')).textContent).toContain('outcome is unconfirmed');
   expect(screen.getByRole('alert').textContent).not.toContain('Nothing was saved');
-  await waitFor(() => expect((within(triage).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(within(triage).getByRole('button', { name: 'Record decision' }));
+  expect((within(triage).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(true);
+  const retry = await screen.findByRole('button', { name: 'Retry pending change' });
+  await waitFor(() => expect((retry as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(retry);
   await screen.findByText('Intake accepted.');
   expect(mutations()).toHaveLength(2);
   expect(mutations()[0]?.key).toBe(mutations()[1]?.key);
@@ -212,7 +214,8 @@ it('hides mutation controls from read-only sessions', async () => {
   render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage={false} canApprove={false} />);
   await screen.findByText('Seller onboarding');
   expect(screen.queryByRole('form')).toBeNull();
-  expect(screen.queryByRole('button')).toBeNull();
+  expect(screen.getAllByRole('button')).toHaveLength(1);
+  expect(screen.getByRole('button', { name: 'Reload workspace' })).toBeTruthy();
   expect(calls.some((call) => call.url.includes('source-control'))).toBe(false);
 });
 

@@ -68,6 +68,7 @@ type DecisionEvent = {
   recorded_at: string;
 };
 type Section<T> = { status: 'loading' } | { status: 'ready'; value: T } | { status: 'error'; message: string };
+type PendingCommand = { success: string; method: 'POST' | 'PUT'; path: string; body: Record<string, unknown> };
 
 const hexCommit = /^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$/;
 const card = 'rounded-3xl border border-white/10 bg-slate-900/70 p-5 sm:p-6';
@@ -174,7 +175,11 @@ export function ProjectWorkspace({
   const [tasks, setTasks] = useState<Section<Task[]>>({ status: 'loading' });
   const [events, setEvents] = useState<Section<DecisionEvent[]>>({ status: 'loading' });
   const [connections, setConnections] = useState<Section<Connection[]>>({ status: 'loading' });
-  const [busy, setBusy] = useState(false);
+  const [working, setWorking] = useState(false);
+  const workingRef = useRef(false);
+  const activeCommand = useRef<Omit<PendingCommand, 'success'> | null>(null);
+  const [pendingCommand, setPendingCommand] = useState<PendingCommand | null>(null);
+  const busy = working || pendingCommand !== null;
   const [notice, setNotice] = useState('');
   const [failure, setFailure] = useState('');
 
@@ -193,7 +198,7 @@ export function ProjectWorkspace({
       canManage ? read<{ connections: Connection[] }>('v1/source-control/connections') : Promise.resolve({ data: { connections: [] }, replayed: false }),
     ]);
     function settle<T, R>(result: PromiseSettledResult<{ data: R }>, pick: (data: R) => T | undefined, set: (value: Section<T>) => void) {
-      if (result.status === 'rejected') return set({ status: 'error', message: describeFailure(result.reason) });
+      if (result.status === 'rejected') return set({ status: 'error', message: describeFailure(result.reason, 'read') });
       const value = pick(result.value.data);
       set(value === undefined ? { status: 'error', message: 'The FluxCore API returned an unsupported response.' } : { status: 'ready', value });
     }
@@ -216,31 +221,66 @@ export function ProjectWorkspace({
     void load();
   }, [load]);
 
-  async function mutate(success: string, action: () => Promise<{ replayed: boolean }>) {
-    setBusy(true);
+  async function mutate(success: string, action: () => Promise<{ replayed: boolean }>, retry = false) {
+    if (workingRef.current || (pendingCommand && !retry)) return false;
+    workingRef.current = true;
+    setWorking(true);
     setFailure('');
     setNotice('');
     try {
       const result = await action();
+      setPendingCommand(null);
       setNotice(result.replayed ? `${success} (already recorded; replayed without a second write)` : success);
       await load();
       return true;
     } catch (error) {
       setFailure(describeFailure(error));
+      if (isOutcomeUnconfirmed(error) && activeCommand.current) {
+        setPendingCommand({ ...activeCommand.current, success });
+      } else {
+        setPendingCommand(null);
+      }
       if (isOutcomeUnconfirmed(error) || (error instanceof FluxCoreApiError && (error.status === 409 || error.status === 404))) await load();
       return false;
     } finally {
-      setBusy(false);
+      workingRef.current = false;
+      setWorking(false);
     }
   }
 
-  const write = <T,>(method: 'POST' | 'PUT', path: string, body: Record<string, unknown>) =>
-    callFluxCore<T>(method, path, { body: { tenant_id: tenantId, ...body }, keys: keys.current });
+  const write = <T,>(method: 'POST' | 'PUT', path: string, body: Record<string, unknown>) => {
+    const snapshot = JSON.parse(JSON.stringify({ tenant_id: tenantId, ...body })) as Record<string, unknown>;
+    activeCommand.current = { method, path, body: snapshot };
+    return callFluxCore<T>(method, path, { body: snapshot, keys: keys.current });
+  };
+
+  async function reload() {
+    if (workingRef.current) return;
+    workingRef.current = true;
+    setWorking(true);
+    try {
+      await load();
+    } finally {
+      workingRef.current = false;
+      setWorking(false);
+    }
+  }
+
+  const retryControl = pendingCommand && (
+    <div className="mt-3 rounded-2xl border border-amber-200/30 p-4">
+      <p className="text-sm text-amber-100">A change is awaiting confirmation. New changes are paused. Retry sends the original payload, project version and Idempotency-Key, even after a refresh.</p>
+      <button className={`${secondary} mt-3`} disabled={working} type="button" onClick={() =>
+        void mutate(pendingCommand.success, () => callFluxCore(pendingCommand.method, pendingCommand.path, { body: pendingCommand.body, keys: keys.current }), true)
+      }>Retry pending change</button>
+    </div>
+  );
 
   if (project.status !== 'ready') {
     return (
       <div role="status" className={card}>
         {project.status === 'loading' ? 'Loading project from FluxCore…' : project.message}
+        {project.status === 'error' && <button className={`${secondary} mt-3 block`} disabled={working} type="button" onClick={() => void reload()}>Reload workspace</button>}
+        {retryControl}
       </div>
     );
   }
@@ -250,6 +290,7 @@ export function ProjectWorkspace({
   return (
     <div className="space-y-6">
       <section aria-label="Project" className={card}>
+        <button className={`${secondary} mb-3`} disabled={working} type="button" onClick={() => void reload()}>Reload workspace</button>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">Shared project · version {version}</p>
         <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-200">{current.outcome}</p>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
@@ -263,6 +304,7 @@ export function ProjectWorkspace({
       <div aria-live="polite">
         {notice && <p role="status" className="rounded-2xl border border-emerald-300/25 bg-emerald-300/5 p-3 text-sm text-emerald-50">{notice}</p>}
         {failure && <p role="alert" className="rounded-2xl border border-rose-300/30 bg-rose-300/5 p-3 text-sm text-rose-100">{failure}</p>}
+        {retryControl}
       </div>
 
       {canManage && (

@@ -74,4 +74,23 @@ describe('callFluxCore', () => {
     expect(message).toContain('Retry the same request');
     expect(message).not.toMatch(/nothing was (?:confirmed as )?saved|nothing was committed/i);
   });
+
+  it.each(['', '{truncated', '[]', 'null'])('retains the key after an unreadable successful response %j', async (payload) => {
+    const keys = new IdempotencyKeys();
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(new Response(payload, { status: 201 }))
+      .mockResolvedValueOnce(json(200, { id: 'saved' }, { 'idempotent-replay': 'true' }));
+    const options = { body: { tenant_id: 't', expected_version: 2 }, keys, fetcher };
+    const failure = await callFluxCore('POST', 'v1/projects/p/engineering-plans', options).catch((error: unknown) => error);
+    expect(failure).toMatchObject({ status: 201, outcomeUnconfirmed: true });
+    expect(describeFailure(failure)).toContain('outcome is unconfirmed');
+    expect((await callFluxCore('POST', 'v1/projects/p/engineering-plans', options)).replayed).toBe(true);
+    expect(fetcher.mock.calls[0]?.[1].headers['Idempotency-Key']).toBe(fetcher.mock.calls[1]?.[1].headers['Idempotency-Key']);
+  });
+
+  it('does not describe a failed read as an uncertain write', () => {
+    const message = describeFailure(new FluxCoreApiError(503, 'not connected'), 'read');
+    expect(message).toContain('data is unavailable');
+    expect(message).not.toContain('may or may not have saved');
+  });
 });

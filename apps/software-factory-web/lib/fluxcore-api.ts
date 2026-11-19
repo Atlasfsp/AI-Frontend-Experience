@@ -3,6 +3,7 @@ export class FluxCoreApiError extends Error {
     readonly status: number,
     message: string,
     readonly reason?: string,
+    readonly outcomeUnconfirmed = false,
   ) {
     super(message);
     this.name = 'FluxCoreApiError';
@@ -25,10 +26,13 @@ const statusMessages: Record<number, string> = {
 
 /** Failures where the backend may have committed the write before the response was lost. */
 export function isOutcomeUnconfirmed(error: unknown) {
-  return !(error instanceof FluxCoreApiError) || error.status === 408 || error.status >= 500;
+  return !(error instanceof FluxCoreApiError) || error.outcomeUnconfirmed || error.status === 408 || error.status >= 500;
 }
 
-export function describeFailure(error: unknown) {
+export function describeFailure(error: unknown, operation: 'read' | 'write' = 'write') {
+  if (operation === 'read' && isOutcomeUnconfirmed(error)) {
+    return 'FluxCore workspace data is unavailable. Reload the workspace after service recovery; this read did not submit a change.';
+  }
   if (!(error instanceof FluxCoreApiError)) return unconfirmed;
   const base = isOutcomeUnconfirmed(error)
     ? `${unconfirmed} (HTTP ${error.status})`
@@ -66,7 +70,7 @@ export class IdempotencyKeys {
 export async function callFluxCore<T>(
   method: 'GET' | 'POST' | 'PUT',
   path: string,
-  options: { body?: unknown; keys?: IdempotencyKeys; fetcher?: typeof fetch } = {},
+  options: { body?: unknown; keys?: Pick<IdempotencyKeys, 'keyFor' | 'settle'>; fetcher?: typeof fetch } = {},
 ): Promise<ApiResult<T>> {
   const fetcher = options.fetcher ?? fetch;
   const headers: Record<string, string> = { accept: 'application/json' };
@@ -87,17 +91,20 @@ export async function callFluxCore<T>(
     options.keys?.settle(signature, null);
     throw error;
   }
-  options.keys?.settle(signature, response.status);
   const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
   if (!response.ok) {
+    options.keys?.settle(signature, response.status);
     throw new FluxCoreApiError(
       response.status,
       typeof payload?.error === 'string' ? payload.error : (statusMessages[response.status] ?? ''),
       typeof payload?.reason === 'string' ? payload.reason : undefined,
     );
   }
-  if (!payload || typeof payload !== 'object') {
-    throw new FluxCoreApiError(response.status, 'The FluxCore API returned an unreadable response.');
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    // A 2xx with a truncated/unreadable body may follow a committed mutation.
+    // Preserve its key until an exact retry yields a definitive response.
+    throw new FluxCoreApiError(response.status, 'The FluxCore API returned an unreadable response.', undefined, true);
   }
+  options.keys?.settle(signature, response.status);
   return { data: payload as T, replayed: response.headers.get('idempotent-replay') === 'true' };
 }
