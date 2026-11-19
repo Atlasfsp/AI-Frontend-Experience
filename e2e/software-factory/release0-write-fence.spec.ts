@@ -5,11 +5,11 @@ import { resolve } from 'node:path';
 import * as ts from 'typescript';
 import { expect, test } from '@playwright/test';
 
-import type * as FenceApi from '../../apps/software-factory-web/lib/release0-write-fence';
+type FenceApi = typeof import('../../apps/software-factory-web/lib/release0-write-fence');
 
 declare global {
   interface Window {
-    __release0Fence?: typeof FenceApi;
+    __release0Fence?: FenceApi;
   }
 }
 
@@ -68,7 +68,7 @@ test.afterAll(async () => {
   });
 });
 
-test('a confirmed browser reload cannot silently replace an unresolved write key', async ({ page }) => {
+test('a full browser reload cannot silently replace an unresolved write key', async ({ page }) => {
   await page.goto(origin);
   await page.locator('body[data-fence-ready="true"]').waitFor();
   const scopedKey = await page.evaluate(async () => {
