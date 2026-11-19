@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 
 import { callFluxCore, describeFailure, FluxCoreApiError, IdempotencyKeys, isOutcomeUnconfirmed } from '@/lib/fluxcore-api';
+import { beginWriteFence, isWriteFenceBlocked, ownsWriteFence, scopedWriteFenceKey, settleWriteFence, type WriteFence } from '@/lib/release0-write-fence';
 
 type Project = {
   id: string;
@@ -87,7 +88,7 @@ type AuditPage = {
   verification: string | undefined;
 };
 type Section<T> = { status: 'loading' } | { status: 'ready'; value: T } | { status: 'error'; message: string };
-type PendingCommand = { success: string; method: 'POST' | 'PUT'; path: string; body: Record<string, unknown> };
+type PendingCommand = { scope: string; success: string; method: 'POST' | 'PUT'; path: string; body: Record<string, unknown> };
 
 const hexCommit = /^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$/;
 const card = 'rounded-3xl border border-white/10 bg-slate-900/70 p-5 sm:p-6';
@@ -225,6 +226,10 @@ export function ProjectWorkspace({
   subject?: string;
 }) {
   const keys = useRef(new IdempotencyKeys());
+  const scope = JSON.stringify([subject, tenantId, projectId]);
+  const [fenceBinding, setFenceBinding] = useState<{ scope: string; key: string } | null>(null);
+  const [fenceBlocked, setFenceBlocked] = useState(false);
+  const ownedFence = useRef<WriteFence | null>(null);
   const [project, setProject] = useState<Section<Project>>({ status: 'loading' });
   const [intakes, setIntakes] = useState<Section<Intake[]>>({ status: 'loading' });
   const [plans, setPlans] = useState<Section<Plan[]>>({ status: 'loading' });
@@ -237,12 +242,41 @@ export function ProjectWorkspace({
   const workingRef = useRef(false);
   const activeCommand = useRef<Omit<PendingCommand, 'success'> | null>(null);
   const [pendingCommand, setPendingCommand] = useState<PendingCommand | null>(null);
-  const busy = working || pendingCommand !== null;
+  const currentPending = pendingCommand?.scope === scope ? pendingCommand : null;
+  const fenceReady = fenceBinding?.scope === scope;
+  const busy = working || currentPending !== null || !fenceReady || fenceBlocked;
   const [notice, setNotice] = useState('');
   const [failure, setFailure] = useState('');
 
   const pid = encodeURIComponent(projectId);
   const tid = encodeURIComponent(tenantId);
+
+  useEffect(() => {
+    let live = true;
+    let observedKey: string | null = null;
+    const onStorage = (event: StorageEvent) => {
+      if ((event.key === observedKey || event.key === null) && observedKey) {
+        setFenceBlocked(isWriteFenceBlocked(observedKey) && !(ownedFence.current && ownsWriteFence(ownedFence.current)));
+      }
+    };
+    // A principal/scope change cannot inherit another person's retry key or
+    // payload. An unresolved prior scope stays fenced in browser storage.
+    ownedFence.current = null;
+    keys.current = new IdempotencyKeys();
+    void scopedWriteFenceKey(subject, tenantId, projectId).then((key) => {
+      if (!live) return;
+      observedKey = key;
+      setFenceBlocked(isWriteFenceBlocked(key));
+      setFenceBinding({ scope, key });
+      window.addEventListener('storage', onStorage);
+    }).catch(() => {
+      if (live) setFenceBlocked(true); // Missing principal/WebCrypto: deny writes.
+    });
+    return () => {
+      live = false;
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [subject, tenantId, projectId, scope]);
 
   const load = useCallback(async () => {
     const read = <T,>(path: string) => callFluxCore<T>('GET', path);
@@ -281,25 +315,46 @@ export function ProjectWorkspace({
   }, [load]);
 
   async function mutate(success: string, action: () => Promise<{ replayed: boolean }>, retry = false) {
-    if (workingRef.current || (pendingCommand && !retry)) return false;
+    const binding = fenceBinding?.scope === scope ? fenceBinding : null;
+    if (!binding || fenceBlocked || workingRef.current || (currentPending && !retry)) return false;
+    if (retry) {
+      if (!currentPending || !ownedFence.current || !ownsWriteFence(ownedFence.current)) {
+        setFenceBlocked(true);
+        return false;
+      }
+    } else {
+      // Mark IN_FLIGHT before the HTTP write. A browser reload between commit
+      // and response cannot silently create another key for the same command.
+      const reservation = beginWriteFence(binding.key);
+      if (!reservation) {
+        setFenceBlocked(true);
+        return false;
+      }
+      ownedFence.current = reservation;
+    }
     workingRef.current = true;
     setWorking(true);
     setFailure('');
     setNotice('');
     try {
       const result = await action();
+      if (!ownedFence.current || !settleWriteFence(ownedFence.current, true)) setFenceBlocked(true);
+      ownedFence.current = null;
       setPendingCommand(null);
       setNotice(result.replayed ? `${success} (already recorded; replayed without a second write)` : success);
       await load();
       return true;
     } catch (error) {
+      const unconfirmed = isOutcomeUnconfirmed(error);
       setFailure(describeFailure(error));
-      if (isOutcomeUnconfirmed(error) && activeCommand.current) {
-        setPendingCommand({ ...activeCommand.current, success });
+      if (ownedFence.current && !settleWriteFence(ownedFence.current, !unconfirmed)) setFenceBlocked(true);
+      if (unconfirmed && activeCommand.current && ownedFence.current) {
+        setPendingCommand({ ...activeCommand.current, success, scope });
       } else {
         setPendingCommand(null);
       }
-      if (isOutcomeUnconfirmed(error) || (error instanceof FluxCoreApiError && (error.status === 409 || error.status === 404))) await load();
+      if (!unconfirmed) ownedFence.current = null;
+      if (unconfirmed || (error instanceof FluxCoreApiError && (error.status === 409 || error.status === 404))) await load();
       return false;
     } finally {
       workingRef.current = false;
@@ -343,12 +398,20 @@ export function ProjectWorkspace({
     }
   }
 
-  const retryControl = pendingCommand && (
+  const retryControl = currentPending && !fenceBlocked && (
     <div className="mt-3 rounded-2xl border border-amber-200/30 p-4">
-      <p className="text-sm text-amber-100">A change is awaiting confirmation. New changes are paused. Retry sends the original payload, project version and Idempotency-Key, even after a refresh.</p>
+      <p className="text-sm text-amber-100">A change is awaiting confirmation. New changes are paused. Retry here reuses the original payload, project version and Idempotency-Key. Do not reload the browser before the outcome is confirmed.</p>
       <button className={`${secondary} mt-3`} disabled={working} type="button" onClick={() =>
-        void mutate(pendingCommand.success, () => callFluxCore(pendingCommand.method, pendingCommand.path, { body: pendingCommand.body, keys: keys.current }), true)
+        void mutate(currentPending.success, () => callFluxCore(currentPending.method, currentPending.path, { body: currentPending.body, keys: keys.current }), true)
       }>Retry pending change</button>
+    </div>
+  );
+  const recoveryAlert = fenceBlocked && (
+    <div role="alert" className="mt-3 rounded-2xl border border-amber-200/30 p-4 text-sm text-amber-100">
+      A previous change may be unresolved in this browser for this project and account, or safe recovery storage is unavailable.
+      New changes are blocked. A browser reload cannot safely restore the original request.
+      An authorized operator must reconcile the backend audit and idempotency records before changes resume.
+      Do not clear browser storage or submit the same change again.
     </div>
   );
 
@@ -358,6 +421,7 @@ export function ProjectWorkspace({
         {project.status === 'loading' ? 'Loading project from FluxCore…' : project.message}
         {project.status === 'error' && <button className={`${secondary} mt-3 block`} disabled={working} type="button" onClick={() => void reload()}>Reload workspace</button>}
         {retryControl}
+        {recoveryAlert}
       </div>
     );
   }
@@ -382,6 +446,7 @@ export function ProjectWorkspace({
         {notice && <p role="status" className="rounded-2xl border border-emerald-300/25 bg-emerald-300/5 p-3 text-sm text-emerald-50">{notice}</p>}
         {failure && <p role="alert" className="rounded-2xl border border-rose-300/30 bg-rose-300/5 p-3 text-sm text-rose-100">{failure}</p>}
         {retryControl}
+        {recoveryAlert}
       </div>
 
       {canManage && (
