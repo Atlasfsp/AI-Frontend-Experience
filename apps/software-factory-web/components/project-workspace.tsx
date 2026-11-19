@@ -331,6 +331,7 @@ export function ProjectWorkspace({
         return false;
       }
       ownedFence.current = reservation;
+      activeCommand.current = null; // Do not recover a prior command as this one.
     }
     workingRef.current = true;
     setWorking(true);
@@ -360,6 +361,12 @@ export function ProjectWorkspace({
       if (unconfirmed && ownedFence.current) {
         const pending = retry ? currentPending : activeCommand.current ? { ...activeCommand.current, success, scope } : null;
         setPendingCommand(pending);
+        if (!pending) {
+          // We cannot recover an exact request even within this component.
+          // Leave the persisted marker and disable mutations immediately.
+          ownedFence.current = null;
+          setFenceBlocked(true);
+        }
       } else {
         setPendingCommand(null);
       }
