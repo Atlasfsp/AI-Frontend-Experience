@@ -55,9 +55,9 @@ const projectPath = () => `v1/projects/${projectId}`;
 const version = async () => (await api('GET', `${projectPath()}?${query}`)).version;
 async function decide(formName: string, reason: string, decision?: string) {
   const form = await screen.findByRole('form', { name: formName });
-  await waitFor(() => expect((within(form).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.change(within(form).getByLabelText('Reason'), { target: { value: reason } });
   if (decision) fireEvent.change(within(form).getByLabelText('Decision'), { target: { value: decision } });
+  await waitFor(() => expect((within(form).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(within(form).getByRole('button', { name: 'Record decision' }));
 }
 
