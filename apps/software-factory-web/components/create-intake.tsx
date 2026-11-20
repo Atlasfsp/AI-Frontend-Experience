@@ -252,6 +252,7 @@ export function CreateIntake({
           <button
             key={starter.label}
             type="button"
+            disabled={editingBlocked}
             onClick={() => {
               invalidate();
               setIdea(starter.idea);
@@ -277,6 +278,7 @@ export function CreateIntake({
             Describe what you have in mind
           </span>
           <textarea
+            disabled={editingBlocked}
             required
             minLength={5}
             maxLength={12000}
@@ -309,6 +311,7 @@ export function CreateIntake({
             <label className="block space-y-2">
               <span className="text-sm">Project name</span>
               <input
+                disabled={editingBlocked}
                 maxLength={160}
                 placeholder="We can suggest one from your idea"
                 className={fieldClass}
@@ -322,6 +325,7 @@ export function CreateIntake({
             <label className="block space-y-2">
               <span className="text-sm">Industry or area</span>
               <input
+                disabled={editingBlocked}
                 maxLength={160}
                 placeholder="e.g. education, health, retail"
                 className={fieldClass}
@@ -347,7 +351,7 @@ export function CreateIntake({
         <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center">
           <button
             type="submit"
-            disabled={pending || idea.trim().length < 5}
+            disabled={editingBlocked || idea.trim().length < 5}
             className="min-h-12 rounded-2xl bg-[var(--bac-color-primary)] px-6 py-3 font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
           >
             {pending ? 'Preparing your project…' : 'Create my project'}
@@ -358,13 +362,27 @@ export function CreateIntake({
           </p>
         </div>
       </form>
-      {error && (
+      {error && responseScope === scope && (
         <p role="alert" className="text-rose-200">
           {error}
         </p>
       )}
+      {retryAvailable && !pending && (
+        <div className="rounded-2xl border border-amber-200/30 p-4 text-sm text-amber-100">
+          <p>A previous project creation is unconfirmed. New creations are paused. This retry uses exactly the original body and Idempotency-Key.</p>
+          <button className="mt-3 min-h-11 rounded-xl border border-amber-200/40 px-4 font-semibold" type="button"
+            onClick={() => void executeCreate(true)}>Retry pending project creation</button>
+        </div>
+      )}
+      {fenceBlocked && ready && (
+        <p role="alert" className="rounded-2xl border border-amber-200/30 p-4 text-sm text-amber-100">
+          A previous project creation may be unresolved in this workspace and account, or its safe recovery marker was lost.
+          New creations are blocked until an authorized operator reconciles the backend project and idempotency records.
+          A browser reload cannot restore the original request. Do not clear browser storage and resubmit.
+        </p>
+      )}
       <div aria-live="polite">
-        {project && (
+        {project && projectScope === scope && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">
               Your project is ready to review: {project.name}
