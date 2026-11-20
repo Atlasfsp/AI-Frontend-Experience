@@ -70,7 +70,7 @@ test.afterAll(async () => {
 
 test('a full browser reload cannot silently replace an unresolved write key', async ({ page }) => {
   await page.goto(origin);
-  await page.locator('body[data-fence-ready="true"]').waitFor();
+  await page.locator('body[data-fence-ready="true"]').waitFor({ state: 'attached' });
   const scoped = await page.evaluate(async () => {
     const api = window.__release0Fence!;
     const projectKey = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
@@ -85,7 +85,7 @@ test('a full browser reload cannot silently replace an unresolved write key', as
     return { projectKey, createKey };
   });
   await page.reload();
-  await page.locator('body[data-fence-ready="true"]').waitFor();
+  await page.locator('body[data-fence-ready="true"]').waitFor({ state: 'attached' });
   const restored = await page.evaluate(async (original) => {
     const api = window.__release0Fence!;
     const project = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
@@ -114,7 +114,7 @@ test('a full browser reload cannot silently replace an unresolved write key', as
 
 test('same-origin second tab blocks while a different verified scope stays separate', async ({ context, page }) => {
   await page.goto(origin);
-  await page.locator('body[data-fence-ready="true"]').waitFor();
+  await page.locator('body[data-fence-ready="true"]').waitFor({ state: 'attached' });
   const firstKeys = await page.evaluate(async () => {
     const api = window.__release0Fence!;
     const project = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
@@ -127,7 +127,7 @@ test('same-origin second tab blocks while a different verified scope stays separ
   const second = await context.newPage();
   try {
     await second.goto(origin);
-    await second.locator('body[data-fence-ready="true"]').waitFor();
+    await second.locator('body[data-fence-ready="true"]').waitFor({ state: 'attached' });
     const result = await second.evaluate(async (existing) => {
       const api = window.__release0Fence!;
       const project = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
@@ -160,7 +160,7 @@ test('same-origin second tab blocks while a different verified scope stays separ
 
 test('malformed persisted browser marker remains blocked after reload', async ({ page }) => {
   await page.goto(origin);
-  await page.locator('body[data-fence-ready="true"]').waitFor();
+  await page.locator('body[data-fence-ready="true"]').waitFor({ state: 'attached' });
   const key = await page.evaluate(async () => {
     const api = window.__release0Fence!;
     const key = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
@@ -168,7 +168,7 @@ test('malformed persisted browser marker remains blocked after reload', async ({
     return key;
   });
   await page.reload();
-  await page.locator('body[data-fence-ready="true"]').waitFor();
+  await page.locator('body[data-fence-ready="true"]').waitFor({ state: 'attached' });
   expect(await page.evaluate((key) => {
     const api = window.__release0Fence!;
     return api.isWriteFenceBlocked(key) && api.beginWriteFence(key) === null;
