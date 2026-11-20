@@ -76,9 +76,15 @@ it('lets a first-time builder start from one plain-language idea and suggests th
   ).toBe('/software-factory/workspaces');
 });
 
-it('fills a conversational starter and its SME context without submitting', () => {
+it('fills a conversational starter and its SME context without submitting', async () => {
+  const request = vi.fn();
+  vi.stubGlobal('fetch', request);
   render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
-  fireEvent.click(screen.getByRole('button', { name: /A simple online shop/ }));
+  const starter = screen.getByRole('button', { name: /A simple online shop/ }) as HTMLButtonElement;
+  // Edits stay disabled until the verified-scope write fence is ready.
+  await waitFor(() => expect(starter.disabled).toBe(false));
+  fireEvent.click(starter);
+  expect(request).not.toHaveBeenCalled();
   expect(
     (
       screen.getByLabelText(

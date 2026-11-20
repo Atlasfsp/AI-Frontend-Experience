@@ -69,13 +69,15 @@ export function CreateIntake({
   const scope = JSON.stringify([subject, tenantId, workspaceId]);
   const [fenceBinding, setFenceBinding] = useState<{ scope: string; key: string } | null>(null);
   const [fenceBlocked, setFenceBlocked] = useState(false);
-  const [retryReady, setRetryReady] = useState(false);
+  // Fence key of the in-memory command retained for exact retry. Render
+  // reads this state, never the ref, so retry affordances stay consistent.
+  const [retryKey, setRetryKey] = useState<string | null>(null);
   const pendingRef = useRef(false);
   const activeCreate = useRef<PendingCreate | null>(null);
   const ready = fenceBinding?.scope === scope;
   const recoveryRequired = fenceBlocked || !ready;
-  const retryAvailable = retryReady && !!activeCreate.current &&
-    activeCreate.current.fence.key === fenceBinding?.key && !fenceBlocked && ready;
+  const retryAvailable = retryKey !== null && retryKey === fenceBinding?.key &&
+    !fenceBlocked && ready;
   const editingBlocked = pending || retryAvailable || recoveryRequired;
 
   useEffect(() => {
@@ -96,6 +98,7 @@ export function CreateIntake({
       if (!live) return;
       observedKey = key;
       setFenceBlocked(isWriteFenceBlocked(key));
+      setRetryKey(null);
       setFenceBinding({ scope, key });
       window.addEventListener('storage', onStorage);
     }).catch(() => {
@@ -161,7 +164,7 @@ export function CreateIntake({
       }
       const body = JSON.stringify({
         tenant_id: tenantId,
-        name: name.trim() || idea.trim().split(/\\s+/).slice(0, 5).join(' ').replace(/[.,!?;:]$/, ''),
+        name: name.trim() || idea.trim().split(/\s+/).slice(0, 5).join(' ').replace(/[.,!?;:]$/, ''),
         outcome: idea.trim(),
         application_domain: domain.trim() || 'General software — SME classification pending',
       });
@@ -191,7 +194,7 @@ export function CreateIntake({
 
       const safelySettled = settleWriteFence(command.fence, true);
       activeCreate.current = null;
-      setRetryReady(false);
+      setRetryKey(null);
       if (!safelySettled) {
         setFenceBlocked(true);
         setError('Project creation was returned, but safe browser reconciliation failed. New creations remain blocked.');
@@ -206,9 +209,9 @@ export function CreateIntake({
       const safelySettled = settleWriteFence(command.fence, !uncertain);
       if (!safelySettled) setFenceBlocked(true);
       if (uncertain && safelySettled) {
-        setRetryReady(true);
+        setRetryKey(command.fence.key);
       } else {
-        setRetryReady(false);
+        setRetryKey(null);
         activeCreate.current = null;
       }
       const detail = failure instanceof Error ? failure.message : 'Project service unavailable.';
