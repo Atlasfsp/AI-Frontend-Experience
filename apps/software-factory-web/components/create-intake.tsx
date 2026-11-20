@@ -375,7 +375,7 @@ export function CreateIntake({
             onClick={() => void executeCreate(true)}>Retry pending project creation</button>
         </div>
       )}
-      {fenceBlocked && ready && (
+      {fenceBlocked && (
         <p role="alert" className="rounded-2xl border border-amber-200/30 p-4 text-sm text-amber-100">
           A previous project creation may be unresolved in this workspace and account, or its safe recovery marker was lost.
           New creations are blocked until an authorized operator reconciles the backend project and idempotency records.
