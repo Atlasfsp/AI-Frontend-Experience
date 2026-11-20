@@ -240,7 +240,7 @@ export function ProjectWorkspace({
   const [connections, setConnections] = useState<Section<Connection[]>>({ status: 'loading' });
   const [working, setWorking] = useState(false);
   const workingRef = useRef(false);
-  const activeCommand = useRef<Omit<PendingCommand, 'success'> | null>(null);
+  const activeCommand = useRef<Omit<PendingCommand, 'success' | 'scope'> | null>(null);
   const [pendingCommand, setPendingCommand] = useState<PendingCommand | null>(null);
   const currentPending = pendingCommand?.scope === scope ? pendingCommand : null;
   const fenceReady = fenceBinding?.scope === scope;
