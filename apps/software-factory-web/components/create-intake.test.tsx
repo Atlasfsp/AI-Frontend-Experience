@@ -331,3 +331,73 @@ it('treats cost as unknown and renders untrusted domain and expert names as text
   expect(screen.getByRole('heading', { name: unsafe })).toBeTruthy();
   expect(container.querySelector('img')).toBeNull();
 });
+
+it('reuses the original project-create body and key after an ambiguous 503 without duplicate creation', async () => {
+  const project = {
+    id: 'project-replayed',
+    tenant_id: 'tenant-a',
+    name: 'Careful builder',
+    status: 'PROPOSED',
+    workforce_plan: {
+      domain: 'Education',
+      evidence_status: 'UNVERIFIED',
+      status: 'PROPOSED',
+      roles: [],
+      expert: {
+        expert_id: 'general',
+        name: 'General software SME',
+        domain: 'Education',
+        is_verified: false,
+      },
+      execution_authorized: false,
+      required_gates: [],
+    },
+    estimated_cost_usd: null,
+  };
+  const request = vi.fn()
+    .mockResolvedValueOnce({ ok: false, status: 503 })
+    .mockResolvedValueOnce({ ok: true, status: 200, json: async () => project });
+  vi.stubGlobal('fetch', request);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
+    target: { value: 'Create a careful builder' },
+  });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+  expect((await screen.findByRole('alert')).textContent).toContain('unconfirmed');
+  expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
+  const retry = screen.getByRole('button', { name: 'Retry pending project creation' });
+  expect(window.localStorage.length).toBe(1);
+  fireEvent.click(retry);
+  await screen.findByText('Shared project ID: project-replayed');
+  expect(request).toHaveBeenCalledTimes(2);
+  expect(request.mock.calls[1][1].headers['Idempotency-Key']).toBe(request.mock.calls[0][1].headers['Idempotency-Key']);
+  expect(request.mock.calls[1][1].body).toBe(request.mock.calls[0][1].body);
+  expect(window.localStorage.length).toBe(0);
+  expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
+});
+
+it('persists only an opaque creation marker and fails closed on remount after an ambiguous write', async () => {
+  const request = vi.fn().mockRejectedValue(new TypeError('connection lost after commit'));
+  vi.stubGlobal('fetch', request);
+  const mounted = render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
+    target: { value: 'Create a private education portal' },
+  });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+  await screen.findByRole('button', { name: 'Retry pending project creation' });
+  expect(window.localStorage.length).toBe(1);
+  const stored = Array.from({ length: window.localStorage.length }, (_, index) => {
+    const key = window.localStorage.key(index)!;
+    return key + window.localStorage.getItem(key);
+  }).join(' ');
+  expect(stored).toMatch(/fluxcore:r0:write-fence:v1:/);
+  expect(stored).not.toMatch(/private education|user:me|tenant-a|workspace-a|Idempotency-Key|access.token/);
+  mounted.unmount();
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true));
+  expect((await screen.findByRole('alert')).textContent).toContain('New creations are blocked');
+  expect(screen.queryByRole('button', { name: 'Retry pending project creation' })).toBeNull();
+  expect(request).toHaveBeenCalledTimes(1);
+});
