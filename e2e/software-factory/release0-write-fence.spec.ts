@@ -115,32 +115,43 @@ test('a full browser reload cannot silently replace an unresolved write key', as
 test('same-origin second tab blocks while a different verified scope stays separate', async ({ context, page }) => {
   await page.goto(origin);
   await page.locator('body[data-fence-ready="true"]').waitFor();
-  const firstKey = await page.evaluate(async () => {
+  const firstKeys = await page.evaluate(async () => {
     const api = window.__release0Fence!;
-    const key = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
-    if (!api.beginWriteFence(key)) throw new Error('first tab could not reserve marker');
-    return key;
+    const project = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
+    const creation = await api.scopedCreateFenceKey('user:alice', 'tenant-a', 'workspace-a');
+    for (const key of [project, creation]) {
+      if (!api.beginWriteFence(key)) throw new Error('first tab could not reserve marker');
+    }
+    return { project, creation };
   });
   const second = await context.newPage();
   try {
     await second.goto(origin);
     await second.locator('body[data-fence-ready="true"]').waitFor();
-    const result = await second.evaluate(async (existingKey) => {
+    const result = await second.evaluate(async (existing) => {
       const api = window.__release0Fence!;
-      const alice = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
+      const project = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
+      const creation = await api.scopedCreateFenceKey('user:alice', 'tenant-a', 'workspace-a');
       const bob = await api.scopedWriteFenceKey('user:bob', 'tenant-a', 'project-a');
       const otherTenant = await api.scopedWriteFenceKey('user:alice', 'tenant-b', 'project-a');
+      const otherCreation = await api.scopedCreateFenceKey('user:bob', 'tenant-a', 'workspace-a');
       return {
-        same: alice === existingKey,
-        blocked: api.isWriteFenceBlocked(alice),
-        otherTabDenied: api.beginWriteFence(alice) === null,
-        distinctPrincipal: bob !== alice,
-        distinctTenant: otherTenant !== alice,
+        sameProject: project === existing.project,
+        sameCreate: creation === existing.creation,
+        projectBlocked: api.isWriteFenceBlocked(project),
+        createBlocked: api.isWriteFenceBlocked(creation),
+        projectDenied: api.beginWriteFence(project) === null,
+        createDenied: api.beginWriteFence(creation) === null,
+        distinctPrincipal: bob !== project,
+        distinctTenant: otherTenant !== project,
+        distinctCreationPrincipal: otherCreation !== creation,
       };
-    }, firstKey);
+    }, firstKeys);
     expect(result).toEqual({
-      same: true, blocked: true, otherTabDenied: true,
-      distinctPrincipal: true, distinctTenant: true,
+      sameProject: true, sameCreate: true,
+      projectBlocked: true, createBlocked: true,
+      projectDenied: true, createDenied: true,
+      distinctPrincipal: true, distinctTenant: true, distinctCreationPrincipal: true,
     });
   } finally {
     await second.close();
