@@ -120,10 +120,11 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
   });
 
   it('connects Create → repository → intake/triage → plan/approval → staffing/decision → tasks/cancellation/audit', async () => {
-    const create = render(<CreateIntake tenantId={tenant} workspaceId="fixture-workspace" />);
+    const create = render(<CreateIntake subject="requester" tenantId={tenant} workspaceId="fixture-workspace" />);
     fireEvent.change(screen.getByLabelText('Describe what you have in mind'), { target: { value: 'Build an accessible checkout service with durable customer orders.' } });
     fireEvent.change(screen.getByLabelText('Project name'), { target: { value: 'Integrated checkout' } });
     fireEvent.change(screen.getByLabelText('Industry or area'), { target: { value: 'Retail' } });
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
     const link = await screen.findByRole('link', { name: 'Continue in FluxCore Engineer' });
     projectId = link.getAttribute('href')!.split('/').at(-1)!;
