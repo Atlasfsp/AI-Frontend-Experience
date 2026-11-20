@@ -67,7 +67,7 @@ it('treats corrupted storage markers and unavailable storage as blocked', async 
   expect(beginWriteFence(key)).toBeNull();
 });
 
-it('does not settle another owner's fence or mistake a different scope for recovery', async () => {
+it("does not settle another owner's fence or mistake a different scope for recovery", async () => {
   const alice = await scopedWriteFenceKey('alice', 'a', 'p');
   const bob = await scopedWriteFenceKey('bob', 'a', 'p');
   const owner = beginWriteFence(alice)!;
