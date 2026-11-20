@@ -401,3 +401,42 @@ it('persists only an opaque creation marker and fails closed on remount after an
   expect(screen.queryByRole('button', { name: 'Retry pending project creation' })).toBeNull();
   expect(request).toHaveBeenCalledTimes(1);
 });
+
+it('keeps the exact create key after unreadable 201 and expired-session 401 on retry', async () => {
+  const project = {
+    id: 'created-before-response-loss', tenant_id: 'tenant-a', name: 'Secure create',
+    status: 'PROPOSED',
+    workforce_plan: {
+      domain: 'Education', evidence_status: 'UNVERIFIED', status: 'PROPOSED', roles: [],
+      expert: { expert_id: 'e', name: 'Education SME', domain: 'Education', is_verified: false },
+      execution_authorized: false, required_gates: [],
+    },
+  };
+  const request = vi.fn()
+    .mockResolvedValueOnce({
+      ok: true, status: 201,
+      json: async () => { throw new SyntaxError('response truncated'); },
+    })
+    .mockResolvedValueOnce({ ok: false, status: 401 })
+    .mockResolvedValueOnce({ ok: true, status: 200, json: async () => project });
+  vi.stubGlobal('fetch', request);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
+    target: { value: 'Secure project create with recovery' },
+  });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+  await screen.findByRole('button', { name: 'Retry pending project creation' });
+  fireEvent.click(screen.getByRole('button', { name: 'Retry pending project creation' }));
+  await waitFor(() => expect((screen.getByRole('alert').textContent ?? '')).toContain('401'));
+  expect(window.localStorage.length).toBe(1);
+  fireEvent.click(screen.getByRole('button', { name: 'Retry pending project creation' }));
+  await screen.findByText('Shared project ID: created-before-response-loss');
+  expect(request).toHaveBeenCalledTimes(3);
+  const firstKey = request.mock.calls[0][1].headers['Idempotency-Key'];
+  for (const call of request.mock.calls.slice(1)) {
+    expect(call[1].headers['Idempotency-Key']).toBe(firstKey);
+    expect(call[1].body).toBe(request.mock.calls[0][1].body);
+  }
+  expect(window.localStorage.length).toBe(0);
+});
