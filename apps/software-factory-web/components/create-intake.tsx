@@ -135,7 +135,8 @@ export function CreateIntake({
   async function executeCreate(retry: boolean) {
     const binding = fenceBinding?.scope === scope ? fenceBinding : null;
     if (pendingRef.current || !binding || fenceBlocked ||
-      (retry && !retryAvailable) || (!retry && retryAvailable)) return;
+      (retry && !retryAvailable) || (!retry && (retryAvailable ||
+        (project !== null && projectScope === scope)))) return;
 
     let command: PendingCreate;
     if (retry) {
