@@ -37,6 +37,25 @@ export async function scopedWriteFenceKey(subject: string | undefined, tenantId:
   return prefix + Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** Separate creation scope: the project ID does not exist until after POST.
+ * One unresolved project-create request blocks a workspace's new project writes
+ * until its original live owner retries or an operator reconciles the backend.
+ * No request body, idempotency key, name or token is stored in the browser.
+ */
+export async function scopedCreateFenceKey(
+  subject: string | undefined, tenantId: string, workspaceId: string,
+): Promise<string> {
+  if (!subject?.trim() || !tenantId.trim() || !workspaceId.trim() ||
+    !globalThis.crypto?.subtle || !globalThis.crypto?.randomUUID) {
+    throw new Error('verified identity and Web Crypto required for safe create recovery');
+  }
+  const bytes = new TextEncoder().encode(
+    JSON.stringify(['fluxcore-r0-create', subject, tenantId, workspaceId]),
+  );
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+  return prefix + Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 /** Unknown/malformed/blocked storage is never treated as clear. */
 export function isWriteFenceBlocked(key: string): boolean {
   try {
