@@ -447,3 +447,55 @@ it('keeps the exact create key after unreadable 201 and expired-session 401 on r
   }
   expect(window.localStorage.length).toBe(0);
 });
+
+it.each([
+  ['COMMITTED', true],
+  ['UNKNOWN', false],
+  ['DENIED', false],
+])('recovers a project create after reload only when the server reports this user committed it: %s', async (mode, cleared) => {
+  const project = {
+    id: 'project-recovered', tenant_id: 'tenant-a', name: 'Recovered', status: 'PROPOSED',
+    workforce_plan: {
+      domain: 'Education', evidence_status: 'UNVERIFIED', status: 'PROPOSED', roles: [],
+      expert: { expert_id: 'e', name: 'Education SME', domain: 'Education', is_verified: false },
+      execution_authorized: false, required_gates: [],
+    },
+  };
+  type Init = { method?: string; headers: Record<string, string> };
+  const request = vi.fn(async (url: string, init?: Init) => {
+    void init;
+    if (url.includes('command-outcome')) {
+      if (mode === 'DENIED') return { ok: false, status: 403, json: async () => ({}) };
+      return { ok: true, status: 200, json: async () => (mode === 'COMMITTED'
+        ? { outcome: 'COMMITTED', project_id: 'project-recovered', resource_id: 'project-recovered', execution_authorized: false }
+        : { outcome: 'UNKNOWN', execution_authorized: false }) };
+    }
+    if (url.startsWith('/api/proxy/sdx/v1/projects/project-recovered')) return { ok: true, status: 200, json: async () => project };
+    throw new TypeError('connection lost after commit');
+  });
+  vi.stubGlobal('fetch', request);
+  const mounted = render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.change(screen.getByLabelText('Describe what you have in mind'), { target: { value: 'Create a recoverable portal' } });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+  await screen.findByRole('button', { name: 'Retry pending project creation' });
+  const originalKey = request.mock.calls[0]![1]!.headers['Idempotency-Key'];
+  mounted.unmount();
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Check project creation outcome' }));
+  await waitFor(() => expect(request.mock.calls.some(([url]) => String(url).includes('command-outcome'))).toBe(true));
+  const lookup = request.mock.calls.find(([url]) => String(url).includes('command-outcome'))!;
+  expect(lookup[1]!.method).toBe('GET');
+  expect(lookup[1]!.headers['Idempotency-Key']).toBe(originalKey);
+  expect(String(lookup[0])).toContain('command=PROJECT_CREATE');
+  expect(String(lookup[0])).not.toContain(originalKey);
+  if (cleared) {
+    await screen.findByText('Shared project ID: project-recovered');
+    expect(window.localStorage.length).toBe(0);
+  } else {
+    await screen.findByText(/cannot establish|remains unknown/);
+    expect(window.localStorage.length).toBe(1);
+    expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
+  }
+  expect(request.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
+});

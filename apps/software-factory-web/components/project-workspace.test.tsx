@@ -353,3 +353,73 @@ it('keeps the original retry identity when a later 401 cannot resolve the first 
   expect(mutations()).toHaveLength(3);
   expect(new Set(mutations().map((call) => call.key)).size).toBe(1);
 });
+
+
+async function leaveUncertainTriage() {
+  let attempts = 0;
+  const original = override;
+  override = (call) => (call.method === 'POST' && call.url.endsWith('/triage') && attempts++ === 0
+    ? json(503, { error: 'outcome unknown' }) : original?.(call));
+  const view = render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
+  const form = await screen.findByRole('form', { name: 'Triage Seller onboarding' });
+  fireEvent.change(within(form).getByLabelText('Reason'), { target: { value: 'Reviewed' } });
+  await waitFor(() => expect((within(form).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(within(form).getByRole('button', { name: 'Record decision' }));
+  await screen.findByRole('button', { name: 'Retry pending change' });
+  view.unmount();
+  override = original;
+  return calls.find((c) => c.method === 'POST')!.key!;
+}
+
+it.each([
+  ['COMMITTED', { outcome: 'COMMITTED', project_id: 'p-1', resource_id: 'in-1', execution_authorized: false }, false],
+  ['UNKNOWN', { outcome: 'UNKNOWN', execution_authorized: false }, true],
+  ['foreign project scope', { outcome: 'COMMITTED', project_id: 'p-2', resource_id: 'in-1', execution_authorized: false }, true],
+  ['execution claim', { outcome: 'COMMITTED', project_id: 'p-1', resource_id: 'in-1', execution_authorized: true }, true],
+])('reconciles after reload only from an authoritative server outcome: %s', async (_name, result, blocked) => {
+  const key = await leaveUncertainTriage();
+  const lookups: Call[] = [];
+  override = (call) => {
+    if (!call.url.includes('command-outcome')) return undefined;
+    lookups.push(call);
+    return json(200, result);
+  };
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Check original change outcome' }));
+  await waitFor(() => expect(lookups).toHaveLength(1));
+  expect(lookups[0]!.method).toBe('GET');
+  expect(lookups[0]!.key).toBe(key);
+  expect(lookups[0]!.url).toContain('command=INTAKE_TRIAGE');
+  expect(lookups[0]!.url).toContain('resource_id=in-1');
+  expect(lookups[0]!.url).not.toContain(key);
+  if (blocked) {
+    await screen.findByText(/cannot establish|mismatch|Unsupported/);
+    expect(Object.keys(window.localStorage)).toHaveLength(1);
+  } else {
+    await screen.findByText(/Original change confirmed/);
+    expect(Object.keys(window.localStorage)).toHaveLength(0);
+  }
+  expect(mutations()).toHaveLength(1);
+});
+
+it('keeps writes blocked when the lookup is denied, unavailable, or the locator is legacy/corrupt', async () => {
+  await leaveUncertainTriage();
+  override = (call) => (call.url.includes('command-outcome') ? json(401, { error: 'expired' }) : undefined);
+  const view = render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Check original change outcome' }));
+  await screen.findByText(/remains unknown/);
+  expect(Object.keys(window.localStorage)).toHaveLength(1);
+  view.unmount();
+  const [fenceKey, raw] = Object.entries(window.localStorage)[0]!;
+  const legacy = JSON.parse(raw);
+  delete legacy.recovery;
+  window.localStorage.setItem(fenceKey, JSON.stringify(legacy));
+  const lookups: Call[] = [];
+  override = (call) => { if (call.url.includes('command-outcome')) lookups.push(call); return undefined; };
+  render(<ProjectWorkspace projectId="p-1" tenantId="tenant-a" canManage canApprove={false} subject="user:me" />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Check original change outcome' }));
+  await screen.findByText(/locator is unavailable/);
+  expect(lookups).toHaveLength(0);
+  expect(window.localStorage.getItem(fenceKey)).not.toBeNull();
+  expect(mutations()).toHaveLength(1);
+});

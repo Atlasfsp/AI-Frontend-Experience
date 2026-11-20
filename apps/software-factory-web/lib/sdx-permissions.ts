@@ -38,6 +38,8 @@ const policies: readonly SdxRoutePolicy[] = [
   { method: 'POST', path: /^v1\/workforce\/org\/staff$/, permission: 'workspace:manage' },
   { method: 'POST', path: /^v1\/projects$/, permission: 'workspace:manage' },
   { method: 'GET', path: /^v1\/projects\/read-authorization$/, permission: 'workspace:view' },
+  { method: 'GET', path: /^v1\/projects\/command-outcome$/, permission: 'workspace:view' },
+  { method: 'GET', path: /^v1\/control-plane\/intake\/command-outcome$/, permission: 'workspace:view' },
   { method: 'GET', path: new RegExp(`^v1/projects/${id}$`), permission: 'workspace:view' },
   { method: 'PUT', path: new RegExp(`^v1/projects/${id}/repository$`), permission: 'workspace:manage' },
   { method: 'GET', path: new RegExp(`^v1/projects/${id}/engineering-plans$`), permission: 'workspace:view' },

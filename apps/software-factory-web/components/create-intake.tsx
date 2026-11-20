@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { z } from 'zod';
 import {
   beginWriteFence, isWriteFenceBlocked, ownsWriteFence,
-  scopedCreateFenceKey, settleWriteFence, type WriteFence,
+  prepareWriteFence, readWriteFenceOutcome, scopedCreateFenceKey, settleWriteFence, type WriteFence,
 } from '@/lib/release0-write-fence';
 
 // Consumer-side validation: the backend remains the contract owner.
@@ -74,6 +74,7 @@ export function CreateIntake({
   const [retryKey, setRetryKey] = useState<string | null>(null);
   const pendingRef = useRef(false);
   const activeCreate = useRef<PendingCreate | null>(null);
+  const recoveryGeneration = useRef(0);
   const ready = fenceBinding?.scope === scope;
   const recoveryRequired = fenceBlocked || !ready;
   const retryAvailable = retryKey !== null && retryKey === fenceBinding?.key &&
@@ -106,6 +107,7 @@ export function CreateIntake({
     });
     return () => {
       live = false;
+      recoveryGeneration.current += 1;
       window.removeEventListener('storage', onStorage);
     };
   }, [scope, subject, tenantId, workspaceId]);
@@ -136,6 +138,7 @@ export function CreateIntake({
     },
   ];
   async function executeCreate(retry: boolean) {
+    const generation = recoveryGeneration.current;
     const binding = fenceBinding?.scope === scope ? fenceBinding : null;
     if (pendingRef.current || !binding || fenceBlocked ||
       (retry && !retryAvailable) || (!retry && (retryAvailable ||
@@ -155,9 +158,9 @@ export function CreateIntake({
         setFenceBlocked(true);
         return;
       }
-      const key = globalThis.crypto?.randomUUID?.();
-      if (!key) {
-        // Without a strong random replay key, refuse this write entirely.
+      const key = fence.nonce;
+      if (!prepareWriteFence(fence, { command: 'PROJECT_CREATE' })) {
+        // Refuse transmission unless the locator is durably readable.
         settleWriteFence(fence, false);
         setFenceBlocked(true);
         return;
@@ -191,6 +194,7 @@ export function CreateIntake({
       const parsed = projectSchema.safeParse(await response.json());
       if (!parsed.success) throw new Error('The service returned an unsupported project.');
       if (parsed.data.tenant_id !== tenantId) throw new Error('The service returned a project for a different tenant.');
+      if (generation !== recoveryGeneration.current) return;
 
       const safelySettled = settleWriteFence(command.fence, true);
       activeCreate.current = null;
@@ -202,6 +206,7 @@ export function CreateIntake({
       setProject(parsed.data);
       setProjectScope(scope);
     } catch (failure) {
+      if (generation !== recoveryGeneration.current) return;
       // After a prior ambiguous attempt, even a new 401/403 does not prove
       // the original write was absent. Keep the original payload/key in RAM.
       const uncertain = retry || definitiveStatus === null ||
@@ -228,6 +233,37 @@ export function CreateIntake({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await executeCreate(false);
+  }
+
+  async function recover() {
+    if (pendingRef.current || !ready || !fenceBinding) return;
+    const generation = recoveryGeneration.current;
+    pendingRef.current = true;
+    setPending(true);
+    setResponseScope(scope);
+    try {
+      const result = await readWriteFenceOutcome(fenceBinding.key, tenantId);
+      if (result.outcome !== 'COMMITTED') throw new Error('The server cannot establish this creation outcome. It may still commit. New creations remain blocked; do not resubmit with a new key.');
+      const response = await fetch(`/api/proxy/sdx/v1/projects/${encodeURIComponent(result.resourceId)}?tenant_id=${encodeURIComponent(tenantId)}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Creation was recorded, but the project is unavailable. Recovery remains required.');
+      const parsed = projectSchema.safeParse(await response.json());
+      if (!parsed.success || parsed.data.id !== result.resourceId || parsed.data.tenant_id !== tenantId) {
+        throw new Error('Recovered project scope or format is unsupported.');
+      }
+      if (generation !== recoveryGeneration.current) return;
+      if (!settleWriteFence(result.fence, true)) throw new Error('Safe browser reconciliation failed. New creations remain blocked.');
+      activeCreate.current = null;
+      setRetryKey(null);
+      setFenceBlocked(false);
+      setError('');
+      setProject(parsed.data);
+      setProjectScope(scope);
+    } catch (failure) {
+      if (generation === recoveryGeneration.current) setError(failure instanceof Error ? failure.message : 'Recovery unavailable. New creations remain blocked.');
+    } finally {
+      pendingRef.current = false;
+      setPending(false);
+    }
   }
   return (
     <section
@@ -384,6 +420,12 @@ export function CreateIntake({
           New creations are blocked until an authorized operator reconciles the backend project and idempotency records.
           A browser reload cannot restore the original request. Do not clear browser storage and resubmit.
         </p>
+      )}
+      {(fenceBlocked || retryAvailable) && ready && (
+        <button type="button" disabled={pending} onClick={() => void recover()}
+          className="min-h-11 rounded-xl border border-amber-200/40 px-4 font-semibold">
+          Check project creation outcome
+        </button>
       )}
       <div aria-live="polite">
         {project && projectScope === scope && (

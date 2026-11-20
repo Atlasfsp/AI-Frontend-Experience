@@ -174,3 +174,51 @@ test('malformed persisted browser marker remains blocked after reload', async ({
     return api.isWriteFenceBlocked(key) && api.beginWriteFence(key) === null;
   }, key)).toBe(true);
 });
+
+test('real browser reload keeps a payload-free locator and only server COMMITTED clears it', async ({ page }) => {
+  const lookups: Array<{ url: string; key: string | null }> = [];
+  let outcome = 'UNKNOWN';
+  await page.route('**/api/proxy/sdx/v1/projects/command-outcome?*', async (route) => {
+    lookups.push({ url: route.request().url(), key: route.request().headers()['idempotency-key'] ?? null });
+    await route.fulfill({
+      status: 200, contentType: 'application/json', headers: { 'Cache-Control': 'no-store' },
+      body: JSON.stringify(outcome === 'COMMITTED'
+        ? { outcome, project_id: 'project-a', resource_id: 'plan-1', execution_authorized: false }
+        : { outcome, execution_authorized: false }),
+    });
+  });
+  await page.goto(origin);
+  await page.locator('body[data-fence-ready="true"]').waitFor({ state: 'attached' });
+  const original = await page.evaluate(async () => {
+    const api = window.__release0Fence!;
+    const key = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
+    const owner = api.beginWriteFence(key)!;
+    if (!api.prepareWriteFence(owner, { command: 'PLAN_DECIDE', resourceId: 'plan-1' }) ||
+      !api.settleWriteFence(owner, false)) throw new Error('could not persist recovery locator');
+    return { key, nonce: owner.nonce };
+  });
+  await page.reload();
+  await page.locator('body[data-fence-ready="true"]').waitFor({ state: 'attached' });
+  const unknown = await page.evaluate(async ({ key }) => {
+    const api = window.__release0Fence!;
+    const result = await api.readWriteFenceOutcome(key, 'tenant-a', 'project-a');
+    return { outcome: result.outcome, blocked: api.isWriteFenceBlocked(key), stored: window.localStorage.getItem(key) };
+  }, original);
+  expect(unknown.outcome).toBe('UNKNOWN');
+  expect(unknown.blocked).toBe(true);
+  expect(unknown.stored).not.toMatch(/alice|tenant-a|reason|access.token/);
+  outcome = 'COMMITTED';
+  const committed = await page.evaluate(async ({ key }) => {
+    const api = window.__release0Fence!;
+    const result = await api.readWriteFenceOutcome(key, 'tenant-a', 'project-a');
+    const settled = result.outcome === 'COMMITTED' && api.settleWriteFence(result.fence, true);
+    return { settled, blocked: api.isWriteFenceBlocked(key) };
+  }, original);
+  expect(committed).toEqual({ settled: true, blocked: false });
+  expect(lookups).toHaveLength(2);
+  for (const lookup of lookups) {
+    expect(lookup.key).toBe(original.nonce);
+    expect(lookup.url).not.toContain(original.nonce);
+    expect(lookup.url).toContain('command=PLAN_DECIDE');
+  }
+});

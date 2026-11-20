@@ -2,8 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 
-import { callFluxCore, describeFailure, FluxCoreApiError, IdempotencyKeys, isOutcomeUnconfirmed } from '@/lib/fluxcore-api';
-import { beginWriteFence, isWriteFenceBlocked, ownsWriteFence, scopedWriteFenceKey, settleWriteFence, type WriteFence } from '@/lib/release0-write-fence';
+import { callFluxCore, describeFailure, FluxCoreApiError, isOutcomeUnconfirmed } from '@/lib/fluxcore-api';
+import { beginWriteFence, isWriteFenceBlocked, ownsWriteFence, prepareWriteFence, readWriteFenceOutcome, scopedWriteFenceKey, settleWriteFence, type RecoveryCommand, type WriteFence } from '@/lib/release0-write-fence';
 
 type Project = {
   id: string;
@@ -225,7 +225,7 @@ export function ProjectWorkspace({
   canApprove: boolean;
   subject?: string;
 }) {
-  const keys = useRef(new IdempotencyKeys());
+  const recoveryGeneration = useRef(0);
   const scope = JSON.stringify([subject, tenantId, projectId]);
   const [fenceBinding, setFenceBinding] = useState<{ scope: string; key: string } | null>(null);
   const [fenceBlocked, setFenceBlocked] = useState(false);
@@ -256,13 +256,13 @@ export function ProjectWorkspace({
     let observedKey: string | null = null;
     const onStorage = (event: StorageEvent) => {
       if ((event.key === observedKey || event.key === null) && observedKey) {
-        setFenceBlocked(isWriteFenceBlocked(observedKey) && !(ownedFence.current && ownsWriteFence(ownedFence.current)));
+        const owner = ownedFence.current;
+        setFenceBlocked((!!owner && !ownsWriteFence(owner)) || (isWriteFenceBlocked(observedKey) && !(owner && ownsWriteFence(owner))));
       }
     };
     // A principal/scope change cannot inherit another person's retry key or
     // payload. An unresolved prior scope stays fenced in browser storage.
     ownedFence.current = null;
-    keys.current = new IdempotencyKeys();
     void scopedWriteFenceKey(subject, tenantId, projectId).then((key) => {
       if (!live) return;
       observedKey = key;
@@ -274,6 +274,7 @@ export function ProjectWorkspace({
     });
     return () => {
       live = false;
+      recoveryGeneration.current += 1;
       window.removeEventListener('storage', onStorage);
     };
   }, [subject, tenantId, projectId, scope]);
@@ -315,6 +316,7 @@ export function ProjectWorkspace({
   }, [load]);
 
   async function mutate(success: string, action: () => Promise<{ replayed: boolean }>, retry = false) {
+    const generation = recoveryGeneration.current;
     const binding = fenceBinding?.scope === scope ? fenceBinding : null;
     if (!binding || fenceBlocked || workingRef.current || (currentPending && !retry)) return false;
     if (retry) {
@@ -339,11 +341,7 @@ export function ProjectWorkspace({
     setNotice('');
     try {
       const result = await action();
-      if (retry && currentPending) {
-        // A successful exact retry ends the original logical request. Rotate
-        // its in-memory key only now, never on denial/outage.
-        keys.current.settle(`${currentPending.method} ${currentPending.path} ${JSON.stringify(currentPending.body)}`, 200);
-      }
+      if (generation !== recoveryGeneration.current) return false;
       if (!ownedFence.current || !settleWriteFence(ownedFence.current, true)) setFenceBlocked(true);
       ownedFence.current = null;
       setPendingCommand(null);
@@ -351,6 +349,7 @@ export function ProjectWorkspace({
       await load();
       return true;
     } catch (error) {
+      if (generation !== recoveryGeneration.current) return false;
       // Once a request is uncertain, *any* unsuccessful retry (including a new
       // 401/403 after session expiry) cannot disprove the original commit.
       const unconfirmed = retry || isOutcomeUnconfirmed(error);
@@ -381,10 +380,51 @@ export function ProjectWorkspace({
 
   const write = <T,>(method: 'POST' | 'PUT', path: string, body: Record<string, unknown>) => {
     const snapshot = JSON.parse(JSON.stringify({ tenant_id: tenantId, ...body })) as Record<string, unknown>;
-    const key = keys.current.keyFor(`${method} ${path} ${JSON.stringify(snapshot)}`);
+    const fence = ownedFence.current;
+    const segments = path.split('/').map(decodeURIComponent);
+    const at = (index: number) => segments[index] ?? '';
+    let recovery: RecoveryCommand | undefined;
+    if (segments[1] === 'control-plane' && segments[2] === 'intake') {
+      recovery = segments.length === 3 ? { command: 'INTAKE_CREATE' } : { command: 'INTAKE_TRIAGE', resourceId: at(3) };
+    } else if (segments[1] === 'workforce') {
+      recovery = { command: 'STAFFING_CREATE' };
+    } else {
+      const kind = segments[3];
+      if (kind === 'repository') recovery = { command: 'REPOSITORY_LINK' };
+      if (kind === 'engineering-plans') recovery = segments.length === 4 ? { command: 'PLAN_CREATE' } : { command: 'PLAN_DECIDE', resourceId: at(4) };
+      if (kind === 'team-proposals') recovery = { command: 'STAFFING_DECIDE', resourceId: at(4) };
+      if (kind === 'engineering-tasks') recovery = segments.length === 4 ? { command: 'TASKS_CREATE' } : { command: 'TASK_CANCEL', resourceId: at(4) };
+    }
+    if (!fence || !recovery || !prepareWriteFence(fence, recovery)) throw new Error('Safe command locator unavailable; no request was sent.');
+    const key = fence.nonce;
     activeCommand.current = { method, path, body: snapshot, key };
-    return callFluxCore<T>(method, path, { body: snapshot, keys: keys.current });
+    return callFluxCore<T>(method, path, { body: snapshot, keys: { keyFor: () => key, settle: () => undefined } });
   };
+
+  async function recover() {
+    if (workingRef.current || !fenceReady || !fenceBinding) return;
+    const generation = recoveryGeneration.current;
+    workingRef.current = true;
+    setWorking(true);
+    try {
+      const result = await readWriteFenceOutcome(fenceBinding.key, tenantId, projectId);
+      if (result.outcome !== 'COMMITTED') throw new Error('The server cannot establish the original outcome. It may still commit. New changes remain blocked; do not use a fresh key.');
+      if (generation !== recoveryGeneration.current) return;
+      if (!settleWriteFence(result.fence, true)) throw new Error('Recovery marker changed. New changes remain blocked.');
+      ownedFence.current = null;
+      activeCommand.current = null;
+      setPendingCommand(null);
+      setFenceBlocked(false);
+      setFailure('');
+      setNotice('Original change confirmed as recorded by FluxCore. No mutation was submitted by recovery. Execution remains disabled.');
+      await load();
+    } catch (error) {
+      if (generation === recoveryGeneration.current) setFailure(error instanceof Error ? error.message : 'Recovery unavailable. New changes remain blocked.');
+    } finally {
+      workingRef.current = false;
+      setWorking(false);
+    }
+  }
 
   async function loadNewerEvents() {
     if (events.status !== 'ready' || events.value.next === null || auditMore === 'loading') return;
@@ -425,6 +465,8 @@ export function ProjectWorkspace({
           keys: { keyFor: () => currentPending.key, settle: () => undefined },
         }), true)
       }>Retry pending change</button>
+      <button className={`${secondary} mt-3 ml-3`} disabled={working || !fenceReady} type="button"
+        onClick={() => void recover()}>Check original change outcome</button>
     </div>
   );
   const recoveryAlert = fenceBlocked && (
@@ -433,6 +475,8 @@ export function ProjectWorkspace({
       New changes are blocked. A browser reload cannot safely restore the original request.
       An authorized operator must reconcile the backend audit and idempotency records before changes resume.
       Do not clear browser storage or submit the same change again.
+      <button className={`${secondary} mt-3 block`} disabled={working || !fenceReady} type="button"
+        onClick={() => void recover()}>Check original change outcome</button>
     </div>
   );
 

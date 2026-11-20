@@ -75,3 +75,10 @@ it('keeps approval decisions away from roles without approval:action', () => {
   expect(hasPermission(createMockSession({ roles: ['MEMBER'] }), permission)).toBe(false);
   expect(hasPermission(createMockSession({ roles: ['APPROVER'] }), permission)).toBe(true);
 });
+
+it('exposes read-only command outcome recovery without exposing mutations on those paths', () => {
+  expect(resolveSdxPermission('GET', ['v1', 'projects', 'command-outcome'])).toBe('workspace:view');
+  expect(resolveSdxPermission('GET', ['v1', 'control-plane', 'intake', 'command-outcome'])).toBe('workspace:view');
+  expect(resolveSdxPermission('POST', ['v1', 'projects', 'command-outcome', 'extra'])).toBeNull();
+  expect(resolveSdxPermission('PUT', ['v1', 'control-plane', 'intake', 'command-outcome'])).toBeNull();
+});
