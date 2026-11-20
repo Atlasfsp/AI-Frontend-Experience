@@ -377,8 +377,8 @@ it('reuses the original project-create body and key after an ambiguous 503 witho
   fireEvent.click(retry);
   await screen.findByText('Shared project ID: project-replayed');
   expect(request).toHaveBeenCalledTimes(2);
-  expect(request.mock.calls[1][1].headers['Idempotency-Key']).toBe(request.mock.calls[0][1].headers['Idempotency-Key']);
-  expect(request.mock.calls[1][1].body).toBe(request.mock.calls[0][1].body);
+  expect(request.mock.calls[1]?.[1].headers['Idempotency-Key']).toBe(request.mock.calls[0]?.[1].headers['Idempotency-Key']);
+  expect(request.mock.calls[1]?.[1].body).toBe(request.mock.calls[0]?.[1].body);
   expect(window.localStorage.length).toBe(0);
   expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
 });
@@ -439,10 +439,11 @@ it('keeps the exact create key after unreadable 201 and expired-session 401 on r
   fireEvent.click(screen.getByRole('button', { name: 'Retry pending project creation' }));
   await screen.findByText('Shared project ID: created-before-response-loss');
   expect(request).toHaveBeenCalledTimes(3);
-  const firstKey = request.mock.calls[0][1].headers['Idempotency-Key'];
+  const firstKey = request.mock.calls[0]?.[1].headers['Idempotency-Key'];
+  expect(firstKey).toEqual(expect.any(String));
   for (const call of request.mock.calls.slice(1)) {
     expect(call[1].headers['Idempotency-Key']).toBe(firstKey);
-    expect(call[1].body).toBe(request.mock.calls[0][1].body);
+    expect(call[1].body).toBe(request.mock.calls[0]?.[1].body);
   }
   expect(window.localStorage.length).toBe(0);
 });
