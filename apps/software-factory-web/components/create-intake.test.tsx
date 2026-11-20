@@ -1,14 +1,19 @@
 import React from 'react';
+import { webcrypto } from 'node:crypto';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { CreateIntake } from './create-intake';
 
+beforeEach(() => {
+  vi.stubGlobal('crypto', webcrypto);
+  window.localStorage.clear();
+});
 afterEach(() => vi.unstubAllGlobals());
 it('carries a dashboard idea into the Create form without creating a project early', () => {
   const request = vi.fn();
   vi.stubGlobal('fetch', request);
   render(
-    <CreateIntake
+    <CreateIntake subject="user:me"
       tenantId="tenant-a"
       workspaceId="workspace-a"
       initialIdea="Build an accessible booking calendar"
@@ -51,10 +56,11 @@ it('lets a first-time builder start from one plain-language idea and suggests th
     .fn()
     .mockResolvedValue({ ok: true, json: async () => project });
   vi.stubGlobal('fetch', request);
-  render(<CreateIntake tenantId="tenant-a" workspaceId="workspace-a" />);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'I want to make a neighborhood garden planner' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   await screen.findByText('General software SME');
   expect(JSON.parse(request.mock.calls[0]?.[1].body)).toEqual({
@@ -71,7 +77,7 @@ it('lets a first-time builder start from one plain-language idea and suggests th
 });
 
 it('fills a conversational starter and its SME context without submitting', () => {
-  render(<CreateIntake tenantId="tenant-a" workspaceId="workspace-a" />);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
   fireEvent.click(screen.getByRole('button', { name: /A simple online shop/ }));
   expect(
     (
@@ -122,7 +128,7 @@ it('creates a shared tenant project and displays its unverified workforce propos
     }),
   });
   vi.stubGlobal('fetch', request);
-  render(<CreateIntake tenantId="tenant-a" workspaceId="workspace-a" />);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A coral monitoring application' },
   });
@@ -132,6 +138,7 @@ it('creates a shared tenant project and displays its unverified workforce propos
   fireEvent.change(screen.getByLabelText('Industry or area'), {
     target: { value: 'Marine biology' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   await screen.findByText('Marine SME');
   expect(request.mock.calls[0]?.[0]).toBe('/api/proxy/sdx/v1/projects');
@@ -166,7 +173,7 @@ it('creates a shared tenant project and displays its unverified workforce propos
 });
 it('reports service failures without success evidence', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
-  render(<CreateIntake tenantId="t" workspaceId="w" />);
+  render(<CreateIntake subject="user:me" tenantId="t" workspaceId="w" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A useful app' },
   });
@@ -176,6 +183,7 @@ it('reports service failures without success evidence', async () => {
   fireEvent.change(screen.getByLabelText('Industry or area'), {
     target: { value: 'Education' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   await waitFor(() =>
     expect(screen.getByRole('alert').textContent).toContain('503'),
@@ -210,7 +218,7 @@ it('rejects a project response from a different tenant', async () => {
       }),
     }),
   );
-  render(<CreateIntake tenantId="tenant-a" workspaceId="workspace-a" />);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A useful app' },
   });
@@ -220,6 +228,7 @@ it('rejects a project response from a different tenant', async () => {
   fireEvent.change(screen.getByLabelText('Industry or area'), {
     target: { value: 'Education' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   expect((await screen.findByRole('alert')).textContent).toContain(
     'different tenant',
@@ -236,7 +245,7 @@ it('rejects responses that claim execution authorization or verified expertise',
         json: async () => ({ workforce_plan: { execution_authorized: true } }),
       }),
   );
-  render(<CreateIntake tenantId="t" workspaceId="w" />);
+  render(<CreateIntake subject="user:me" tenantId="t" workspaceId="w" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A useful app' },
   });
@@ -246,6 +255,7 @@ it('rejects responses that claim execution authorization or verified expertise',
   fireEvent.change(screen.getByLabelText('Industry or area'), {
     target: { value: 'Education' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   expect((await screen.findByRole('alert')).textContent).toContain(
     'unsupported project',
@@ -277,7 +287,7 @@ it('treats cost as unknown and renders untrusted domain and expert names as text
       }),
     }),
   );
-  const { container } = render(<CreateIntake tenantId="t" workspaceId="w" />);
+  const { container } = render(<CreateIntake subject="user:me" tenantId="t" workspaceId="w" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A useful app' },
   });
@@ -314,6 +324,7 @@ it('treats cost as unknown and renders untrusted domain and expert names as text
       }),
     });
   vi.stubGlobal('fetch', request);
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   await screen.findByText('Shared project ID: p-1');
   expect(screen.getByText('Cost: unknown until measured')).toBeTruthy();
