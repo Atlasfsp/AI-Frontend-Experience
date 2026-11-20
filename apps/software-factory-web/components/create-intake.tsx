@@ -351,7 +351,7 @@ export function CreateIntake({
         <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center">
           <button
             type="submit"
-            disabled={editingBlocked || idea.trim().length < 5}
+            disabled={editingBlocked || (project !== null && projectScope === scope) || idea.trim().length < 5}
             className="min-h-12 rounded-2xl bg-[var(--bac-color-primary)] px-6 py-3 font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
           >
             {pending ? 'Preparing your project…' : 'Create my project'}
