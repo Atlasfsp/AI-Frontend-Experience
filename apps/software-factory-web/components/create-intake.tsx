@@ -1,8 +1,12 @@
 'use client';
 
-import React, { useRef, useState, type FormEvent } from 'react';
+import React, { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { z } from 'zod';
+import {
+  beginWriteFence, isWriteFenceBlocked, ownsWriteFence,
+  scopedCreateFenceKey, settleWriteFence, type WriteFence,
+} from '@/lib/release0-write-fence';
 
 // Consumer-side validation: the backend remains the contract owner.
 const projectSchema = z
@@ -37,14 +41,19 @@ const projectSchema = z
   })
   .passthrough();
 type Project = z.infer<typeof projectSchema>;
+type PendingCreate = { key: string; payload: string; fence: WriteFence };
+
 const fieldClass =
   'w-full rounded-2xl border border-white/20 bg-slate-950/70 p-4 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300';
 
 export function CreateIntake({
+  subject,
   tenantId,
   workspaceId,
   initialIdea = '',
 }: {
+  /** Verified by the server session; never supplied by a browser form. */
+  subject: string;
   tenantId: string;
   workspaceId: string;
   initialIdea?: string;
@@ -55,11 +64,51 @@ export function CreateIntake({
   const [project, setProject] = useState<Project | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
-  const revision = useRef(0);
-  const idempotencyKey = useRef('');
+  const [responseScope, setResponseScope] = useState('');
+  const [projectScope, setProjectScope] = useState('');
+  const scope = JSON.stringify([subject, tenantId, workspaceId]);
+  const [fenceBinding, setFenceBinding] = useState<{ scope: string; key: string } | null>(null);
+  const [fenceBlocked, setFenceBlocked] = useState(false);
+  const [retryReady, setRetryReady] = useState(false);
+  const pendingRef = useRef(false);
+  const activeCreate = useRef<PendingCreate | null>(null);
+  const ready = fenceBinding?.scope === scope;
+  const recoveryRequired = fenceBlocked || !ready;
+  const retryAvailable = retryReady && !!activeCreate.current &&
+    activeCreate.current.fence.key === fenceBinding?.key && !fenceBlocked && ready;
+  const editingBlocked = pending || retryAvailable || recoveryRequired;
+
+  useEffect(() => {
+    let live = true;
+    let observedKey: string | null = null;
+    activeCreate.current = null;
+    const onStorage = (event: StorageEvent) => {
+      if (observedKey && (event.key === observedKey || event.key === null)) {
+        // A marker stolen/removed during an in-flight attempt cannot be
+        // treated as a successful confirmation by another tab.
+        const owner = activeCreate.current?.fence;
+        const lostOwner = !!owner && !ownsWriteFence(owner);
+        setFenceBlocked(lostOwner || (isWriteFenceBlocked(observedKey) &&
+          !(owner && ownsWriteFence(owner))));
+      }
+    };
+    void scopedCreateFenceKey(subject, tenantId, workspaceId).then((key) => {
+      if (!live) return;
+      observedKey = key;
+      setFenceBlocked(isWriteFenceBlocked(key));
+      setFenceBinding({ scope, key });
+      window.addEventListener('storage', onStorage);
+    }).catch(() => {
+      if (live) setFenceBlocked(true);
+    });
+    return () => {
+      live = false;
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [scope, subject, tenantId, workspaceId]);
+
   function invalidate() {
-    revision.current += 1;
-    idempotencyKey.current = '';
+    if (pendingRef.current || retryAvailable || recoveryRequired) return;
     setProject(null);
     setError('');
   }
@@ -83,62 +132,98 @@ export function CreateIntake({
       domain: 'Industry-specific software',
     },
   ];
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const submittedRevision = ++revision.current;
+  async function executeCreate(retry: boolean) {
+    const binding = fenceBinding?.scope === scope ? fenceBinding : null;
+    if (pendingRef.current || !binding || fenceBlocked ||
+      (retry && !retryAvailable) || (!retry && retryAvailable)) return;
+
+    let command: PendingCreate;
+    if (retry) {
+      const existing = activeCreate.current;
+      if (!existing || !ownsWriteFence(existing.fence) || existing.fence.key !== binding.key) {
+        setFenceBlocked(true);
+        return;
+      }
+      command = existing;
+    } else {
+      const fence = beginWriteFence(binding.key);
+      if (!fence) {
+        setFenceBlocked(true);
+        return;
+      }
+      const key = globalThis.crypto?.randomUUID?.();
+      if (!key) {
+        // Without a strong random replay key, refuse this write entirely.
+        settleWriteFence(fence, false);
+        setFenceBlocked(true);
+        return;
+      }
+      const body = JSON.stringify({
+        tenant_id: tenantId,
+        name: name.trim() || idea.trim().split(/\\s+/).slice(0, 5).join(' ').replace(/[.,!?;:]$/, ''),
+        outcome: idea.trim(),
+        application_domain: domain.trim() || 'General software — SME classification pending',
+      });
+      command = { fence, key, payload: body };
+      activeCreate.current = command;
+    }
+    pendingRef.current = true;
     setPending(true);
-    setProject(null);
     setError('');
-    if (!idempotencyKey.current)
-      idempotencyKey.current =
-        globalThis.crypto?.randomUUID?.() ??
-        `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setResponseScope(scope);
+    setProject(null);
+    let definitiveStatus: number | null = null;
     try {
       const response = await fetch('/api/proxy/sdx/v1/projects', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'Idempotency-Key': idempotencyKey.current,
-        },
-        body: JSON.stringify({
-          tenant_id: tenantId,
-          name:
-            name.trim() ||
-            idea
-              .trim()
-              .split(/\s+/)
-              .slice(0, 5)
-              .join(' ')
-              .replace(/[.,!?;:]$/, ''),
-          outcome: idea.trim(),
-          application_domain:
-            domain.trim() || 'General software — SME classification pending',
-        }),
+        headers: { 'content-type': 'application/json', 'Idempotency-Key': command.key },
+        body: command.payload,
       });
-      if (!response.ok)
-        throw new Error(
-          `Project service returned ${response.status}. No execution was started.`,
-        );
+      if (!response.ok) {
+        definitiveStatus = response.status;
+        throw new Error(`Project service returned ${response.status}. No execution was started.`);
+      }
+      // An unreadable 2xx may have committed; never rotate its replay key.
       const parsed = projectSchema.safeParse(await response.json());
-      if (!parsed.success)
-        throw new Error(
-          'The service returned an unsupported project. No execution was started.',
-        );
-      if (parsed.data.tenant_id !== tenantId)
-        throw new Error(
-          'The service returned a project for a different tenant.',
-        );
-      if (revision.current === submittedRevision) setProject(parsed.data);
+      if (!parsed.success) throw new Error('The service returned an unsupported project.');
+      if (parsed.data.tenant_id !== tenantId) throw new Error('The service returned a project for a different tenant.');
+
+      const safelySettled = settleWriteFence(command.fence, true);
+      activeCreate.current = null;
+      setRetryReady(false);
+      if (!safelySettled) {
+        setFenceBlocked(true);
+        setError('Project creation was returned, but safe browser reconciliation failed. New creations remain blocked.');
+      }
+      setProject(parsed.data);
+      setProjectScope(scope);
     } catch (failure) {
-      if (revision.current === submittedRevision)
-        setError(
-          failure instanceof Error
-            ? failure.message
-            : 'Proposal service unavailable.',
-        );
+      // After a prior ambiguous attempt, even a new 401/403 does not prove
+      // the original write was absent. Keep the original payload/key in RAM.
+      const uncertain = retry || definitiveStatus === null ||
+        definitiveStatus === 408 || definitiveStatus >= 500;
+      const safelySettled = settleWriteFence(command.fence, !uncertain);
+      if (!safelySettled) setFenceBlocked(true);
+      if (uncertain && safelySettled) {
+        setRetryReady(true);
+      } else {
+        setRetryReady(false);
+        activeCreate.current = null;
+      }
+      const detail = failure instanceof Error ? failure.message : 'Project service unavailable.';
+      setError(uncertain
+        ? `Project creation is unconfirmed. It may already have been saved. Retry only the original pending request, or ask an operator to reconcile it. ${detail}`
+        : detail);
+      setResponseScope(scope);
     } finally {
+      pendingRef.current = false;
       setPending(false);
     }
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await executeCreate(false);
   }
   return (
     <section
