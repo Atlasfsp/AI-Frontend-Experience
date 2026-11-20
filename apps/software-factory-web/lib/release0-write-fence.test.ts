@@ -6,6 +6,7 @@ import {
   isWriteFenceBlocked,
   ownsWriteFence,
   scopedWriteFenceKey,
+  scopedCreateFenceKey,
   settleWriteFence,
 } from './release0-write-fence';
 
@@ -76,4 +77,22 @@ it('does not settle another owner's fence or mistake a different scope for recov
   expect(isWriteFenceBlocked(alice)).toBe(true);
   expect(settleWriteFence(owner, true)).toBe(true);
   expect(isWriteFenceBlocked(bob)).toBe(true);
+});
+
+it('creates a separate opaque workspace fence for project creation with verified scope', async () => {
+  const key = await scopedCreateFenceKey('user:me', 'tenant-a', 'workspace-a');
+  const differentUser = await scopedCreateFenceKey('user:other', 'tenant-a', 'workspace-a');
+  const differentTenant = await scopedCreateFenceKey('user:me', 'tenant-b', 'workspace-a');
+  const differentWorkspace = await scopedCreateFenceKey('user:me', 'tenant-a', 'workspace-b');
+  expect(key).toMatch(/^fluxcore:r0:write-fence:v1:[a-f0-9]{64}$/);
+  expect(new Set([key, differentUser, differentTenant, differentWorkspace]).size).toBe(4);
+  expect(key).not.toBe(await scopedWriteFenceKey('user:me', 'tenant-a', 'workspace-a'));
+  await expect(scopedCreateFenceKey(undefined, 'tenant-a', 'workspace-a')).rejects.toThrow('verified identity');
+  const owner = beginWriteFence(key)!;
+  expect(owner).toBeTruthy();
+  expect(settleWriteFence(owner, false)).toBe(true);
+  expect(beginWriteFence(key)).toBeNull();
+  expect(isWriteFenceBlocked(key)).toBe(true);
+  const entry = window.localStorage.getItem(key)!;
+  expect(key + entry).not.toMatch(/user:me|tenant-a|workspace-a|secret|Idempotency-Key/);
 });
