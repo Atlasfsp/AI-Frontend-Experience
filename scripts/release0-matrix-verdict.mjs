@@ -34,3 +34,14 @@ export function requireRelease0MatrixVerdict(report) {
   }
   return { passed: RELEASE0_MATRIX_CASES.length };
 }
+
+// `pnpm <script> --reporter=json --outputFile=…` lets pnpm consume and reject
+// the reporter flags, so invoke Vitest directly inside the app package.
+export function release0MatrixCommand(reportPath) {
+  return [
+    '--filter', '@bac/software-factory-web', 'exec', 'vitest', 'run',
+    '--config', '../../vitest.config.ts',
+    'components/release0-integration.test.tsx',
+    '--reporter=json', `--outputFile=${reportPath}`,
+  ];
+}

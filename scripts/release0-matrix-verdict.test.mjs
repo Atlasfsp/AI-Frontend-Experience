@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 
-import { RELEASE0_MATRIX_CASES, requireRelease0MatrixVerdict } from './release0-matrix-verdict.mjs';
+import { RELEASE0_MATRIX_CASES, release0MatrixCommand, requireRelease0MatrixVerdict } from './release0-matrix-verdict.mjs';
 
 function passing() {
   return {
@@ -40,4 +40,12 @@ test('rejects empty/skipped/partial/renamed matrices and false-positive exits', 
   }
   assert.throws(() => requireRelease0MatrixVerdict(null));
   assert.throws(() => requireRelease0MatrixVerdict({ success: true }));
+});
+test('matrix command passes the JSON reporter to Vitest, not to pnpm', () => {
+  const args = release0MatrixCommand('/tmp/report.json');
+  const run = args.indexOf('run');
+  assert.deepEqual(args.slice(0, run + 1), ['--filter', '@bac/software-factory-web', 'exec', 'vitest', 'run']);
+  assert.ok(args.indexOf('--reporter=json') > run);
+  assert.ok(args.indexOf('--outputFile=/tmp/report.json') > run);
+  assert.ok(!args.includes('--passWithNoTests'));
 });

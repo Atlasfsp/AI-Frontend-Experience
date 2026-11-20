@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { assertMatrixSource } from './release0-source-guard.mjs';
-import { requireRelease0MatrixVerdict } from './release0-matrix-verdict.mjs';
+import { release0MatrixCommand, requireRelease0MatrixVerdict } from './release0-matrix-verdict.mjs';
 
 const {
   FLUXCORE_INTEGRATION_DESCRIPTOR: descriptor,
@@ -36,11 +36,7 @@ let result;
 let matrixVerdict = 'BLOCKED';
 let matrixReason = 'not executed';
 try {
-  result = spawnSync('pnpm', [
-    '--filter', '@bac/software-factory-web', 'test',
-    'components/release0-integration.test.tsx',
-    '--reporter=json', `--outputFile=${reportPath}`,
-  ], {
+  result = spawnSync('pnpm', release0MatrixCommand(reportPath), {
     stdio: 'inherit',
     env: { ...process.env, FLUXCORE_INTEGRATION_REQUIRED: '1' },
     timeout: 900000,
