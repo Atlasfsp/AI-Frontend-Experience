@@ -71,30 +71,45 @@ test.afterAll(async () => {
 test('a full browser reload cannot silently replace an unresolved write key', async ({ page }) => {
   await page.goto(origin);
   await page.locator('body[data-fence-ready="true"]').waitFor();
-  const scopedKey = await page.evaluate(async () => {
+  const scoped = await page.evaluate(async () => {
     const api = window.__release0Fence!;
-    const key = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
-    const owner = api.beginWriteFence(key);
-    if (!owner || !api.settleWriteFence(owner, false)) throw new Error('failed to reserve opaque write marker');
-    return key;
+    const projectKey = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
+    const createKey = await api.scopedCreateFenceKey('user:alice', 'tenant-a', 'workspace-a');
+    if (createKey === projectKey) throw new Error('creation scope collided with project scope');
+    for (const key of [projectKey, createKey]) {
+      const owner = api.beginWriteFence(key);
+      if (!owner || !api.settleWriteFence(owner, false)) {
+        throw new Error('failed to reserve opaque project or creation marker');
+      }
+    }
+    return { projectKey, createKey };
   });
   await page.reload();
   await page.locator('body[data-fence-ready="true"]').waitFor();
-  const restored = await page.evaluate(async (key) => {
+  const restored = await page.evaluate(async (original) => {
     const api = window.__release0Fence!;
-    const scoped = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
+    const project = await api.scopedWriteFenceKey('user:alice', 'tenant-a', 'project-a');
+    const creation = await api.scopedCreateFenceKey('user:alice', 'tenant-a', 'workspace-a');
     return {
-      sameKey: scoped === key,
-      blocked: api.isWriteFenceBlocked(scoped),
-      reservation: api.beginWriteFence(scoped),
-      stored: window.localStorage.getItem(scoped),
+      sameProject: project === original.projectKey,
+      sameCreate: creation === original.createKey,
+      projectBlocked: api.isWriteFenceBlocked(project),
+      createBlocked: api.isWriteFenceBlocked(creation),
+      projectReservation: api.beginWriteFence(project),
+      createReservation: api.beginWriteFence(creation),
+      stored: [project, creation].map((key) => window.localStorage.getItem(key)),
     };
-  }, scopedKey);
-  expect(restored.sameKey).toBe(true);
-  expect(restored.blocked).toBe(true);
-  expect(restored.reservation).toBeNull();
-  expect(restored.stored).toContain('UNCONFIRMED');
-  expect(restored.stored).not.toMatch(/user:alice|tenant-a|project-a|Idempotency-Key|access.token/);
+  }, scoped);
+  expect(restored.sameProject).toBe(true);
+  expect(restored.sameCreate).toBe(true);
+  expect(restored.projectBlocked).toBe(true);
+  expect(restored.createBlocked).toBe(true);
+  expect(restored.projectReservation).toBeNull();
+  expect(restored.createReservation).toBeNull();
+  for (const marker of restored.stored) {
+    expect(marker).toContain('UNCONFIRMED');
+    expect(marker).not.toMatch(/user:alice|tenant-a|project-a|workspace-a|Idempotency-Key|access.token/);
+  }
 });
 
 test('same-origin second tab blocks while a different verified scope stays separate', async ({ context, page }) => {
