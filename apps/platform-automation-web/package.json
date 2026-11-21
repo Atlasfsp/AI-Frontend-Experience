@@ -8,7 +8,7 @@
     "start": "next start --port 3001",
     "lint": "eslint .",
     "test": "vitest run --config ../../vitest.config.ts --passWithNoTests",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "next typegen && tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@bac/api-clients": "workspace:*",

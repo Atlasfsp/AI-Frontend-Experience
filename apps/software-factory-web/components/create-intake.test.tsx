@@ -1,14 +1,19 @@
 import React from 'react';
+import { webcrypto } from 'node:crypto';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { CreateIntake } from './create-intake';
 
+beforeEach(() => {
+  vi.stubGlobal('crypto', webcrypto);
+  window.localStorage.clear();
+});
 afterEach(() => vi.unstubAllGlobals());
 it('carries a dashboard idea into the Create form without creating a project early', () => {
   const request = vi.fn();
   vi.stubGlobal('fetch', request);
   render(
-    <CreateIntake
+    <CreateIntake subject="user:me"
       tenantId="tenant-a"
       workspaceId="workspace-a"
       initialIdea="Build an accessible booking calendar"
@@ -51,10 +56,11 @@ it('lets a first-time builder start from one plain-language idea and suggests th
     .fn()
     .mockResolvedValue({ ok: true, json: async () => project });
   vi.stubGlobal('fetch', request);
-  render(<CreateIntake tenantId="tenant-a" workspaceId="workspace-a" />);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'I want to make a neighborhood garden planner' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   await screen.findByText('General software SME');
   expect(JSON.parse(request.mock.calls[0]?.[1].body)).toEqual({
@@ -70,9 +76,15 @@ it('lets a first-time builder start from one plain-language idea and suggests th
   ).toBe('/software-factory/workspaces');
 });
 
-it('fills a conversational starter and its SME context without submitting', () => {
-  render(<CreateIntake tenantId="tenant-a" workspaceId="workspace-a" />);
-  fireEvent.click(screen.getByRole('button', { name: /A simple online shop/ }));
+it('fills a conversational starter and its SME context without submitting', async () => {
+  const request = vi.fn();
+  vi.stubGlobal('fetch', request);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  const starter = screen.getByRole('button', { name: /A simple online shop/ }) as HTMLButtonElement;
+  // Edits stay disabled until the verified-scope write fence is ready.
+  await waitFor(() => expect(starter.disabled).toBe(false));
+  fireEvent.click(starter);
+  expect(request).not.toHaveBeenCalled();
   expect(
     (
       screen.getByLabelText(
@@ -122,7 +134,7 @@ it('creates a shared tenant project and displays its unverified workforce propos
     }),
   });
   vi.stubGlobal('fetch', request);
-  render(<CreateIntake tenantId="tenant-a" workspaceId="workspace-a" />);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A coral monitoring application' },
   });
@@ -132,6 +144,7 @@ it('creates a shared tenant project and displays its unverified workforce propos
   fireEvent.change(screen.getByLabelText('Industry or area'), {
     target: { value: 'Marine biology' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   await screen.findByText('Marine SME');
   expect(request.mock.calls[0]?.[0]).toBe('/api/proxy/sdx/v1/projects');
@@ -146,13 +159,12 @@ it('creates a shared tenant project and displays its unverified workforce propos
   ).toBeGreaterThanOrEqual(8);
   expect(screen.getByText('Verify SME expertise')).toBeTruthy();
   expect(screen.getByText('Cost: unknown until measured')).toBeTruthy();
+  expect(screen.getByText('Execution remains blocked.')).toBeTruthy();
   expect(
-    (
-      screen.getByRole('button', {
-        name: 'Execution blocked',
-      }) as HTMLButtonElement
-    ).disabled,
-  ).toBe(true);
+    screen
+      .getByRole('link', { name: 'Continue in FluxCore Engineer' })
+      .getAttribute('href'),
+  ).toBe('/software-factory/workspaces/project-1');
   expect(screen.getByText('Shared project ID: project-1')).toBeTruthy();
   expect(
     screen.getByText(
@@ -167,7 +179,7 @@ it('creates a shared tenant project and displays its unverified workforce propos
 });
 it('reports service failures without success evidence', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }));
-  render(<CreateIntake tenantId="t" workspaceId="w" />);
+  render(<CreateIntake subject="user:me" tenantId="t" workspaceId="w" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A useful app' },
   });
@@ -177,6 +189,7 @@ it('reports service failures without success evidence', async () => {
   fireEvent.change(screen.getByLabelText('Industry or area'), {
     target: { value: 'Education' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   await waitFor(() =>
     expect(screen.getByRole('alert').textContent).toContain('503'),
@@ -211,7 +224,7 @@ it('rejects a project response from a different tenant', async () => {
       }),
     }),
   );
-  render(<CreateIntake tenantId="tenant-a" workspaceId="workspace-a" />);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A useful app' },
   });
@@ -221,6 +234,7 @@ it('rejects a project response from a different tenant', async () => {
   fireEvent.change(screen.getByLabelText('Industry or area'), {
     target: { value: 'Education' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   expect((await screen.findByRole('alert')).textContent).toContain(
     'different tenant',
@@ -237,7 +251,7 @@ it('rejects responses that claim execution authorization or verified expertise',
         json: async () => ({ workforce_plan: { execution_authorized: true } }),
       }),
   );
-  render(<CreateIntake tenantId="t" workspaceId="w" />);
+  render(<CreateIntake subject="user:me" tenantId="t" workspaceId="w" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A useful app' },
   });
@@ -247,6 +261,7 @@ it('rejects responses that claim execution authorization or verified expertise',
   fireEvent.change(screen.getByLabelText('Industry or area'), {
     target: { value: 'Education' },
   });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   expect((await screen.findByRole('alert')).textContent).toContain(
     'unsupported project',
@@ -278,7 +293,7 @@ it('treats cost as unknown and renders untrusted domain and expert names as text
       }),
     }),
   );
-  const { container } = render(<CreateIntake tenantId="t" workspaceId="w" />);
+  const { container } = render(<CreateIntake subject="user:me" tenantId="t" workspaceId="w" />);
   fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
     target: { value: 'A useful app' },
   });
@@ -315,9 +330,172 @@ it('treats cost as unknown and renders untrusted domain and expert names as text
       }),
     });
   vi.stubGlobal('fetch', request);
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
   fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
   await screen.findByText('Shared project ID: p-1');
   expect(screen.getByText('Cost: unknown until measured')).toBeTruthy();
   expect(screen.getByRole('heading', { name: unsafe })).toBeTruthy();
   expect(container.querySelector('img')).toBeNull();
+});
+
+it('reuses the original project-create body and key after an ambiguous 503 without duplicate creation', async () => {
+  const project = {
+    id: 'project-replayed',
+    tenant_id: 'tenant-a',
+    name: 'Careful builder',
+    status: 'PROPOSED',
+    workforce_plan: {
+      domain: 'Education',
+      evidence_status: 'UNVERIFIED',
+      status: 'PROPOSED',
+      roles: [],
+      expert: {
+        expert_id: 'general',
+        name: 'General software SME',
+        domain: 'Education',
+        is_verified: false,
+      },
+      execution_authorized: false,
+      required_gates: [],
+    },
+    estimated_cost_usd: null,
+  };
+  const request = vi.fn()
+    .mockResolvedValueOnce({ ok: false, status: 503 })
+    .mockResolvedValueOnce({ ok: true, status: 200, json: async () => project });
+  vi.stubGlobal('fetch', request);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
+    target: { value: 'Create a careful builder' },
+  });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+  expect((await screen.findByRole('alert')).textContent).toContain('unconfirmed');
+  expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
+  const retry = screen.getByRole('button', { name: 'Retry pending project creation' });
+  expect(window.localStorage.length).toBe(1);
+  fireEvent.click(retry);
+  await screen.findByText('Shared project ID: project-replayed');
+  expect(request).toHaveBeenCalledTimes(2);
+  expect(request.mock.calls[1]?.[1].headers['Idempotency-Key']).toBe(request.mock.calls[0]?.[1].headers['Idempotency-Key']);
+  expect(request.mock.calls[1]?.[1].body).toBe(request.mock.calls[0]?.[1].body);
+  expect(window.localStorage.length).toBe(0);
+  expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
+});
+
+it('persists only an opaque creation marker and fails closed on remount after an ambiguous write', async () => {
+  const request = vi.fn().mockRejectedValue(new TypeError('connection lost after commit'));
+  vi.stubGlobal('fetch', request);
+  const mounted = render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
+    target: { value: 'Create a private education portal' },
+  });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+  await screen.findByRole('button', { name: 'Retry pending project creation' });
+  expect(window.localStorage.length).toBe(1);
+  const stored = Array.from({ length: window.localStorage.length }, (_, index) => {
+    const key = window.localStorage.key(index)!;
+    return key + window.localStorage.getItem(key);
+  }).join(' ');
+  expect(stored).toMatch(/fluxcore:r0:write-fence:v1:/);
+  expect(stored).not.toMatch(/private education|user:me|tenant-a|workspace-a|Idempotency-Key|access.token/);
+  mounted.unmount();
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true));
+  expect((await screen.findByRole('alert')).textContent).toContain('New creations are blocked');
+  expect(screen.queryByRole('button', { name: 'Retry pending project creation' })).toBeNull();
+  expect(request).toHaveBeenCalledTimes(1);
+});
+
+it('keeps the exact create key after unreadable 201 and expired-session 401 on retry', async () => {
+  const project = {
+    id: 'created-before-response-loss', tenant_id: 'tenant-a', name: 'Secure create',
+    status: 'PROPOSED',
+    workforce_plan: {
+      domain: 'Education', evidence_status: 'UNVERIFIED', status: 'PROPOSED', roles: [],
+      expert: { expert_id: 'e', name: 'Education SME', domain: 'Education', is_verified: false },
+      execution_authorized: false, required_gates: [],
+    },
+  };
+  const request = vi.fn()
+    .mockResolvedValueOnce({
+      ok: true, status: 201,
+      json: async () => { throw new SyntaxError('response truncated'); },
+    })
+    .mockResolvedValueOnce({ ok: false, status: 401 })
+    .mockResolvedValueOnce({ ok: true, status: 200, json: async () => project });
+  vi.stubGlobal('fetch', request);
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.change(screen.getByLabelText('Describe what you have in mind'), {
+    target: { value: 'Secure project create with recovery' },
+  });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+  await screen.findByRole('button', { name: 'Retry pending project creation' });
+  fireEvent.click(screen.getByRole('button', { name: 'Retry pending project creation' }));
+  await waitFor(() => expect((screen.getByRole('alert').textContent ?? '')).toContain('401'));
+  expect(window.localStorage.length).toBe(1);
+  fireEvent.click(screen.getByRole('button', { name: 'Retry pending project creation' }));
+  await screen.findByText('Shared project ID: created-before-response-loss');
+  expect(request).toHaveBeenCalledTimes(3);
+  const firstKey = request.mock.calls[0]?.[1].headers['Idempotency-Key'];
+  expect(firstKey).toEqual(expect.any(String));
+  for (const call of request.mock.calls.slice(1)) {
+    expect(call[1].headers['Idempotency-Key']).toBe(firstKey);
+    expect(call[1].body).toBe(request.mock.calls[0]?.[1].body);
+  }
+  expect(window.localStorage.length).toBe(0);
+});
+
+it.each([
+  ['COMMITTED', true],
+  ['UNKNOWN', false],
+  ['DENIED', false],
+])('recovers a project create after reload only when the server reports this user committed it: %s', async (mode, cleared) => {
+  const project = {
+    id: 'project-recovered', tenant_id: 'tenant-a', name: 'Recovered', status: 'PROPOSED',
+    workforce_plan: {
+      domain: 'Education', evidence_status: 'UNVERIFIED', status: 'PROPOSED', roles: [],
+      expert: { expert_id: 'e', name: 'Education SME', domain: 'Education', is_verified: false },
+      execution_authorized: false, required_gates: [],
+    },
+  };
+  type Init = { method?: string; headers: Record<string, string> };
+  const request = vi.fn(async (url: string, init?: Init) => {
+    void init;
+    if (url.includes('command-outcome')) {
+      if (mode === 'DENIED') return { ok: false, status: 403, json: async () => ({}) };
+      return { ok: true, status: 200, json: async () => (mode === 'COMMITTED'
+        ? { outcome: 'COMMITTED', project_id: 'project-recovered', resource_id: 'project-recovered', execution_authorized: false }
+        : { outcome: 'UNKNOWN', execution_authorized: false }) };
+    }
+    if (url.startsWith('/api/proxy/sdx/v1/projects/project-recovered')) return { ok: true, status: 200, json: async () => project };
+    throw new TypeError('connection lost after commit');
+  });
+  vi.stubGlobal('fetch', request);
+  const mounted = render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.change(screen.getByLabelText('Describe what you have in mind'), { target: { value: 'Create a recoverable portal' } });
+  await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+  fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+  await screen.findByRole('button', { name: 'Retry pending project creation' });
+  const originalKey = request.mock.calls[0]![1]!.headers['Idempotency-Key'];
+  mounted.unmount();
+  render(<CreateIntake subject="user:me" tenantId="tenant-a" workspaceId="workspace-a" />);
+  fireEvent.click(await screen.findByRole('button', { name: 'Check project creation outcome' }));
+  await waitFor(() => expect(request.mock.calls.some(([url]) => String(url).includes('command-outcome'))).toBe(true));
+  const lookup = request.mock.calls.find(([url]) => String(url).includes('command-outcome'))!;
+  expect(lookup[1]!.method).toBe('GET');
+  expect(lookup[1]!.headers['Idempotency-Key']).toBe(originalKey);
+  expect(String(lookup[0])).toContain('command=PROJECT_CREATE');
+  expect(String(lookup[0])).not.toContain(originalKey);
+  if (cleared) {
+    await screen.findByText('Shared project ID: project-recovered');
+    expect(window.localStorage.length).toBe(0);
+  } else {
+    await screen.findByText(/cannot establish|remains unknown/);
+    expect(window.localStorage.length).toBe(1);
+    expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
+  }
+  expect(request.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1);
 });

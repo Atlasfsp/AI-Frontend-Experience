@@ -76,4 +76,28 @@ describe('AppShell', () => {
     expect(screen.getByText('Review API contracts')).toBeTruthy();
     expect(screen.queryByText('Restricted intake route')).toBeNull();
   });
+
+  it('signs out with a form POST rather than a prefetchable link', () => {
+    render(
+      <AppShell
+        navigation={navigation}
+        productName="AI Software Factory"
+        session={{
+          email: 'viewer@example.com',
+          name: 'Viewer User',
+          roles: ['VIEWER'],
+          tenantId: 'tenant-core',
+          workspaceId: 'workspace-alpha',
+        }}
+      >
+        <div>Dashboard content</div>
+      </AppShell>,
+    );
+
+    const signOut = screen.getByRole('button', { name: 'Sign out' });
+    const form = signOut.closest('form');
+    expect(form?.getAttribute('action')).toBe('/logout');
+    expect(form?.getAttribute('method')).toBe('post');
+    expect(document.querySelector('a[href="/logout"]')).toBeNull();
+  });
 });

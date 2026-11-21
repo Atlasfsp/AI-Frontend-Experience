@@ -1,3 +1,5 @@
+import { loadAppEnv } from '@/lib/env';
+
 export default async function LoginPage({
   searchParams,
 }: {
@@ -5,6 +7,7 @@ export default async function LoginPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const nextPath = typeof resolvedSearchParams.next === 'string' ? resolvedSearchParams.next : '/software-factory';
+  const mockLoginEnabled = loadAppEnv().environment === 'development';
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(31,94,255,0.28),_transparent_32%),linear-gradient(180deg,_#06111f,_#050910)] px-6">
@@ -23,6 +26,8 @@ export default async function LoginPage({
         >
           Continue with Authentik OIDC
         </a>
+        {mockLoginEnabled ? (
+        <>
         <div className="flex items-center gap-3 text-xs uppercase tracking-[0.26em] text-slate-500">
           <span className="h-px flex-1 bg-white/10" />
           Local operator mode
@@ -59,6 +64,8 @@ export default async function LoginPage({
             Continue with mock session
           </button>
         </form>
+        </>
+        ) : null}
       </div>
     </main>
   );
