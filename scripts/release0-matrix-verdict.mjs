@@ -37,12 +37,54 @@ export function requireRelease0MatrixVerdict(report) {
 }
 
 // `pnpm <script> --reporter=json --outputFile=…` lets pnpm consume and reject
-// the reporter flags, so invoke Vitest directly inside the app package.
+// the reporter flags, so invoke Vitest directly inside the app package. The
+// default reporter runs alongside JSON so unhandled errors that fail the run
+// after every case passed are still printed with their details.
 export function release0MatrixCommand(reportPath) {
   return [
     '--filter', '@bac/software-factory-web', 'exec', 'vitest', 'run',
     '--config', '../../vitest.config.ts',
     'components/release0-integration.test.tsx',
-    '--reporter=json', `--outputFile=${reportPath}`,
+    '--reporter=default', '--reporter=json', `--outputFile.json=${reportPath}`,
   ];
+}
+
+const redactions = [
+  [/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED]'],
+  [/\beyJ[A-Za-z0-9_-]{8,}(?:\.[A-Za-z0-9_-]+){1,2}/g, '[REDACTED_TOKEN]'],
+  [/((?:access_token|id_token|refresh_token|client_secret|session_secret|password|authorization|cookie|bac_session)\\?"?\s*[:=]\s*\\?"?)[^"\\\s,;}]+/gi, '$1[REDACTED]'],
+];
+
+/** Removes bearer tokens, signed sessions and credential fields from evidence text. */
+export function redactEvidence(text) {
+  return redactions.reduce((value, [pattern, replacement]) => value.replace(pattern, replacement), String(text ?? ''));
+}
+
+const clip = (text, limit = 4000) => (text.length > limit ? `${text.slice(0, limit)}…[truncated]` : text);
+
+/** Case-level outcome, including failures, that survives a failed or partial run. */
+export function summarizeRelease0MatrixReport(report) {
+  if (!report || typeof report !== 'object') return { report: 'absent_or_unreadable' };
+  const suites = Array.isArray(report.testResults) ? report.testResults : [];
+  return {
+    report: 'present',
+    success: report.success === true,
+    total: report.numTotalTests ?? null,
+    passed: report.numPassedTests ?? null,
+    failed: report.numFailedTests ?? null,
+    pending: report.numPendingTests ?? null,
+    todo: report.numTodoTests ?? null,
+    suites: suites.map((suite) => ({
+      file: typeof suite?.name === 'string' ? suite.name.replaceAll('\\', '/').split('/').slice(-2).join('/') : null,
+      status: suite?.status ?? null,
+      ...(suite?.message ? { message: clip(redactEvidence(suite.message)) } : {}),
+    })),
+    cases: suites.flatMap((suite) => (Array.isArray(suite?.assertionResults) ? suite.assertionResults : []).map((c) => ({
+      title: c?.title ?? null,
+      status: c?.status ?? null,
+      ...(Array.isArray(c?.failureMessages) && c.failureMessages.length
+        ? { failure: clip(redactEvidence(c.failureMessages.join('\n'))) }
+        : {}),
+    }))),
+  };
 }
