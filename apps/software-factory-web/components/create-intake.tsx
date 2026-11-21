@@ -1,8 +1,12 @@
 'use client';
 
-import React, { useRef, useState, type FormEvent } from 'react';
+import React, { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { z } from 'zod';
+import {
+  beginWriteFence, isWriteFenceBlocked, ownsWriteFence,
+  prepareWriteFence, readWriteFenceOutcome, scopedCreateFenceKey, settleWriteFence, type WriteFence,
+} from '@/lib/release0-write-fence';
 
 // Consumer-side validation: the backend remains the contract owner.
 const projectSchema = z
@@ -37,14 +41,19 @@ const projectSchema = z
   })
   .passthrough();
 type Project = z.infer<typeof projectSchema>;
+type PendingCreate = { key: string; payload: string; fence: WriteFence };
+
 const fieldClass =
   'w-full rounded-2xl border border-white/20 bg-slate-950/70 p-4 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300';
 
 export function CreateIntake({
+  subject,
   tenantId,
   workspaceId,
   initialIdea = '',
 }: {
+  /** Verified by the server session; never supplied by a browser form. */
+  subject: string;
   tenantId: string;
   workspaceId: string;
   initialIdea?: string;
@@ -55,11 +64,56 @@ export function CreateIntake({
   const [project, setProject] = useState<Project | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
-  const revision = useRef(0);
-  const idempotencyKey = useRef('');
+  const [responseScope, setResponseScope] = useState('');
+  const [projectScope, setProjectScope] = useState('');
+  const scope = JSON.stringify([subject, tenantId, workspaceId]);
+  const [fenceBinding, setFenceBinding] = useState<{ scope: string; key: string } | null>(null);
+  const [fenceBlocked, setFenceBlocked] = useState(false);
+  // Fence key of the in-memory command retained for exact retry. Render
+  // reads this state, never the ref, so retry affordances stay consistent.
+  const [retryKey, setRetryKey] = useState<string | null>(null);
+  const pendingRef = useRef(false);
+  const activeCreate = useRef<PendingCreate | null>(null);
+  const recoveryGeneration = useRef(0);
+  const ready = fenceBinding?.scope === scope;
+  const recoveryRequired = fenceBlocked || !ready;
+  const retryAvailable = retryKey !== null && retryKey === fenceBinding?.key &&
+    !fenceBlocked && ready;
+  const editingBlocked = pending || retryAvailable || recoveryRequired;
+
+  useEffect(() => {
+    let live = true;
+    let observedKey: string | null = null;
+    activeCreate.current = null;
+    const onStorage = (event: StorageEvent) => {
+      if (observedKey && (event.key === observedKey || event.key === null)) {
+        // A marker stolen/removed during an in-flight attempt cannot be
+        // treated as a successful confirmation by another tab.
+        const owner = activeCreate.current?.fence;
+        const lostOwner = !!owner && !ownsWriteFence(owner);
+        setFenceBlocked(lostOwner || (isWriteFenceBlocked(observedKey) &&
+          !(owner && ownsWriteFence(owner))));
+      }
+    };
+    void scopedCreateFenceKey(subject, tenantId, workspaceId).then((key) => {
+      if (!live) return;
+      observedKey = key;
+      setFenceBlocked(isWriteFenceBlocked(key));
+      setRetryKey(null);
+      setFenceBinding({ scope, key });
+      window.addEventListener('storage', onStorage);
+    }).catch(() => {
+      if (live) setFenceBlocked(true);
+    });
+    return () => {
+      live = false;
+      recoveryGeneration.current += 1;
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [scope, subject, tenantId, workspaceId]);
+
   function invalidate() {
-    revision.current += 1;
-    idempotencyKey.current = '';
+    if (pendingRef.current || retryAvailable || recoveryRequired) return;
     setProject(null);
     setError('');
   }
@@ -83,60 +137,131 @@ export function CreateIntake({
       domain: 'Industry-specific software',
     },
   ];
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const submittedRevision = ++revision.current;
+  async function executeCreate(retry: boolean) {
+    const generation = recoveryGeneration.current;
+    const binding = fenceBinding?.scope === scope ? fenceBinding : null;
+    if (pendingRef.current || !binding || fenceBlocked ||
+      (retry && !retryAvailable) || (!retry && (retryAvailable ||
+        (project !== null && projectScope === scope)))) return;
+
+    let command: PendingCreate;
+    if (retry) {
+      const existing = activeCreate.current;
+      if (!existing || !ownsWriteFence(existing.fence) || existing.fence.key !== binding.key) {
+        setFenceBlocked(true);
+        return;
+      }
+      command = existing;
+    } else {
+      const fence = beginWriteFence(binding.key);
+      if (!fence) {
+        setFenceBlocked(true);
+        return;
+      }
+      const key = fence.nonce;
+      if (!prepareWriteFence(fence, { command: 'PROJECT_CREATE' })) {
+        // Refuse transmission unless the locator is durably readable.
+        settleWriteFence(fence, false);
+        setFenceBlocked(true);
+        return;
+      }
+      const body = JSON.stringify({
+        tenant_id: tenantId,
+        name: name.trim() || idea.trim().split(/\s+/).slice(0, 5).join(' ').replace(/[.,!?;:]$/, ''),
+        outcome: idea.trim(),
+        application_domain: domain.trim() || 'General software — SME classification pending',
+      });
+      command = { fence, key, payload: body };
+      activeCreate.current = command;
+    }
+    pendingRef.current = true;
     setPending(true);
-    setProject(null);
     setError('');
-    if (!idempotencyKey.current)
-      idempotencyKey.current =
-        globalThis.crypto?.randomUUID?.() ??
-        `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setResponseScope(scope);
+    setProject(null);
+    let definitiveStatus: number | null = null;
     try {
       const response = await fetch('/api/proxy/sdx/v1/projects', {
         method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'Idempotency-Key': idempotencyKey.current,
-        },
-        body: JSON.stringify({
-          tenant_id: tenantId,
-          name:
-            name.trim() ||
-            idea
-              .trim()
-              .split(/\s+/)
-              .slice(0, 5)
-              .join(' ')
-              .replace(/[.,!?;:]$/, ''),
-          outcome: idea.trim(),
-          application_domain:
-            domain.trim() || 'General software — SME classification pending',
-        }),
+        headers: { 'content-type': 'application/json', 'Idempotency-Key': command.key },
+        body: command.payload,
       });
-      if (!response.ok)
-        throw new Error(
-          `Project service returned ${response.status}. No execution was started.`,
-        );
+      if (!response.ok) {
+        definitiveStatus = response.status;
+        throw new Error(`Project service returned ${response.status}. No execution was started.`);
+      }
+      // An unreadable 2xx may have committed; never rotate its replay key.
       const parsed = projectSchema.safeParse(await response.json());
-      if (!parsed.success)
-        throw new Error(
-          'The service returned an unsupported project. No execution was started.',
-        );
-      if (parsed.data.tenant_id !== tenantId)
-        throw new Error(
-          'The service returned a project for a different tenant.',
-        );
-      if (revision.current === submittedRevision) setProject(parsed.data);
+      if (!parsed.success) throw new Error('The service returned an unsupported project.');
+      if (parsed.data.tenant_id !== tenantId) throw new Error('The service returned a project for a different tenant.');
+      if (generation !== recoveryGeneration.current) return;
+
+      const safelySettled = settleWriteFence(command.fence, true);
+      activeCreate.current = null;
+      setRetryKey(null);
+      if (!safelySettled) {
+        setFenceBlocked(true);
+        setError('Project creation was returned, but safe browser reconciliation failed. New creations remain blocked.');
+      }
+      setProject(parsed.data);
+      setProjectScope(scope);
     } catch (failure) {
-      if (revision.current === submittedRevision)
-        setError(
-          failure instanceof Error
-            ? failure.message
-            : 'Proposal service unavailable.',
-        );
+      if (generation !== recoveryGeneration.current) return;
+      // After a prior ambiguous attempt, even a new 401/403 does not prove
+      // the original write was absent. Keep the original payload/key in RAM.
+      const uncertain = retry || definitiveStatus === null ||
+        definitiveStatus === 408 || definitiveStatus >= 500;
+      const safelySettled = settleWriteFence(command.fence, !uncertain);
+      if (!safelySettled) setFenceBlocked(true);
+      if (uncertain && safelySettled) {
+        setRetryKey(command.fence.key);
+      } else {
+        setRetryKey(null);
+        activeCreate.current = null;
+      }
+      const detail = failure instanceof Error ? failure.message : 'Project service unavailable.';
+      setError(uncertain
+        ? `Project creation is unconfirmed. It may already have been saved. Retry only the original pending request, or ask an operator to reconcile it. ${detail}`
+        : detail);
+      setResponseScope(scope);
     } finally {
+      pendingRef.current = false;
+      setPending(false);
+    }
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await executeCreate(false);
+  }
+
+  async function recover() {
+    if (pendingRef.current || !ready || !fenceBinding) return;
+    const generation = recoveryGeneration.current;
+    pendingRef.current = true;
+    setPending(true);
+    setResponseScope(scope);
+    try {
+      const result = await readWriteFenceOutcome(fenceBinding.key, tenantId);
+      if (result.outcome !== 'COMMITTED') throw new Error('The server cannot establish this creation outcome. It may still commit. New creations remain blocked; do not resubmit with a new key.');
+      const response = await fetch(`/api/proxy/sdx/v1/projects/${encodeURIComponent(result.resourceId)}?tenant_id=${encodeURIComponent(tenantId)}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Creation was recorded, but the project is unavailable. Recovery remains required.');
+      const parsed = projectSchema.safeParse(await response.json());
+      if (!parsed.success || parsed.data.id !== result.resourceId || parsed.data.tenant_id !== tenantId) {
+        throw new Error('Recovered project scope or format is unsupported.');
+      }
+      if (generation !== recoveryGeneration.current) return;
+      if (!settleWriteFence(result.fence, true)) throw new Error('Safe browser reconciliation failed. New creations remain blocked.');
+      activeCreate.current = null;
+      setRetryKey(null);
+      setFenceBlocked(false);
+      setError('');
+      setProject(parsed.data);
+      setProjectScope(scope);
+    } catch (failure) {
+      if (generation === recoveryGeneration.current) setError(failure instanceof Error ? failure.message : 'Recovery unavailable. New creations remain blocked.');
+    } finally {
+      pendingRef.current = false;
       setPending(false);
     }
   }
@@ -167,6 +292,7 @@ export function CreateIntake({
           <button
             key={starter.label}
             type="button"
+            disabled={editingBlocked}
             onClick={() => {
               invalidate();
               setIdea(starter.idea);
@@ -192,6 +318,7 @@ export function CreateIntake({
             Describe what you have in mind
           </span>
           <textarea
+            disabled={editingBlocked}
             required
             minLength={5}
             maxLength={12000}
@@ -224,6 +351,7 @@ export function CreateIntake({
             <label className="block space-y-2">
               <span className="text-sm">Project name</span>
               <input
+                disabled={editingBlocked}
                 maxLength={160}
                 placeholder="We can suggest one from your idea"
                 className={fieldClass}
@@ -237,6 +365,7 @@ export function CreateIntake({
             <label className="block space-y-2">
               <span className="text-sm">Industry or area</span>
               <input
+                disabled={editingBlocked}
                 maxLength={160}
                 placeholder="e.g. education, health, retail"
                 className={fieldClass}
@@ -262,7 +391,7 @@ export function CreateIntake({
         <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center">
           <button
             type="submit"
-            disabled={pending || idea.trim().length < 5}
+            disabled={editingBlocked || (project !== null && projectScope === scope) || idea.trim().length < 5}
             className="min-h-12 rounded-2xl bg-[var(--bac-color-primary)] px-6 py-3 font-semibold text-white shadow-lg shadow-cyan-950/40 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
           >
             {pending ? 'Preparing your project…' : 'Create my project'}
@@ -273,13 +402,33 @@ export function CreateIntake({
           </p>
         </div>
       </form>
-      {error && (
+      {error && responseScope === scope && (
         <p role="alert" className="text-rose-200">
           {error}
         </p>
       )}
+      {retryAvailable && !pending && (
+        <div className="rounded-2xl border border-amber-200/30 p-4 text-sm text-amber-100">
+          <p>A previous project creation is unconfirmed. New creations are paused. This retry uses exactly the original body and Idempotency-Key.</p>
+          <button className="mt-3 min-h-11 rounded-xl border border-amber-200/40 px-4 font-semibold" type="button"
+            onClick={() => void executeCreate(true)}>Retry pending project creation</button>
+        </div>
+      )}
+      {fenceBlocked && (
+        <p role="alert" className="rounded-2xl border border-amber-200/30 p-4 text-sm text-amber-100">
+          A previous project creation may be unresolved in this workspace and account, or its safe recovery marker was lost.
+          New creations are blocked until an authorized operator reconciles the backend project and idempotency records.
+          A browser reload cannot restore the original request. Do not clear browser storage and resubmit.
+        </p>
+      )}
+      {(fenceBlocked || retryAvailable) && ready && (
+        <button type="button" disabled={pending} onClick={() => void recover()}
+          className="min-h-11 rounded-xl border border-amber-200/40 px-4 font-semibold">
+          Check project creation outcome
+        </button>
+      )}
       <div aria-live="polite">
-        {project && (
+        {project && projectScope === scope && (
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">
               Your project is ready to review: {project.name}
@@ -322,13 +471,13 @@ export function CreateIntake({
                 {JSON.stringify(project, null, 2)}
               </pre>
             </details>
-            <button
-              type="button"
-              disabled
-              className="rounded-2xl border border-white/20 px-5 py-3 opacity-60"
+            <Link
+              className="inline-block rounded-2xl bg-[var(--bac-color-primary)] px-5 py-3 font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+              href={`/software-factory/workspaces/${encodeURIComponent(project.id)}`}
             >
-              Execution blocked
-            </button>
+              Continue in FluxCore Engineer
+            </Link>
+            <p className="text-sm text-slate-300">Execution remains blocked.</p>
             <p>
               No generated files, test results, preview, deployment, or
               production authorization is claimed.

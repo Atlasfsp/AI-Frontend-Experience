@@ -22,6 +22,7 @@ export default async function PrdIntakePage({
       />
       {session && (
         <CreateIntake
+          subject={session.subject}
           tenantId={session.tenantId}
           workspaceId={session.workspaceId}
           initialIdea={initialIdea}

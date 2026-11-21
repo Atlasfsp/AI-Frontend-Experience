@@ -18,7 +18,8 @@ export const authVerifierCookieName = 'bac_auth_code_verifier';
 export const authNextCookieName = 'bac_auth_next';
 
 function isSecureCookie() {
-  return loadAppEnv().environment === 'production';
+  const environment = loadAppEnv().environment;
+  return environment === 'staging' || environment === 'production';
 }
 
 export async function readRequestSession(token: string | undefined) {

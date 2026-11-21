@@ -1,0 +1,152 @@
+# Release 0 software-factory-web image. Supply the approved immutable Node image reference
+# and non-secret staging/production endpoint build arguments from Jenkins.
+# Never pass BAC_SESSION_SECRET or BAC_AUTH_CLIENT_SECRET as build arguments.
+
+ARG NODE_IMAGE
+FROM ${NODE_IMAGE} AS base
+
+ARG NODE_IMAGE
+RUN node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 22 || (major === 22 && minor < 12)) { console.error("Node.js 22.12 or newer is required."); process.exit(1); } if (!/^node:22(?:\.\d+)?(?:\.\d+)?-alpine[^@]*@sha256:[a-f0-9]{64}$/.test((process.env.NODE_IMAGE || "").split("/").pop() || "")) { console.error("NODE_IMAGE must be a pinned Node 22 Alpine image digest."); process.exit(1); }' \
+    && apk add --no-cache libc6-compat \
+    && corepack enable \
+    && corepack prepare pnpm@9.15.9 --activate
+
+WORKDIR /app
+
+FROM base AS deps
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY patches/ ./patches/
+COPY apps/ ./apps/
+COPY packages/ ./packages/
+
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+
+ARG APP_NAME=software-factory-web
+ARG BAC_ENV=staging
+ARG NEXT_PUBLIC_BAC_ENV=staging
+ARG NEXT_PUBLIC_BAC_ENABLE_MOCK_API=false
+ARG NEXT_PUBLIC_BAC_PROXY_THROUGH_BFF=true
+ARG NEXT_PUBLIC_BAC_AUTH_BASE_URL
+ARG NEXT_PUBLIC_BAC_AUTH_CLIENT_ID
+ARG NEXT_PUBLIC_BAC_AUTH_ISSUER_URL
+ARG NEXT_PUBLIC_BAC_AUTH_AUTHORIZE_URL
+ARG NEXT_PUBLIC_BAC_AUTH_TOKEN_URL
+ARG NEXT_PUBLIC_BAC_AUTH_LOGOUT_URL
+ARG NEXT_PUBLIC_BAC_SDX_API_URL
+ARG NEXT_PUBLIC_BAC_API_URL
+ARG NEXT_PUBLIC_BAC_PLATFORM_API_URL
+ARG NEXT_PUBLIC_BAC_HASURA_URL
+ARG NEXT_PUBLIC_BAC_SWAGGER_URL
+ARG NEXT_PUBLIC_BAC_OTEL_COLLECTOR_URL
+ARG NEXT_PUBLIC_BAC_DEFAULT_REGION
+ARG NEXT_PUBLIC_BAC_FEATURE_LIVE_SUBSCRIPTIONS=false
+ARG NEXT_PUBLIC_BAC_FEATURE_PREVIEW_DEPLOYS=false
+ARG NEXT_PUBLIC_BAC_GOVERNANCE_MODE=HOTL
+
+ENV BAC_ENV=${BAC_ENV} \
+    NEXT_PUBLIC_BAC_ENV=${NEXT_PUBLIC_BAC_ENV} \
+    NEXT_PUBLIC_BAC_ENABLE_MOCK_API=${NEXT_PUBLIC_BAC_ENABLE_MOCK_API} \
+    NEXT_PUBLIC_BAC_PROXY_THROUGH_BFF=${NEXT_PUBLIC_BAC_PROXY_THROUGH_BFF} \
+    NEXT_PUBLIC_BAC_AUTH_BASE_URL=${NEXT_PUBLIC_BAC_AUTH_BASE_URL} \
+    NEXT_PUBLIC_BAC_AUTH_CLIENT_ID=${NEXT_PUBLIC_BAC_AUTH_CLIENT_ID} \
+    NEXT_PUBLIC_BAC_AUTH_ISSUER_URL=${NEXT_PUBLIC_BAC_AUTH_ISSUER_URL} \
+    NEXT_PUBLIC_BAC_AUTH_AUTHORIZE_URL=${NEXT_PUBLIC_BAC_AUTH_AUTHORIZE_URL} \
+    NEXT_PUBLIC_BAC_AUTH_TOKEN_URL=${NEXT_PUBLIC_BAC_AUTH_TOKEN_URL} \
+    NEXT_PUBLIC_BAC_AUTH_LOGOUT_URL=${NEXT_PUBLIC_BAC_AUTH_LOGOUT_URL} \
+    NEXT_PUBLIC_BAC_SDX_API_URL=${NEXT_PUBLIC_BAC_SDX_API_URL} \
+    NEXT_PUBLIC_BAC_API_URL=${NEXT_PUBLIC_BAC_API_URL} \
+    NEXT_PUBLIC_BAC_PLATFORM_API_URL=${NEXT_PUBLIC_BAC_PLATFORM_API_URL} \
+    NEXT_PUBLIC_BAC_HASURA_URL=${NEXT_PUBLIC_BAC_HASURA_URL} \
+    NEXT_PUBLIC_BAC_SWAGGER_URL=${NEXT_PUBLIC_BAC_SWAGGER_URL} \
+    NEXT_PUBLIC_BAC_OTEL_COLLECTOR_URL=${NEXT_PUBLIC_BAC_OTEL_COLLECTOR_URL} \
+    NEXT_PUBLIC_BAC_DEFAULT_REGION=${NEXT_PUBLIC_BAC_DEFAULT_REGION} \
+    NEXT_PUBLIC_BAC_FEATURE_LIVE_SUBSCRIPTIONS=${NEXT_PUBLIC_BAC_FEATURE_LIVE_SUBSCRIPTIONS} \
+    NEXT_PUBLIC_BAC_FEATURE_PREVIEW_DEPLOYS=${NEXT_PUBLIC_BAC_FEATURE_PREVIEW_DEPLOYS} \
+    NEXT_PUBLIC_BAC_GOVERNANCE_MODE=${NEXT_PUBLIC_BAC_GOVERNANCE_MODE} \
+    NEXT_TELEMETRY_DISABLED=1
+
+RUN node -e 'const env = process.env; const fail = (message) => { console.error(message); process.exit(1); }; if (!["staging", "production"].includes(env.BAC_ENV) || env.BAC_ENV !== env.NEXT_PUBLIC_BAC_ENV) fail("BAC_ENV and NEXT_PUBLIC_BAC_ENV must match staging or production."); if (env.NEXT_PUBLIC_BAC_ENABLE_MOCK_API !== "false" || env.NEXT_PUBLIC_BAC_PROXY_THROUGH_BFF !== "true") fail("Mock API must be disabled and the BFF proxy must be enabled."); if (env.NEXT_PUBLIC_BAC_FEATURE_LIVE_SUBSCRIPTIONS !== "false" || env.NEXT_PUBLIC_BAC_FEATURE_PREVIEW_DEPLOYS !== "false" || env.NEXT_PUBLIC_BAC_GOVERNANCE_MODE !== "HOTL") fail("Release 0 requires live subscriptions and preview deploys off, with HOTL governance."); if (!["ng", "za", "eu"].includes(env.NEXT_PUBLIC_BAC_DEFAULT_REGION)) fail("NEXT_PUBLIC_BAC_DEFAULT_REGION must be ng, za or eu."); const keys = ["NEXT_PUBLIC_BAC_AUTH_BASE_URL", "NEXT_PUBLIC_BAC_AUTH_ISSUER_URL", "NEXT_PUBLIC_BAC_AUTH_AUTHORIZE_URL", "NEXT_PUBLIC_BAC_AUTH_TOKEN_URL", "NEXT_PUBLIC_BAC_AUTH_LOGOUT_URL", "NEXT_PUBLIC_BAC_API_URL", "NEXT_PUBLIC_BAC_PLATFORM_API_URL", "NEXT_PUBLIC_BAC_HASURA_URL", "NEXT_PUBLIC_BAC_SWAGGER_URL", "NEXT_PUBLIC_BAC_OTEL_COLLECTOR_URL", "NEXT_PUBLIC_BAC_SDX_API_URL"]; const invalid = keys.filter((key) => { try { const url = new URL(env[key] || ""); const internalApi = key === "NEXT_PUBLIC_BAC_SDX_API_URL" && url.href === "http://api:8080/"; return !internalApi && (url.protocol !== "https:" || ["localhost", "127.0.0.1", "[::1]", "example.com"].includes(url.hostname) || url.hostname.endsWith(".example.com")); } catch { return true; } }); if (!env.NEXT_PUBLIC_BAC_AUTH_CLIENT_ID?.trim()) invalid.push("NEXT_PUBLIC_BAC_AUTH_CLIENT_ID"); if (invalid.length) fail("Missing or unsafe required Release 0 build arguments: " + invalid.join(", "));'
+
+RUN test "${APP_NAME}" = "software-factory-web" \
+    || (echo "This Release 0 image supports software-factory-web only." >&2; exit 1)
+
+COPY --from=deps /app/ ./
+COPY . ./
+
+RUN pnpm exec turbo run build --env-mode=loose --filter="@bac/${APP_NAME}"
+
+FROM base AS runner
+
+ARG APP_NAME=software-factory-web
+ARG BAC_ENV=staging
+ARG NEXT_PUBLIC_BAC_ENV=staging
+ARG NEXT_PUBLIC_BAC_ENABLE_MOCK_API=false
+ARG NEXT_PUBLIC_BAC_PROXY_THROUGH_BFF=true
+ARG NEXT_PUBLIC_BAC_AUTH_BASE_URL
+ARG NEXT_PUBLIC_BAC_AUTH_CLIENT_ID
+ARG NEXT_PUBLIC_BAC_AUTH_ISSUER_URL
+ARG NEXT_PUBLIC_BAC_AUTH_AUTHORIZE_URL
+ARG NEXT_PUBLIC_BAC_AUTH_TOKEN_URL
+ARG NEXT_PUBLIC_BAC_AUTH_LOGOUT_URL
+ARG NEXT_PUBLIC_BAC_SDX_API_URL
+ARG NEXT_PUBLIC_BAC_API_URL
+ARG NEXT_PUBLIC_BAC_PLATFORM_API_URL
+ARG NEXT_PUBLIC_BAC_HASURA_URL
+ARG NEXT_PUBLIC_BAC_SWAGGER_URL
+ARG NEXT_PUBLIC_BAC_OTEL_COLLECTOR_URL
+ARG NEXT_PUBLIC_BAC_DEFAULT_REGION
+ARG NEXT_PUBLIC_BAC_FEATURE_LIVE_SUBSCRIPTIONS=false
+ARG NEXT_PUBLIC_BAC_FEATURE_PREVIEW_DEPLOYS=false
+ARG NEXT_PUBLIC_BAC_GOVERNANCE_MODE=HOTL
+
+RUN apk add --no-cache curl \
+    && addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nextjs
+
+WORKDIR /app
+
+ENV NODE_ENV=production \
+    BAC_ENV=${BAC_ENV} \
+    NEXT_PUBLIC_BAC_ENV=${NEXT_PUBLIC_BAC_ENV} \
+    NEXT_PUBLIC_BAC_ENABLE_MOCK_API=${NEXT_PUBLIC_BAC_ENABLE_MOCK_API} \
+    NEXT_PUBLIC_BAC_PROXY_THROUGH_BFF=${NEXT_PUBLIC_BAC_PROXY_THROUGH_BFF} \
+    NEXT_PUBLIC_BAC_AUTH_BASE_URL=${NEXT_PUBLIC_BAC_AUTH_BASE_URL} \
+    NEXT_PUBLIC_BAC_AUTH_CLIENT_ID=${NEXT_PUBLIC_BAC_AUTH_CLIENT_ID} \
+    NEXT_PUBLIC_BAC_AUTH_ISSUER_URL=${NEXT_PUBLIC_BAC_AUTH_ISSUER_URL} \
+    NEXT_PUBLIC_BAC_AUTH_AUTHORIZE_URL=${NEXT_PUBLIC_BAC_AUTH_AUTHORIZE_URL} \
+    NEXT_PUBLIC_BAC_AUTH_TOKEN_URL=${NEXT_PUBLIC_BAC_AUTH_TOKEN_URL} \
+    NEXT_PUBLIC_BAC_AUTH_LOGOUT_URL=${NEXT_PUBLIC_BAC_AUTH_LOGOUT_URL} \
+    NEXT_PUBLIC_BAC_SDX_API_URL=${NEXT_PUBLIC_BAC_SDX_API_URL} \
+    NEXT_PUBLIC_BAC_API_URL=${NEXT_PUBLIC_BAC_API_URL} \
+    NEXT_PUBLIC_BAC_PLATFORM_API_URL=${NEXT_PUBLIC_BAC_PLATFORM_API_URL} \
+    NEXT_PUBLIC_BAC_HASURA_URL=${NEXT_PUBLIC_BAC_HASURA_URL} \
+    NEXT_PUBLIC_BAC_SWAGGER_URL=${NEXT_PUBLIC_BAC_SWAGGER_URL} \
+    NEXT_PUBLIC_BAC_OTEL_COLLECTOR_URL=${NEXT_PUBLIC_BAC_OTEL_COLLECTOR_URL} \
+    NEXT_PUBLIC_BAC_DEFAULT_REGION=${NEXT_PUBLIC_BAC_DEFAULT_REGION} \
+    NEXT_PUBLIC_BAC_FEATURE_LIVE_SUBSCRIPTIONS=${NEXT_PUBLIC_BAC_FEATURE_LIVE_SUBSCRIPTIONS} \
+    NEXT_PUBLIC_BAC_FEATURE_PREVIEW_DEPLOYS=${NEXT_PUBLIC_BAC_FEATURE_PREVIEW_DEPLOYS} \
+    NEXT_PUBLIC_BAC_GOVERNANCE_MODE=${NEXT_PUBLIC_BAC_GOVERNANCE_MODE} \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/standalone/ ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/.next/static ./apps/${APP_NAME}/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/${APP_NAME}/public ./apps/${APP_NAME}/public
+COPY --chown=root:root docker/start-frontend.sh /usr/local/bin/start-frontend.sh
+
+RUN test "${APP_NAME}" = "software-factory-web" \
+    && chmod 0555 /usr/local/bin/start-frontend.sh \
+    && ln -s "apps/${APP_NAME}/server.js" /app/server.js
+
+USER nextjs
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://127.0.0.1:3000/api/health || exit 1
+
+CMD ["/usr/local/bin/start-frontend.sh"]
