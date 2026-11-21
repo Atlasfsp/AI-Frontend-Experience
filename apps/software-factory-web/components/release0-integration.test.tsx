@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createMockSession, createSignedSessionToken, sessionCookieName } from '@bac/auth';
 import { GET, POST, PUT } from '@/app/api/proxy/sdx/[...path]/route';
 import { callFluxCore, IdempotencyKeys } from '@/lib/fluxcore-api';
+import { clickReadyButton } from '../test-utils/click-ready-button';
 import { CreateIntake } from './create-intake';
 import { ProjectWorkspace } from './project-workspace';
 
@@ -58,8 +59,7 @@ async function decide(formName: string, reason: string, decision?: string) {
   const form = await screen.findByRole('form', { name: formName });
   fireEvent.change(within(form).getByLabelText('Reason'), { target: { value: reason } });
   if (decision) fireEvent.change(within(form).getByLabelText('Decision'), { target: { value: decision } });
-  await waitFor(() => expect((within(form).getByRole('button', { name: 'Record decision' }) as HTMLButtonElement).disabled).toBe(false));
-  fireEvent.click(within(form).getByRole('button', { name: 'Record decision' }));
+  await clickReadyButton('Record decision', within(form));
 }
 
 // This suite is mandatory when explicitly selected by the cross-repository
@@ -140,18 +140,18 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
       await identity(subject);
       view.rerender(workspace(subject));
     };
-    fireEvent.click(await screen.findByRole('button', { name: 'Check commit' }));
+    await clickReadyButton('Check commit');
     await screen.findByText(new RegExp(`Resolves to ${commit}`));
-    fireEvent.click(screen.getByRole('button', { name: 'Link repository' }));
+    await clickReadyButton('Link repository');
     await screen.findByText('Repository linked to the resolved commit.');
     await waitFor(() => expect(screen.getByText(`conn-a@${commit}`)).toBeTruthy());
     fireEvent.change(screen.getByLabelText('Intake title'), { target: { value: 'Accessible checkout API' } });
     fireEvent.change(screen.getByLabelText('Requirements'), { target: { value: 'Persist orders and make checkout keyboard accessible.' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Submit for triage' }));
+    await clickReadyButton('Submit for triage');
     await screen.findByText('Intake saved and awaiting human triage.');
     await decide('Triage Accessible checkout API', 'Accepted for product planning');
     await screen.findByText('Intake accepted.');
-    fireEvent.click(await screen.findByRole('button', { name: 'Draft engineering plan' }));
+    await clickReadyButton('Draft engineering plan');
     await screen.findByText('Draft engineering plan saved.');
     const plans = await api<{ engineering_plans: Array<{ plan_id: string }> }>('GET', `${projectPath()}/engineering-plans?${query}`);
     planId = plans.engineering_plans[0]!.plan_id;
@@ -170,7 +170,7 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     const staffing = await screen.findByRole('form', { name: 'Propose staffing' });
     fireEvent.change(within(staffing).getByLabelText('Budget ceiling (USD)'), { target: { value: '2500' } });
     fireEvent.change(within(staffing).getByLabelText('Linked plan'), { target: { value: planId } });
-    fireEvent.click(within(staffing).getByRole('button', { name: 'Propose team' }));
+    await clickReadyButton('Propose team', within(staffing));
     await screen.findByText('Staffing proposal saved. No member is activated.');
     const teams = await api<{ staffing_proposals: Array<{ team_id: string }> }>('GET', `${projectPath()}/team-proposals?${query}`);
     await screen.findByText('You proposed this team. A different person must record the decision.');
@@ -178,12 +178,12 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     await decide(`Decide team ${teams.staffing_proposals[0]!.team_id}`, 'Approve task preparation only');
     await screen.findByText('Staffing approved.');
     await actAs('task-planner');
-    fireEvent.click(await screen.findByRole('button', { name: 'Create tasks' }));
+    await clickReadyButton('Create tasks');
     await screen.findByText('Engineering tasks created without dispatch.');
     const list = await screen.findByRole('list', { name: 'Engineering tasks' });
     const cancel = within(list).getAllByRole('form')[0]!;
     fireEvent.change(within(cancel).getByLabelText('Cancellation reason'), { target: { value: 'Requirement removed during review' } });
-    fireEvent.click(within(cancel).getByRole('button', { name: 'Cancel task' }));
+    await clickReadyButton('Cancel task', within(cancel));
     await screen.findByText('Task cancelled.');
     await waitFor(() => expect(screen.getByRole('list', { name: 'Engineering tasks' }).textContent).toMatch(/Cancelled: by task-planner .*\(Requirement removed during review\)/));
     expect(screen.getByRole('list', { name: 'Engineering tasks' }).textContent).toContain('Dispatch: NOT_DISPATCHED');
@@ -233,12 +233,12 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     fireEvent.change(within(form).getByLabelText('Budget ceiling (USD)'), { target: { value: '3000' } });
     fireEvent.change(within(form).getByLabelText('Linked plan'), { target: { value: planId } });
     lostPath = 'v1/workforce/org/staff';
-    fireEvent.click(within(form).getByRole('button', { name: 'Propose team' }));
+    await clickReadyButton('Propose team', within(form));
     await screen.findByRole('alert');
     const submitted = commands.filter((command) => command.path === lostPath || command.path === 'v1/workforce/org/staff').at(-1)!;
-    const retry = await screen.findByRole('button', { name: 'Retry pending change' });
+    await screen.findByRole('button', { name: 'Retry pending change' });
     expect((within(form).getByRole('button', { name: 'Propose team' }) as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(retry);
+    await clickReadyButton('Retry pending change');
     await screen.findByText(/already recorded; replayed without a second write/);
     expect(commands.filter((command) => command.path === 'v1/workforce/org/staff').at(-1)).toEqual(submitted);
     const teams = await api<{ staffing_proposals: unknown[] }>('GET', `${projectPath()}/team-proposals?${query}`);
@@ -250,7 +250,7 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     render(<ProjectWorkspace projectId={projectId} tenantId={tenant} canManage canApprove subject="requester" />);
     await screen.findByText(/unavailable/i);
     await control('outage?enabled=false');
-    fireEvent.click(screen.getByRole('button', { name: 'Reload workspace' }));
+    await clickReadyButton('Reload workspace');
     await screen.findByText(/Shared project · version/);
     transportDown = true;
     await expect(api('GET', `${projectPath()}?${query}`)).rejects.toMatchObject({ status: 502 });
@@ -353,11 +353,11 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     expect(await foreign.json()).toEqual({ outcome: 'UNKNOWN', execution_authorized: false });
     await identity('requester');
     await control('outage?enabled=true');
-    fireEvent.click(recoverCreate);
+    await clickReadyButton('Check project creation outcome');
     await screen.findByText(/Recovery unavailable or denied/);
     expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
     await control('outage?enabled=false');
-    fireEvent.click(screen.getByRole('button', { name: 'Check project creation outcome' }));
+    await clickReadyButton('Check project creation outcome');
     const link = await screen.findByRole('link', { name: 'Continue in FluxCore Engineer' });
     const recoveredId = link.getAttribute('href')!.split('/').at(-1)!;
     expect(commands).toHaveLength(writesAfterCreate);
@@ -379,9 +379,7 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     const before = await api('GET', `v1/projects/${recoveredId}?${query}`);
     view.unmount();
     view = render(workspace());
-    const recoverIntake = await screen.findByRole('button', { name: 'Check original change outcome' });
-    await waitFor(() => expect((recoverIntake as HTMLButtonElement).disabled).toBe(false));
-    fireEvent.click(recoverIntake);
+    await clickReadyButton('Check original change outcome');
     await screen.findByText('Original change confirmed as recorded by FluxCore. No mutation was submitted by recovery. Execution remains disabled.');
     expect(commands).toHaveLength(writesAfterIntake);
     expect(await api('GET', `v1/projects/${recoveredId}?${query}`)).toEqual(before);
