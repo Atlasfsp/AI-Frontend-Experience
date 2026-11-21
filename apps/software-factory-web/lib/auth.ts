@@ -17,6 +17,18 @@ export const authStateCookieName = 'bac_auth_state';
 export const authVerifierCookieName = 'bac_auth_code_verifier';
 export const authNextCookieName = 'bac_auth_next';
 
+export function safeNextPath(value: string | null | undefined, fallback = '/software-factory') {
+  return value && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\') ? value : fallback;
+}
+
+// Route handlers may observe a server-side host (bind address or internal
+// proxy origin) that differs from the browser's origin. A relative Location
+// keeps the browser on the origin that received the session cookie, and 303
+// prevents a POST from being replayed against the destination.
+export function sameOriginRedirect(path: string) {
+  return new NextResponse(null, { status: 303, headers: { location: safeNextPath(path) } });
+}
+
 function isSecureCookie() {
   const environment = loadAppEnv().environment;
   return environment === 'staging' || environment === 'production';
@@ -83,7 +95,7 @@ export async function createOidcLoginResponse(request: Request, nextPath: string
     path: '/',
     sameSite: 'lax',
     secure: isSecureCookie(),
-    value: nextPath,
+    value: safeNextPath(nextPath),
   });
 
   return response;
@@ -95,10 +107,10 @@ export async function createOidcCallbackResponse(request: NextRequest, fallbackP
   const state = request.nextUrl.searchParams.get('state');
   const stateCookie = request.cookies.get(authStateCookieName)?.value;
   const codeVerifier = request.cookies.get(authVerifierCookieName)?.value;
-  const nextPath = request.cookies.get(authNextCookieName)?.value ?? fallbackPath;
+  const nextPath = safeNextPath(request.cookies.get(authNextCookieName)?.value, fallbackPath);
 
   if (!code || !state || !stateCookie || state !== stateCookie || !codeVerifier) {
-    return NextResponse.redirect(new URL(`/login?error=oidc_state&next=${encodeURIComponent(nextPath)}`, request.url));
+    return sameOriginRedirect(`/login?error=oidc_state&next=${encodeURIComponent(nextPath)}`);
   }
 
   const tokenResponse = await exchangeAuthorizationCode({
@@ -118,7 +130,7 @@ export async function createOidcCallbackResponse(request: NextRequest, fallbackP
     scope: tokenResponse.scope?.split(' '),
   });
 
-  const response = NextResponse.redirect(new URL(nextPath, request.url));
+  const response = sameOriginRedirect(nextPath);
   clearAuthCookies(response);
   await appendSessionCookie(response, session);
   return response;
