@@ -48,7 +48,7 @@ try {
     // suite is skipped, renamed, absent, partially run or missing test cases.
     requireRelease0MatrixVerdict(JSON.parse(readFileSync(reportPath, 'utf8')));
     matrixVerdict = 'PASS';
-    matrixReason = 'all six named tests passed in a JSON report';
+    matrixReason = 'all seven named tests passed in a JSON report';
   }
 } catch {
   matrixReason = 'required JSON test evidence absent, invalid or incomplete';

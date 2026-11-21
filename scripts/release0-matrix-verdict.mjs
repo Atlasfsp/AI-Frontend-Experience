@@ -7,6 +7,7 @@ export const RELEASE0_MATRIX_CASES = Object.freeze([
   'reports service outages and offers explicit recovery without claiming success',
   'enforces human rejection and approved-plan staffing/task prerequisites',
   'commits concurrent retries once and rejects a competing verified requester without leaking the winner',
+  'recovers committed Create and Engineer outcomes through both BFF lookup routes after remount without resubmitting writes',
 ]);
 
 export function requireRelease0MatrixVerdict(report) {

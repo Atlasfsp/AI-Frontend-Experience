@@ -6,7 +6,7 @@ import { RELEASE0_MATRIX_CASES, release0MatrixCommand, requireRelease0MatrixVerd
 function passing() {
   return {
     success: true,
-    numTotalTests: 6, numPassedTests: 6, numFailedTests: 0,
+    numTotalTests: 7, numPassedTests: 7, numFailedTests: 0,
     numPendingTests: 0, numTodoTests: 0,
     testResults: [{
       name: '/runner/apps/software-factory-web/components/release0-integration.test.tsx',
@@ -15,14 +15,15 @@ function passing() {
     }],
   };
 }
-test('accepts only all six exact named non-skipped matrix cases', () => {
-  assert.deepEqual(requireRelease0MatrixVerdict(passing()), { passed: 6 });
+test('accepts only all seven exact named non-skipped matrix cases', () => {
+  assert.deepEqual(requireRelease0MatrixVerdict(passing()), { passed: 7 });
 });
 test('rejects empty/skipped/partial/renamed matrices and false-positive exits', () => {
   for (const mutate of [
     (r) => { r.success = false; },
     (r) => { r.numTotalTests = 0; r.numPassedTests = 0; r.testResults = []; },
-    (r) => { r.numPassedTests = 5; r.numPendingTests = 1; },
+    (r) => { r.numPassedTests = 6; r.numPendingTests = 1; },
+    (r) => { r.numTotalTests = 6; r.numPassedTests = 6; r.testResults[0].assertionResults.pop(); },
     (r) => { r.numFailedTests = 1; },
     (r) => { r.numTodoTests = 1; },
     (r) => { r.testResults = []; },

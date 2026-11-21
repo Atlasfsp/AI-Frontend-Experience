@@ -26,6 +26,7 @@ let planId = '';
 let lostPath = '';
 let transportDown = false;
 const commands: Command[] = [];
+const lookups: Array<{ path: string; query: string; key: string }> = [];
 const keys = new IdempotencyKeys();
 const tenant = 'tenant-alpha';
 const commit = '0123456789abcdef0123456789abcdef01234567';
@@ -97,6 +98,9 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
       if (cookie) headers.set('cookie', `${sessionCookieName}=${cookie}`);
       const command = { method, path, body: String(init.body ?? ''), key: headers.get('idempotency-key') ?? '' };
       if (method !== 'GET') commands.push(command);
+      if (method === 'GET' && path.endsWith('/command-outcome')) {
+        lookups.push({ path, query: target.search, key: command.key });
+      }
       const request = new NextRequest(target, { method, headers, ...(typeof init.body === 'string' ? { body: init.body } : {}) });
       // Next.js decodes each catch-all segment before invoking the route handler.
       const context = { params: Promise.resolve({ path: path.split('/').map(decodeURIComponent) }) };
@@ -318,5 +322,76 @@ describe.skipIf(!descriptorPath)(`AUTHOR_RUN_LOCAL_DEVELOPMENT backend=${backend
     expect(Object.keys(denial).sort()).toEqual(['error', 'reason']);
     expect(denial.reason).toBe('IDEMPOTENCY_KEY_REUSED');
     expect(await version()).toBe(before + 2);
+  }, 30000);
+
+  it('recovers committed Create and Engineer outcomes through both BFF lookup routes after remount without resubmitting writes', async () => {
+    await identity('requester');
+    const props = { subject: 'requester', tenantId: tenant, workspaceId: 'recovery-workspace' };
+    let create = render(<CreateIntake {...props} />);
+    fireEvent.change(screen.getByLabelText('Describe what you have in mind'), { target: { value: 'Recover a durable project after the committed response is lost.' } });
+    fireEvent.change(screen.getByLabelText('Project name'), { target: { value: 'Outcome recovery project' } });
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(false));
+    lostPath = 'v1/projects';
+    fireEvent.click(screen.getByRole('button', { name: 'Create my project' }));
+    await screen.findByRole('alert');
+    const original = commands.at(-1)!;
+    expect(original.path).toBe('v1/projects');
+    const writesAfterCreate = commands.length;
+    create.unmount(); // Lose the component's in-memory payload and retry state.
+    await control('restart'); // Outcome authority survives a disposable WAL restart.
+    create = render(<CreateIntake {...props} />);
+    const recoverCreate = await screen.findByRole('button', { name: 'Check project creation outcome' });
+    await waitFor(() => expect((recoverCreate as HTMLButtonElement).disabled).toBe(false));
+    expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
+
+    // A different verified subject cannot discover the creator's resource.
+    await identity('reviewer');
+    const foreign = await fetch(`/api/proxy/sdx/v1/projects/command-outcome?tenant_id=${tenant}&command=PROJECT_CREATE`, {
+      headers: { 'Idempotency-Key': original.key },
+    });
+    expect(foreign.status).toBe(200);
+    expect(await foreign.json()).toEqual({ outcome: 'UNKNOWN', execution_authorized: false });
+    await identity('requester');
+    await control('outage?enabled=true');
+    fireEvent.click(recoverCreate);
+    await screen.findByText(/Recovery unavailable or denied/);
+    expect((screen.getByRole('button', { name: 'Create my project' }) as HTMLButtonElement).disabled).toBe(true);
+    await control('outage?enabled=false');
+    fireEvent.click(screen.getByRole('button', { name: 'Check project creation outcome' }));
+    const link = await screen.findByRole('link', { name: 'Continue in FluxCore Engineer' });
+    const recoveredId = link.getAttribute('href')!.split('/').at(-1)!;
+    expect(commands).toHaveLength(writesAfterCreate);
+    expect((await api('GET', `v1/projects/${recoveredId}?${query}`)).name).toBe('Outcome recovery project');
+    create.unmount();
+
+    const workspace = () => <ProjectWorkspace projectId={recoveredId} tenantId={tenant} canManage canApprove subject="requester" />;
+    let view = render(workspace());
+    const submit = await screen.findByRole('button', { name: 'Submit for triage' });
+    fireEvent.change(screen.getByLabelText('Intake title'), { target: { value: 'Recover original intake' } });
+    fireEvent.change(screen.getByLabelText('Requirements'), { target: { value: 'Keep the original committed intake without sending another submission.' } });
+    await waitFor(() => expect((submit as HTMLButtonElement).disabled).toBe(false));
+    lostPath = 'v1/control-plane/intake';
+    fireEvent.click(submit);
+    await screen.findByRole('button', { name: 'Retry pending change' });
+    const intake = commands.at(-1)!;
+    expect(intake.path).toBe('v1/control-plane/intake');
+    const writesAfterIntake = commands.length;
+    const before = await api('GET', `v1/projects/${recoveredId}?${query}`);
+    view.unmount();
+    view = render(workspace());
+    const recoverIntake = await screen.findByRole('button', { name: 'Check original change outcome' });
+    await waitFor(() => expect((recoverIntake as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(recoverIntake);
+    await screen.findByText('Original change confirmed as recorded by FluxCore. No mutation was submitted by recovery. Execution remains disabled.');
+    expect(commands).toHaveLength(writesAfterIntake);
+    expect(await api('GET', `v1/projects/${recoveredId}?${query}`)).toEqual(before);
+    await screen.findByText('Recover original intake');
+    view.unmount();
+    expect(lookups.some((lookup) => lookup.path === 'v1/projects/command-outcome' && lookup.key === original.key && lookup.query.includes('command=PROJECT_CREATE'))).toBe(true);
+    expect(lookups.some((lookup) => lookup.path === 'v1/control-plane/intake/command-outcome' && lookup.key === intake.key && lookup.query.includes('command=INTAKE_CREATE'))).toBe(true);
+    for (const lookup of lookups) {
+      expect(lookup.key).not.toBe('');
+      expect(lookup.query).not.toContain(lookup.key);
+    }
   }, 30000);
 });
