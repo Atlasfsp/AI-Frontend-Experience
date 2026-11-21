@@ -237,12 +237,15 @@ export function AppShell({
                     {action.label}
                   </Link>
                 ))}
-                <Link
-                  href="/logout"
-                  className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-white/10"
-                >
-                  Sign out
-                </Link>
+                {/* A form POST, not a Link: production router prefetches would run a GET sign-out. */}
+                <form action="/logout" method="post">
+                  <button
+                    type="submit"
+                    className="rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-white/10"
+                  >
+                    Sign out
+                  </button>
+                </form>
               </div>
             </div>
           </header>
