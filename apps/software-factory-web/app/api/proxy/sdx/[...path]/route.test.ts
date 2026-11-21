@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createMockSession, type BacSession } from '@bac/auth';
 import { readRequestSession } from '@/lib/auth';
+import { callFluxCore, IdempotencyKeys, isOutcomeUnconfirmed } from '@/lib/fluxcore-api';
 import { GET, POST, PUT } from './route';
 
 const env = vi.hoisted(() => ({ sdxApiUrl: 'http://fluxcore.local', environment: 'development' }));
@@ -311,5 +312,135 @@ describe('SDX browser API proxy', () => {
     expect(response.headers.get('set-cookie')).toBeNull();
     expect(response.headers.get('idempotent-replay')).toBe('true');
     expect(await response.json()).toEqual({ error: 'project version changed' });
+  });
+  describe('upstream deadline through body completion', () => {
+    const encoder = new TextEncoder();
+    const project = ['v1', 'projects'];
+
+    function upstream(status: number, source: UnderlyingDefaultSource<Uint8Array>) {
+      const cancel = vi.fn(source.cancel);
+      const stream = new ReadableStream<Uint8Array>({ ...source, cancel }, { highWaterMark: 0 });
+      return { cancel, response: new Response(stream, { status, headers: { 'content-type': 'application/json' } }) };
+    }
+
+    function createProject() {
+      return POST(
+        new NextRequest('http://localhost/x', { method: 'POST', body: '{}', headers: { 'idempotency-key': 'key-12345678' } }),
+        getContext(project),
+      );
+    }
+
+    it('completes a response delivered within the deadline and releases the timer', async () => {
+      vi.useFakeTimers();
+      fetcher.mockImplementationOnce(() => new Promise((resolve) => {
+        setTimeout(() => resolve(new Response('{"id":"p-1"}', { status: 201 })), 10_000);
+      }));
+      const pending = createProject();
+      await vi.advanceTimersByTimeAsync(10_000);
+      const response = await pending;
+      expect(response.status).toBe(201);
+      expect(await response.json()).toEqual({ id: 'p-1' });
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('fails a body that stalls after headers once the deadline expires', async () => {
+      vi.useFakeTimers();
+      const { cancel, response: upstreamResponse } = upstream(201, { pull: () => new Promise(() => undefined) });
+      fetcher.mockResolvedValueOnce(upstreamResponse);
+      const response = await createProject();
+      expect(response.status).toBe(201);
+      const read = response.text().then(() => 'resolved', (error: unknown) => error);
+      await vi.advanceTimersByTimeAsync(15_000);
+      expect(await read).toMatchObject({ name: 'TimeoutError' });
+      expect(cancel).toHaveBeenCalledTimes(1);
+      expect((fetcher.mock.calls[0]?.[1] as RequestInit).signal?.aborted).toBe(true);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('never delivers partially transmitted JSON as a complete body', async () => {
+      vi.useFakeTimers();
+      let sent = false;
+      const { response: upstreamResponse } = upstream(201, {
+        pull(stream) {
+          if (sent) return new Promise(() => undefined);
+          sent = true;
+          stream.enqueue(encoder.encode('{"id":"p-1","tenant_id":"ten'));
+        },
+      });
+      fetcher.mockResolvedValueOnce(upstreamResponse);
+      const response = await createProject();
+      const read = response.json().then(() => 'parsed', (error: unknown) => error);
+      await vi.advanceTimersByTimeAsync(15_000);
+      expect(await read).toMatchObject({ name: 'TimeoutError' });
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('propagates an upstream connection termination mid-body as an error', async () => {
+      vi.useFakeTimers();
+      let sent = false;
+      const { response: upstreamResponse } = upstream(200, {
+        pull(stream) {
+          if (sent) throw new TypeError('terminated');
+          sent = true;
+          stream.enqueue(encoder.encode('{"id":'));
+        },
+      });
+      fetcher.mockResolvedValueOnce(upstreamResponse);
+      const response = await createProject();
+      await expect(response.text()).rejects.toThrow('terminated');
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('cancels the upstream body and releases the deadline when the browser aborts mid-stream', async () => {
+      vi.useFakeTimers();
+      let sent = false;
+      const { cancel, response: upstreamResponse } = upstream(200, {
+        pull(stream) {
+          if (sent) return new Promise(() => undefined);
+          sent = true;
+          stream.enqueue(encoder.encode('{"items":['));
+        },
+      });
+      fetcher.mockResolvedValueOnce(upstreamResponse);
+      const response = await createProject();
+      const reader = response.body!.getReader();
+      expect((await reader.read()).done).toBe(false);
+      await reader.cancel('navigated away');
+      expect(cancel).toHaveBeenCalledWith('navigated away');
+      expect(vi.getTimerCount()).toBe(0);
+      await vi.advanceTimersByTimeAsync(15_000);
+      expect((fetcher.mock.calls[0]?.[1] as RequestInit).signal?.aborted).toBe(false);
+    });
+
+    it('keeps a mutation stalled after 2xx headers unconfirmed and retries it with the same key', async () => {
+      vi.useFakeTimers();
+      const { response: upstreamResponse } = upstream(201, { pull: () => new Promise(() => undefined) });
+      fetcher.mockResolvedValueOnce(upstreamResponse);
+      const proxied = await createProject();
+      const keys = new IdempotencyKeys();
+      const browserFetch = vi.fn()
+        .mockResolvedValueOnce(proxied)
+        .mockResolvedValueOnce(new Response('{"id":"p-1"}', { status: 200, headers: { 'idempotent-replay': 'true' } }));
+      const options = { body: { tenant_id: 'tenant-echo' }, keys, fetcher: browserFetch };
+      const attempt = callFluxCore('POST', 'v1/projects', options).catch((error: unknown) => error);
+      await vi.advanceTimersByTimeAsync(15_000);
+      const failure = await attempt;
+      expect(failure).toMatchObject({ status: 201, outcomeUnconfirmed: true });
+      expect(isOutcomeUnconfirmed(failure)).toBe(true);
+      expect((await callFluxCore('POST', 'v1/projects', options)).replayed).toBe(true);
+      const [first, second] = browserFetch.mock.calls.map((call) => (call[1] as { headers: Record<string, string> }).headers['Idempotency-Key']);
+      expect(first).toBe(second);
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('releases the deadline for bodiless and redirect responses', async () => {
+      vi.useFakeTimers();
+      fetcher.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      expect((await createProject()).status).toBe(204);
+      expect(vi.getTimerCount()).toBe(0);
+      fetcher.mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: 'https://other.example' } }));
+      expect((await createProject()).status).toBe(502);
+      expect(vi.getTimerCount()).toBe(0);
+    });
   });
 });

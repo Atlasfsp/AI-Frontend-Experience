@@ -114,21 +114,24 @@ async function proxy(request: NextRequest, path: string[]) {
       ? { cache: 'no-store', headers, method: request.method }
       : { body, cache: 'no-store', headers, method: request.method };
 
+  // One deadline covers the headers and the whole body: a stalled body after
+  // 2xx headers must still fail, or the browser waits forever with its write pending.
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), upstreamTimeoutMs);
+  const release = () => clearTimeout(timer);
   let response: Response;
   try {
     response = await fetch(target, { ...init, redirect: 'manual', signal: controller.signal });
   } catch {
+    release();
     // A mutation may have been committed before the connection failed or timed out.
     return controller.signal.aborted ? deny(504, 'upstream_timeout_outcome_unconfirmed') : deny(502, 'upstream_unavailable');
-  } finally {
-    clearTimeout(timer);
   }
 
   // Redirects are never followed or reflected: following would replay the bearer token
   // to another origin, and reflecting Location or Set-Cookie would leak upstream state.
   if (response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400)) {
+    release();
     await response.body?.cancel().catch(() => undefined);
     return deny(502, 'upstream_redirect_refused');
   }
@@ -138,7 +141,66 @@ async function proxy(request: NextRequest, path: string[]) {
     const value = response.headers.get(name);
     if (value) responseHeaders.set(name, value);
   }
-  return new NextResponse(response.body, { headers: responseHeaders, status: response.status });
+  if (!response.body) {
+    release();
+    return new NextResponse(null, { headers: responseHeaders, status: response.status });
+  }
+  return new NextResponse(forwardWithinDeadline(response.body, controller.signal, release), {
+    headers: responseHeaders,
+    status: response.status,
+  });
+}
+
+/**
+ * Streams the upstream body without buffering it. If the deadline expires or
+ * the upstream connection fails mid-body, the forwarded stream is errored
+ * rather than closed, so a truncated body can never parse as a complete
+ * response; the browser then reaches its unconfirmed-outcome recovery path.
+ */
+function forwardWithinDeadline(body: ReadableStream<Uint8Array>, signal: AbortSignal, release: () => void) {
+  const reader = body.getReader();
+  let settled = false;
+  let onAbort = () => {};
+  const finish = () => {
+    if (settled) return false;
+    settled = true;
+    release();
+    signal.removeEventListener('abort', onAbort);
+    return true;
+  };
+  return new ReadableStream<Uint8Array>(
+    {
+      start(stream) {
+        onAbort = () => {
+          if (!finish()) return;
+          stream.error(new DOMException('upstream_timeout_outcome_unconfirmed', 'TimeoutError'));
+          reader.cancel().catch(() => undefined);
+        };
+        if (signal.aborted) onAbort();
+        else signal.addEventListener('abort', onAbort, { once: true });
+      },
+      async pull(stream) {
+        try {
+          const { done, value } = await reader.read();
+          if (settled) return;
+          if (done) {
+            finish();
+            stream.close();
+          } else {
+            stream.enqueue(value);
+          }
+        } catch (error) {
+          if (!finish()) return;
+          stream.error(error);
+        }
+      },
+      cancel(reason) {
+        finish();
+        return reader.cancel(reason).catch(() => undefined);
+      },
+    },
+    { highWaterMark: 0 },
+  );
 }
 
 type ProxyContext = { params: Promise<{ path: string[] }> };
